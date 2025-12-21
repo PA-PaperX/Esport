@@ -1,0 +1,47 @@
+{
+  "name": "esport-control",
+  "version": "1.0.0",
+  "description": "Esport Control Panel for Tournament Management",
+  "author": "PaperX",
+  "main": "electron-main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run index.ts",
+    "electron": "electron .",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.5.0"
+  },
+  "build": {
+    "appId": "com.paperx.esportcontrol",
+    "productName": "Esport Control Panel",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron-main.js",
+      "index.ts",
+      "src/**/*",
+      "public/**/*",
+      "data/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "public/icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "public/icon.png"
+    }
+  }
+}

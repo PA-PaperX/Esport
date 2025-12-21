@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreboard Overlay - Esport Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        :root {
+            --team-a-color: #3b82f6;
+            --team-b-color: #ef4444;
+            --box-height: 50px;
+            --box-width: 320px;
+            --logo-size: 40px;
+            --score-width: 50px;
+        }
+
+        .scoreboard {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Team Box Base */
+        .team-box {
+            height: var(--box-height);
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+        }
+
+        .team-a {
+            animation: slideFromLeft 0.8s ease-out 0.2s forwards;
+            border-left: 4px solid var(--team-a-color);
+        }
+
+        .team-b {
+            animation: slideFromRight 0.8s ease-out 0.2s forwards;
+            border-right: 4px solid var(--team-b-color);
+            flex-direction: row-reverse;
+        }
+
+        /* Logo */
+        .logo {
+            width: var(--logo-size);
+            height: var(--logo-size);
+            margin: 0 12px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            flex-shrink: 0;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.8s forwards;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Team Name */
+        .team-name {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+            padding: 0 15px;
+            min-width: 150px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 1s forwards;
+        }
+
+        .team-a .team-name {
+            text-align: left;
+        }
+
+        .team-b .team-name {
+            text-align: right;
+        }
+
+        /* Score */
+        .score {
+            width: var(--score-width);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: white;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.6s forwards;
+        }
+
+        .team-a .score {
+            background: var(--team-a-color);
+        }
+
+        .team-b .score {
+            background: var(--team-b-color);
+        }
+
+        /* Center Match Info */
+        .center-box {
+            height: var(--box-height);
+            min-width: 120px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(168, 85, 247, 0.5);
+            opacity: 0;
+            animation: dropDown 0.6s ease-out 0.5s forwards;
+        }
+
+        .match-info {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .match-info span {
+            color: #a855f7;
+        }
+
+        /* VS Separator */
+        .vs-text {
+            color: #a855f7;
+            font-size: 1.5em;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        /* Animations */
+        @keyframes slideFromLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideFromRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes dropDown {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Score Update Animation */
+        @keyframes scorePulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .score.pulse {
+            animation: scorePulse 0.3s ease-out forwards;
+        }
+
+        /* Connection Status (hidden in production) */
+        .connection-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+            opacity: 0.7;
+            display: none;
+        }
+
+        .connection-status.connected {
+            background: #10b981;
+        }
+
+        .connection-status.disconnected {
+            background: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scoreboard">
+        <!-- Team A (Left) -->
+        <div class="team-box team-a">
+            <div class="logo" id="teamA-logo"></div>
+            <div class="team-name" id="teamA-name">TEAM A</div>
+            <div class="score" id="teamA-score">0</div>
+        </div>
+
+        <!-- Center Match Info -->
+        <div class="center-box">
+            <div class="match-info">
+                <span>BO</span><span id="best-of">3</span>
+            </div>
+        </div>
+
+        <!-- Team B (Right) -->
+        <div class="team-box team-b">
+            <div class="score" id="teamB-score">0</div>
+            <div class="team-name" id="teamB-name">TEAM B</div>
+            <div class="logo" id="teamB-logo"></div>
+        </div>
+    </div>
+
+    <div class="connection-status" id="connection-status">Disconnected</div>
+
+    <script>
+        // WebSocket Connection
+        const WS_URL = `ws://${window.location.host}`;
+        let ws = null;
+        let reconnectInterval = null;
+        const RECONNECT_DELAY = 3000;
+
+        // State
+        let currentState = null;
+        let previousScores = { A: 0, B: 0 };
+
+        // DOM Elements
+        const elements = {
+            teamAName: document.getElementById('teamA-name'),
+            teamAScore: document.getElementById('teamA-score'),
+            teamALogo: document.getElementById('teamA-logo'),
+            teamBName: document.getElementById('teamB-name'),
+            teamBScore: document.getElementById('teamB-score'),
+            teamBLogo: document.getElementById('teamB-logo'),
+            bestOf: document.getElementById('best-of'),
+            connectionStatus: document.getElementById('connection-status')
+        };
+
+        // Connect WebSocket
+        function connectWebSocket() {
+            console.log('🔌 Connecting to WebSocket...');
+
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('✅ WebSocket Connected');
+                updateConnectionStatus(true);
+                if (reconnectInterval) {
+                    clearInterval(reconnectInterval);
+                    reconnectInterval = null;
+                }
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'STATE_UPDATE' && message.data) {
+                        currentState = message.data;
+                        renderOverlay();
+                    }
+                } catch (err) {
+                    console.error('Parse error:', err);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('❌ WebSocket Disconnected');
+                updateConnectionStatus(false);
+                scheduleReconnect();
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+                ws?.close();
+            };
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectInterval) {
+                reconnectInterval = setInterval(() => {
+                    if (!ws || ws.readyState === WebSocket.CLOSED) {
+                        connectWebSocket();
+                    }
+                }, RECONNECT_DELAY);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const el = elements.connectionStatus;
+            if (connected) {
+                el.textContent = 'Connected';
+                el.className = 'connection-status connected';
+            } else {
+                el.textContent = 'Disconnected';
+                el.className = 'connection-status disconnected';
+            }
+        }
+
+        // Render Overlay
+        function renderOverlay() {
+            if (!currentState) return;
+
+            const teamA = currentState.teams.A;
+            const teamB = currentState.teams.B;
+
+            // Team A
+            elements.teamAName.textContent = teamA.name;
+            updateScore('A', teamA.score);
+            updateLogo('A', teamA.logo);
+            updateTeamColor('A', teamA.color);
+
+            // Team B
+            elements.teamBName.textContent = teamB.name;
+            updateScore('B', teamB.score);
+            updateLogo('B', teamB.logo);
+            updateTeamColor('B', teamB.color);
+
+            // Best Of
+            elements.bestOf.textContent = currentState.bestOf || 3;
+        }
+
+        function updateScore(side, score) {
+            const scoreEl = side === 'A' ? elements.teamAScore : elements.teamBScore;
+            const prevScore = previousScores[side];
+
+            if (prevScore !== score) {
+                scoreEl.textContent = score;
+                scoreEl.classList.remove('pulse');
+                void scoreEl.offsetWidth; // Trigger reflow
+                scoreEl.classList.add('pulse');
+                previousScores[side] = score;
+            }
+        }
+
+        function updateLogo(side, logoPath) {
+            const logoEl = side === 'A' ? elements.teamALogo : elements.teamBLogo;
+
+            if (logoPath) {
+                logoEl.innerHTML = `<img src="${logoPath}" alt="Logo">`;
+            } else {
+                logoEl.innerHTML = '';
+            }
+        }
+
+        function updateTeamColor(side, color) {
+            document.documentElement.style.setProperty(
+                side === 'A' ? '--team-a-color' : '--team-b-color',
+                color
+            );
+        }
+
+        // Fetch Initial State
+        async function fetchInitialState() {
+            try {
+                const response = await fetch(`http://${window.location.host}/api/state`);
+                if (response.ok) {
+                    currentState = await response.json();
+                    renderOverlay();
+                }
+            } catch (err) {
+                console.error('Fetch state error:', err);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎮 Scoreboard Overlay Initializing...');
+            fetchInitialState();
+            connectWebSocket();
+        });
+    </script>
+</body>
+
+</html>

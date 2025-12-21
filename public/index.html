@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esport Control Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gray: { 850: '#1f2937', 900: '#111827' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden font-sans">
+
+    <header class="bg-gray-900 border-b border-gray-700 p-4 flex justify-between items-center shadow-lg z-10 relative">
+        <div class="flex items-center gap-3">
+            <!-- Hamburger Menu Button -->
+            <button onclick="toggleSettingsMenu()" id="hamburger-btn"
+                class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
+            <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse" id="status-dot"></div>
+            <h1 class="font-bold text-xl tracking-wide text-white">ESPORT CONTROL <span
+                    class="text-xs text-gray-500 font-normal">v1.0 Local</span></h1>
+        </div>
+        <div class="flex gap-4 text-sm items-center">
+            <button onclick="openTemplateManager()"
+                class="px-3 py-1 bg-purple-600 hover:bg-purple-500 rounded text-white transition">
+                📋 Template Manager
+            </button>
+            <button onclick="location.reload()" class="hover:text-white text-gray-400 transition">⟳ Reload UI</button>
+            <div id="connection-status" class="text-red-400 font-mono">DISCONNECTED</div>
+        </div>
+
+        <!-- Page Navigation Menu (Dropdown) -->
+        <div id="settings-menu"
+            class="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl hidden z-50">
+            <div class="p-3 border-b border-gray-700">
+                <h3 class="font-bold text-white text-sm">📋 เมนู</h3>
+            </div>
+            <div class="py-2">
+                <button onclick="switchPage('scoreboard')" id="nav-scoreboard"
+                    class="w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 text-white bg-purple-600/20 border-l-4 border-purple-500">
+                    <span>🎮</span>
+                    <div>
+                        <div class="font-medium">Scoreboard</div>
+                        <div class="text-xs text-gray-400">จัดการทีม, คะแนน, ผู้เล่น</div>
+                    </div>
+                </button>
+                <button onclick="switchPage('broadcast')" id="nav-broadcast"
+                    class="w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 text-gray-300 hover:text-white border-l-4 border-transparent">
+                    <span>📺</span>
+                    <div>
+                        <div class="font-medium">Broadcast</div>
+                        <div class="text-xs text-gray-500">Transition, Overlay URLs</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ======================== -->
+    <!-- PAGE: SCOREBOARD -->
+    <!-- ======================== -->
+    <div id="page-scoreboard" class="flex-1 flex flex-col overflow-hidden">
+        <main class="flex-1 flex overflow-hidden">
+
+            <section id="teamA-section"
+                class="flex-1 bg-gray-900/50 p-6 flex flex-col border-r border-gray-700 overflow-y-auto"
+                style="border-left: 4px solid #3b82f6;">
+                <h2 id="teamA-header" class="font-bold mb-4 flex items-center gap-2" style="color: #3b82f6;">
+                    <span id="teamA-accent" class="w-2 h-6 rounded-sm" style="background: #3b82f6;"></span> TEAM A
+                    (Home)
+                </h2>
+
+                <div class="mb-4 flex items-center gap-2">
+                    <select id="teamA-template"
+                        class="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                        <option value="">📋 Select Template...</option>
+                    </select>
+                    <button onclick="loadTemplate('A')"
+                        class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition">
+                        📥 Load
+                    </button>
+                </div>
+
+                <div id="teamA-card" class="space-y-4 mb-8 bg-gray-800 p-4 rounded-lg border"
+                    style="border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);">
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase">Team Name</label>
+                        <input type="text" id="teamA-name"
+                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 focus:outline-none transition"
+                            placeholder="Enter Team Name">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 uppercase">Color</label>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input type="color" id="teamA-color"
+                                    class="h-8 w-8 bg-transparent cursor-pointer border-none" value="#3b82f6">
+                                <button onclick="pickColor('A')"
+                                    class="h-8 w-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white transition"
+                                    title="Pick color from screen">
+                                    💧
+                                </button>
+                                <span id="teamA-color-hex" class="text-xs font-mono text-gray-400">#3b82f6</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 uppercase">Score</label>
+                            <div class="flex items-center gap-2">
+                                <button onclick="adjustScore('A', -1)"
+                                    class="bg-gray-700 hover:bg-gray-600 w-8 h-8 rounded text-white">-</button>
+                                <input type="number" id="teamA-score"
+                                    class="w-16 bg-gray-900 border border-gray-600 rounded p-1 text-center font-bold text-xl"
+                                    value="0" readonly>
+                                <button onclick="adjustScore('A', 1)"
+                                    class="bg-blue-600 hover:bg-blue-500 w-8 h-8 rounded text-white shadow-lg shadow-blue-500/20">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase">Team Logo</label>
+                        <div class="flex items-center gap-3 mt-1">
+                            <div id="teamA-logo-preview"
+                                class="w-16 h-16 bg-gray-700 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden">
+                                <span class="text-gray-500 text-xs">No Logo</span>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="teamA-logo-input"
+                                    accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" class="hidden"
+                                    onchange="handleLogoSelect('A', this)">
+                                <button onclick="document.getElementById('teamA-logo-input').click()"
+                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition">
+                                    📁 Choose Logo
+                                </button>
+                                <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP, SVG (max 2MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="saveTeam('A')"
+                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition shadow-lg shadow-blue-600/20">UPDATE
+                        TEAM A</button>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-gray-400 uppercase mb-2 block">Active Roster</label>
+                    <div id="teamA-players" class="space-y-2">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Swap Sides Button -->
+            <div class="flex flex-col items-center justify-center px-4 bg-gray-900/80 border-x border-gray-700">
+                <button onclick="swapSides()" id="swap-btn"
+                    class="px-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition shadow-lg hover:shadow-purple-500/30 flex flex-col items-center gap-1">
+                    <span class="text-2xl">🔄</span>
+                    <span class="text-xs uppercase tracking-wide">SWAP</span>
+                </button>
+                <span id="swap-status" class="text-xs text-gray-500 mt-2 text-center">ปกติ</span>
+            </div>
+
+            <section id="teamB-section" class="flex-1 bg-gray-900/50 p-6 flex flex-col overflow-y-auto"
+                style="border-right: 4px solid #ef4444;">
+                <h2 id="teamB-header" class="font-bold mb-4 flex items-center gap-2" style="color: #ef4444;">
+                    <span id="teamB-accent" class="w-2 h-6 rounded-sm" style="background: #ef4444;"></span> TEAM B
+                    (Away)
+                </h2>
+
+                <div class="mb-4 flex items-center gap-2">
+                    <select id="teamB-template"
+                        class="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                        <option value="">📋 Select Template...</option>
+                    </select>
+                    <button onclick="loadTemplate('B')"
+                        class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition">
+                        📥 Load
+                    </button>
+                </div>
+
+                <div id="teamB-card" class="space-y-4 mb-8 bg-gray-800 p-4 rounded-lg border"
+                    style="border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);">
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase">Team Name</label>
+                        <input type="text" id="teamB-name"
+                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 focus:outline-none transition"
+                            placeholder="Enter Team Name">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 uppercase">Color</label>
+                            <div class="flex items-center gap-2 mt-1">
+                                <input type="color" id="teamB-color"
+                                    class="h-8 w-8 bg-transparent cursor-pointer border-none" value="#ef4444">
+                                <button onclick="pickColor('B')"
+                                    class="h-8 w-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white transition"
+                                    title="Pick color from screen">
+                                    💧
+                                </button>
+                                <span id="teamB-color-hex" class="text-xs font-mono text-gray-400">#ef4444</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-400 uppercase">Score</label>
+                            <div class="flex items-center gap-2">
+                                <button onclick="adjustScore('B', -1)"
+                                    class="bg-gray-700 hover:bg-gray-600 w-8 h-8 rounded text-white">-</button>
+                                <input type="number" id="teamB-score"
+                                    class="w-16 bg-gray-900 border border-gray-600 rounded p-1 text-center font-bold text-xl"
+                                    value="0" readonly>
+                                <button onclick="adjustScore('B', 1)"
+                                    class="bg-red-600 hover:bg-red-500 w-8 h-8 rounded text-white shadow-lg shadow-red-500/20">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase">Team Logo</label>
+                        <div class="flex items-center gap-3 mt-1">
+                            <div id="teamB-logo-preview"
+                                class="w-16 h-16 bg-gray-700 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden">
+                                <span class="text-gray-500 text-xs">No Logo</span>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="teamB-logo-input"
+                                    accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" class="hidden"
+                                    onchange="handleLogoSelect('B', this)">
+                                <button onclick="document.getElementById('teamB-logo-input').click()"
+                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition">
+                                    📁 Choose Logo
+                                </button>
+                                <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP, SVG (max 2MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="saveTeam('B')"
+                        class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded transition shadow-lg shadow-red-600/20">UPDATE
+                        TEAM B</button>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-gray-400 uppercase mb-2 block">Active Roster</label>
+                    <div id="teamB-players" class="space-y-2">
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ======================== -->
+    <!-- PAGE: BROADCAST -->
+    <!-- ======================== -->
+    <div id="page-broadcast" class="flex-1 flex flex-col overflow-hidden hidden">
+        <!-- Broadcast page content will go here -->
+        <div class="flex-1 p-6 overflow-y-auto">
+            <h2 class="text-2xl font-bold text-white mb-6">📺 Broadcast Settings</h2>
+
+            <!-- Transition Control -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    <span>🎬</span> Transition
+                </h3>
+
+                <!-- Logo Upload -->
+                <div>
+                    <label class="text-sm text-gray-400 uppercase block mb-2 font-medium">โลโก้ Transition</label>
+                    <div class="flex items-center gap-4">
+                        <div id="transition-logo-preview"
+                            class="w-24 h-24 bg-gray-900 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden">
+                            <img id="transition-logo-img" src="" alt="Logo" class="w-full h-full object-contain hidden">
+                            <span id="transition-logo-placeholder" class="text-gray-500 text-sm">No Logo</span>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <input type="file" id="transition-logo-input" accept="image/*" class="hidden"
+                                onchange="previewTransitionLogo(this)">
+                            <button onclick="document.getElementById('transition-logo-input').click()"
+                                class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                                <span>📁</span> Choose Logo
+                            </button>
+                            <button onclick="uploadTransitionLogo()"
+                                class="w-full bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                                <span>💾</span> Upload Logo
+                            </button>
+                            <p id="transition-logo-status" class="text-xs text-gray-500 text-center">
+                                เลือกรูป → กด Upload</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lower Third Settings -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    <span>📺</span> Lower Third (แถบล่าง)
+                </h3>
+
+                <!-- Enable/Disable Toggle -->
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
+                    <span class="text-gray-300">เปิดใช้งาน Lower Third</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="lower-third-enabled" class="sr-only peer" checked
+                            onchange="updateLowerThird()">
+                        <div
+                            class="w-11 h-6 bg-gray-600 peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600">
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Main Title -->
+                <div class="mb-4">
+                    <label class="text-sm text-gray-400 uppercase block mb-2">ข้อความหลัก</label>
+                    <input type="text" id="lower-third-title"
+                        class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white"
+                        value="ROV PRO LEAGUE 2025 WINTER" placeholder="ข้อความหลัก..." onchange="updateLowerThird()">
+                </div>
+
+                <!-- Slots -->
+                <div class="space-y-4" id="lower-third-slots">
+                    <!-- Slot 1 -->
+                    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-white font-medium">Slot 1</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="slot-1-enabled" class="sr-only peer" checked
+                                    onchange="updateLowerThird()">
+                                <div
+                                    class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500">
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <input type="text" id="slot-1-text"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white text-sm"
+                                    value="Facebook" placeholder="Label..." onchange="updateLowerThird()">
+                            </div>
+                            <input type="file" id="slot-1-logo-input" accept="image/*" class="hidden"
+                                onchange="uploadSlotLogo(1, this)">
+                            <button onclick="document.getElementById('slot-1-logo-input').click()"
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded transition">
+                                📁 Logo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Slot 2 -->
+                    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-white font-medium">Slot 2</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="slot-2-enabled" class="sr-only peer" checked
+                                    onchange="updateLowerThird()">
+                                <div
+                                    class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500">
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <input type="text" id="slot-2-text"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white text-sm"
+                                    value="YouTube" placeholder="Label..." onchange="updateLowerThird()">
+                            </div>
+                            <input type="file" id="slot-2-logo-input" accept="image/*" class="hidden"
+                                onchange="uploadSlotLogo(2, this)">
+                            <button onclick="document.getElementById('slot-2-logo-input').click()"
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded transition">
+                                📁 Logo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Slot 3 -->
+                    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-white font-medium">Slot 3</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="slot-3-enabled" class="sr-only peer" checked
+                                    onchange="updateLowerThird()">
+                                <div
+                                    class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500">
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <input type="text" id="slot-3-text"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white text-sm"
+                                    value="TikTok" placeholder="Label..." onchange="updateLowerThird()">
+                            </div>
+                            <input type="file" id="slot-3-logo-input" accept="image/*" class="hidden"
+                                onchange="uploadSlotLogo(3, this)">
+                            <button onclick="document.getElementById('slot-3-logo-input').click()"
+                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded transition">
+                                📁 Logo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    <span>🔗</span> Overlay URLs
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="scoreboard-overlay-url"
+                            class="block text-sm font-medium text-gray-400 mb-1">Scoreboard Overlay URL</label>
+                        <input type="text" id="scoreboard-overlay-url" readonly
+                            class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white text-sm font-mono cursor-text"
+                            value="http://localhost:3000/scoreboard.html">
+                        <button onclick="copyToClipboard('scoreboard-overlay-url')"
+                            class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition">
+                            📋 Copy URL
+                        </button>
+                    </div>
+                    <div>
+                        <label for="transition-overlay-url"
+                            class="block text-sm font-medium text-gray-400 mb-1">Transition Overlay URL</label>
+                        <input type="text" id="transition-overlay-url" readonly
+                            class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white text-sm font-mono cursor-text"
+                            value="http://localhost:3000/transition.html">
+                        <button onclick="copyToClipboard('transition-overlay-url')"
+                            class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition">
+                            📋 Copy URL
+                        </button>
+                    </div>
+                    <div>
+                        <label for="lower-third-overlay-url" class="block text-sm font-medium text-gray-400 mb-1">Lower
+                            Third Overlay URL</label>
+                        <input type="text" id="lower-third-overlay-url" readonly
+                            class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white text-sm font-mono cursor-text"
+                            value="http://localhost:3000/lower-third.html">
+                        <button onclick="copyToClipboard('lower-third-overlay-url')"
+                            class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition">
+                            📋 Copy URL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Page Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-8">
+        <div
+            class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
+                <h2 id="settings-modal-title" class="font-bold text-xl text-white flex items-center gap-2">⚙️ Settings
+                </h2>
+                <button onclick="closeSettingsPanel()"
+                    class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div id="settings-modal-content" class="flex-1 overflow-y-auto p-6">
+                <!-- Content loaded dynamically -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-gray-700 bg-gray-800">
+                <button onclick="saveCurrentSettings()"
+                    class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg shadow-purple-600/30">
+                    💾 Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/src/main.ts" type="module"></script>
+</body>
+
+</html>
