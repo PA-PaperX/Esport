@@ -1,3 +1,5 @@
+export { };
+
 // ==========================================
 // Interfaces (Strict Typing)
 // ==========================================
@@ -7,6 +9,7 @@ interface Player {
     name: string;
     realName?: string;
     hero?: string;
+    lane?: string;
 }
 
 interface Team {
@@ -311,6 +314,14 @@ function renderPlayers(side: 'A' | 'B', players: Player[], container: HTMLDivEle
         class="flex-1 bg-gray-900 border border-gray-600 rounded p-2 text-white ${colorClass} focus:outline-none transition text-sm"
         placeholder="Player ${player.slot}"
       />
+      <button 
+        onclick="${player.hero ? `openLanePicker('${side}', ${player.slot})` : ''}"
+        class="px-2 py-2 ${player.hero ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-800 cursor-not-allowed opacity-50'} text-white text-xs rounded transition"
+        title="${player.hero ? (player.lane || 'Select Lane') : 'Select Hero first'}"
+        ${player.hero ? '' : 'disabled'}
+      >
+        ${player.lane ? `<img src="/lane/${encodeURIComponent(player.lane)}.jpg" class="w-5 h-5 rounded" alt="${escapeHtml(player.lane)}">` : '🛤️'}
+      </button>
       <button 
         onclick="openHeroPicker('${side}', ${player.slot})"
         class="px-3 py-2 ${buttonColor} text-white text-xs rounded transition truncate max-w-24"
@@ -1315,78 +1326,28 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     // Create overlay
     heroPickerOverlay = document.createElement('div');
     heroPickerOverlay.id = 'hero-picker-overlay';
-    heroPickerOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    `;
+    heroPickerOverlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center';
 
     // Create modal container
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        background: #1f2937;
-        border-radius: 16px;
-        padding: 24px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
-    `;
+    modal.className = 'glass-card w-[90%] max-w-2xl max-h-[85vh] p-6 flex flex-col shadow-2xl border border-white/20';
 
     // Header
     const header = document.createElement('div');
-    header.style.cssText = `
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 16px;
-        text-align: center;
-    `;
-    header.innerHTML = `🎮 Select Hero for Team ${side} - Player ${slot}`;
+    header.className = 'text-white text-xl font-bold mb-4 text-center pb-4 border-b border-white/10';
+    header.innerHTML = `<i class="ph-duotone ph-game-controller text-blue-400"></i> Select Hero for Team ${side} - Player ${slot}`;
 
     // Search input
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
-    searchInput.placeholder = '🔍 Search hero...';
-    searchInput.style.cssText = `
-        width: 100%;
-        padding: 12px 16px;
-        background: #111827;
-        border: 2px solid #374151;
-        border-radius: 8px;
-        color: white;
-        font-size: 16px;
-        margin-bottom: 16px;
-        outline: none;
-    `;
-    searchInput.addEventListener('focus', () => {
-        searchInput.style.borderColor = '#3b82f6';
-    });
-    searchInput.addEventListener('blur', () => {
-        searchInput.style.borderColor = '#374151';
-    });
+    searchInput.placeholder = 'Search hero...';
+    searchInput.className = 'glass-input w-full p-3 mb-4 text-lg';
 
     // Hero grid container
     const gridContainer = document.createElement('div');
     gridContainer.id = 'hero-grid';
-    gridContainer.style.cssText = `
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 8px;
-        overflow-y: auto;
-        max-height: 400px;
-        padding: 4px;
-    `;
+    gridContainer.className = 'grid grid-cols-4 sm:grid-cols-5 gap-2 overflow-y-auto pr-2 custom-scrollbar';
+    gridContainer.style.maxHeight = '50vh';
 
     // Render heroes
     const renderHeroes = (filter: string = '') => {
@@ -1398,22 +1359,7 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
             <button 
                 onclick="selectHero('${escapeHtml(hero)}')"
                 class="hero-btn"
-                style="
-                    padding: 10px 8px;
-                    background: #374151;
-                    border: none;
-                    border-radius: 8px;
-                    color: white;
-                    font-size: 12px;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    text-align: center;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                "
-                onmouseover="this.style.background='#4b5563'; this.style.transform='scale(1.05)';"
-                onmouseout="this.style.background='#374151'; this.style.transform='scale(1)';"
+                class="glass-btn p-3 text-xs sm:text-sm hover:scale-105 transition-transform truncate"
             >
                 ${escapeHtml(hero)}
             </button>
@@ -1433,17 +1379,8 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
 
     // Close button
     const closeBtn = document.createElement('button');
-    closeBtn.textContent = '✕ Close';
-    closeBtn.style.cssText = `
-        margin-top: 16px;
-        padding: 10px 20px;
-        background: #ef4444;
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-    `;
+    closeBtn.innerHTML = '<i class="ph-bold ph-x"></i> Close';
+    closeBtn.className = 'mt-4 glass-btn bg-red-600/20 hover:bg-red-600/40 text-red-300 hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2';
     closeBtn.onclick = closeHeroPicker;
 
     // Click outside to close
@@ -1505,6 +1442,132 @@ async function selectHero(heroName: string): Promise<void> {
 (window as any).selectHero = selectHero;
 
 // ==========================================
+// Lane Picker Modal
+// ==========================================
+
+// ROV Lanes (5 positions)
+// ROV Lanes (5 positions)
+const LANES = [
+    { name: 'ds_lane', label: 'DS Lane', thaiName: 'ออฟเลน', icon: '⚔️' },
+    { name: 'jungle', label: 'Jungle', thaiName: 'ป่า', icon: '🌲' },
+    { name: 'mid', label: 'Mid', thaiName: 'เมจ', icon: '⭐' },
+    { name: 'adc', label: 'ADC', thaiName: 'แครี่', icon: '🎯' },
+    { name: 'support', label: 'Support', thaiName: 'โรมมิ่ง', icon: '🛡️' },
+];
+
+let lanePickerOverlay: HTMLDivElement | null = null;
+let lanePickerSide: 'A' | 'B' | null = null;
+let lanePickerSlot: number | null = null;
+
+function openLanePicker(side: 'A' | 'B', slot: number): void {
+    lanePickerSide = side;
+    lanePickerSlot = slot;
+
+    // Create overlay
+    lanePickerOverlay = document.createElement('div');
+    lanePickerOverlay.id = 'lane-picker-overlay';
+    lanePickerOverlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center';
+
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.className = 'glass-card w-[90%] max-w-md p-6 flex flex-col shadow-2xl border border-white/20';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'text-white text-xl font-bold mb-4 text-center pb-4 border-b border-white/10';
+    header.innerHTML = `<i class="ph-duotone ph-path text-yellow-400"></i> Select Lane for Team ${side} - Player ${slot}`;
+
+    // Lane grid container
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'flex flex-col gap-3';
+
+    // Render lanes
+    gridContainer.innerHTML = LANES.map(lane => `
+        <button 
+            onclick="selectLane('${lane.name}')"
+            class="glass-btn w-full p-4 flex items-center gap-4 hover:bg-white/10 transition-colors"
+        >
+            <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
+                 style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" 
+                 alt="${lane.name}"
+                 onerror="this.style.display='none'">
+            <div>
+                <div style="font-weight: bold;">${lane.label}</div>
+                <div style="font-size: 12px; color: #9ca3af;">${lane.thaiName}</div>
+            </div>
+        </button>
+    `).join('');
+
+    // Clear Lane button
+    const clearBtn = document.createElement('button');
+    clearBtn.innerHTML = '<i class="ph-bold ph-prohibit"></i> Clear Lane';
+    clearBtn.className = 'mt-4 glass-btn bg-gray-600/50 hover:bg-gray-500 font-bold py-3 rounded-xl transition flex items-center justify-center gap-2';
+    clearBtn.onclick = () => selectLane('');
+
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '<i class="ph-bold ph-x"></i> Close';
+    closeBtn.className = 'mt-2 glass-btn bg-red-600/20 hover:bg-red-600/40 text-red-300 hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2';
+    closeBtn.onclick = closeLanePicker;
+
+    // Click outside to close
+    lanePickerOverlay.addEventListener('click', (e) => {
+        if (e.target === lanePickerOverlay) {
+            closeLanePicker();
+        }
+    });
+
+    // ESC to close
+    const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            closeLanePicker();
+            document.removeEventListener('keydown', handleEsc);
+        }
+    };
+    document.addEventListener('keydown', handleEsc);
+
+    // Assemble modal
+    modal.appendChild(header);
+    modal.appendChild(gridContainer);
+    modal.appendChild(clearBtn);
+    modal.appendChild(closeBtn);
+    lanePickerOverlay.appendChild(modal);
+    document.body.appendChild(lanePickerOverlay);
+}
+
+function closeLanePicker(): void {
+    if (lanePickerOverlay) {
+        lanePickerOverlay.remove();
+        lanePickerOverlay = null;
+    }
+    lanePickerSide = null;
+    lanePickerSlot = null;
+}
+
+async function selectLane(laneName: string): Promise<void> {
+    if (!lanePickerSide || !lanePickerSlot) return;
+
+    const success = await postAPI('/api/player/update', {
+        side: lanePickerSide,
+        slot: lanePickerSlot,
+        lane: laneName,
+    });
+
+    if (success) {
+        console.log(`✅ Lane ${laneName || 'cleared'} for Team ${lanePickerSide} Player ${lanePickerSlot}`);
+    } else {
+        console.error('❌ Failed to update lane');
+    }
+
+    closeLanePicker();
+}
+
+// Expose Lane functions to window
+(window as any).openLanePicker = openLanePicker;
+(window as any).closeLanePicker = closeLanePicker;
+(window as any).selectLane = selectLane;
+
+// ==========================================
 // Template Management
 // ==========================================
 
@@ -1540,7 +1603,7 @@ function renderTemplateDropdowns(): void {
         `<option value="${t.id}">${escapeHtml(t.name)}</option>`
     ).join('');
 
-    const defaultOption = '<option value="">📋 Select Template...</option>';
+    const defaultOption = '<option value="">Select Template...</option>';
 
     if (teamASelect) teamASelect.innerHTML = defaultOption + optionsHtml;
     if (teamBSelect) teamBSelect.innerHTML = defaultOption + optionsHtml;

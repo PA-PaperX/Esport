@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Roster - Team B</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-cyan: #00FFFF;
+            --neon-blue: #0080FF;
+            --neon-pink: #FF006E;
+            --deep-black: #000000;
+            --dark-blue: #0A0E27;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(180deg, var(--deep-black) 0%, var(--dark-blue) 100%);
+            overflow: hidden;
+            width: 1920px;
+            height: 1080px;
+            color: white;
+        }
+
+        /* Subtle Scanlines Effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px);
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        /* Team Banner */
+        .team-banner {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, rgba(10, 20, 35, 0.9), rgba(20, 40, 60, 0.85));
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+            border-bottom: 4px solid var(--team-color, #ef4444);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px var(--team-color-glow, rgba(239, 68, 68, 0.3));
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .team-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--team-color, #ef4444);
+            box-shadow: 0 0 20px var(--team-color-glow, rgba(239, 68, 68, 0.4));
+        }
+
+        .team-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .team-name {
+            font-size: 3em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px var(--team-color-glow, rgba(239, 68, 68, 0.5));
+        }
+
+        /* Players Grid */
+        .players-container {
+            position: absolute;
+            top: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        /* Player Card */
+        .player-card {
+            width: 320px;
+            background: linear-gradient(180deg, rgba(10, 20, 35, 0.85), rgba(5, 15, 30, 0.95));
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 25px var(--team-color-glow, rgba(239, 68, 68, 0.2));
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: cardReveal 0.8s ease-out backwards;
+        }
+
+        .player-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .player-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .player-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .player-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .player-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .player-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 40px var(--team-color-glow, rgba(239, 68, 68, 0.4));
+        }
+
+        /* Hero Image */
+        .hero-image {
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+            transition: transform 0.4s ease;
+        }
+
+        .player-card:hover .hero-image img {
+            transform: scale(1.08);
+        }
+
+        .hero-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(transparent, rgba(5, 15, 30, 0.95));
+        }
+
+        /* Player Info */
+        .player-info {
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(10, 25, 45, 0.9), rgba(5, 15, 30, 0.95));
+            border-top: 3px solid var(--team-color, #ef4444);
+            position: relative;
+        }
+
+        .player-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-name {
+            font-size: 1.2em;
+            font-weight: 500;
+            color: var(--team-color, #ef4444);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.9;
+        }
+
+        /* No hero placeholder */
+        .no-hero {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(30, 40, 60, 0.8), rgba(20, 30, 50, 0.9));
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 1.5em;
+            text-transform: uppercase;
+        }
+
+        /* Player slot number */
+        .slot-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            background: var(--team-color, #ef4444);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2em;
+            box-shadow: 0 0 15px var(--team-color-glow, rgba(239, 68, 68, 0.5));
+            z-index: 10;
+        }
+
+        /* Lane Icon */
+        .lane-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--team-color-glow, rgba(239, 68, 68, 0.4));
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .lane-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .lane-icon.lane-pop {
+            animation: laneSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes laneSlideIn {
+            0% {
+                transform: translate(-50px, -50px) scale(0.3);
+                opacity: 0;
+            }
+
+            70% {
+                transform: translate(3px, 3px) scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Hero Image Animation - Slide Up */
+        .hero-image img.hero-img {
+            animation: heroSlideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes heroSlideUp {
+            0% {
+                transform: translateY(100px) scale(0.9);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Animation for updates */
+        .update-flash {
+            animation: flash 0.5s ease-out;
+        }
+
+        @keyframes flash {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="team-banner">
+        <div class="team-logo" id="team-logo"></div>
+        <div class="team-name" id="team-name">TEAM B</div>
+    </div>
+
+    <div class="players-container" id="players-container">
+        <!-- Players will be rendered here -->
+    </div>
+
+    <script>
+        // Configuration
+        const TEAM_SIDE = 'B'; // This page is for Team B
+        const WS_URL = `ws://${window.location.host}`;
+
+        // Hero image mapping (normalize hero names to file paths)
+        const HERO_IMAGE_MAP = {
+            // Direct matches
+            'valhein': 'Valhein.webp',
+            'zanis': 'Zanis_3F3F3F3F3F%29.webp',
+            'yorn': 'Yorn_3F3F3F3F3F%29.webp',
+            'thane': 'Thane.webp',
+            'krixi': 'Krixi.webp',
+            'ormarr': 'Ormarr.webp',
+            'zephys': 'Zephys_3F3F3F3F3F%29.webp',
+            'lu bu': 'Lu_Bu_3F3F3F3F3F%29.webp',
+            'alice': 'Alice.webp',
+            'mganga': 'Mganga_3F3F3F3F3F%29.webp',
+            'gildur': 'Gildur_(โมเดลใหม่).webp',
+            'butterfly': 'Butterfly_3F3F3F3F3F%29.webp',
+            'taara': 'Taara_3F3F3F3F%29.webp',
+            'toro': 'Toro.webp',
+            'mina': 'Mina.webp',
+            'veera': 'Veera-3.webp',
+            'kahlii': 'Kahlii.webp',
+            "azzen'ka": 'Aleister-3.webp',
+            'chaugnar': 'Chaugnar.webp',
+            'omega': 'Omega_3F3F3F3F3F%29.webp',
+            'violet': 'Violet_3F3F3F3F3F%29.webp',
+            'diao chan': 'Diao_Chan_3F3F3F3F3F%29.webp',
+            'nakroth': 'Nakroth_3F3F3F3F3F%29.webp',
+            'grakk': 'Grakk.webp',
+            'fennik': 'Fennik.webp',
+            'aleister': 'Aleister-3.webp',
+            'lumburr': 'Lumburr.webp',
+            'payna': 'Payna.webp',
+            'natalya': 'Natalya_3F3F3F3F3F%29.webp',
+            'cresht': 'Cresht_3F3F3F3F%29.webp',
+            'jinna': 'Jinna_3F3F3F3F3F%29.webp',
+            'maloch': 'Maloch_3F3F3F3F3F%29.webp',
+            'ilumia': 'Ilumia.webp',
+            'wukong': 'WuKong_3F3F3F3F%29.webp',
+            'kriknak': 'Kriknak.webp',
+            'mortos': 'Mortos-3.webp',
+            'slimz': 'Slimz.webp',
+            'preyta': 'Preyta.webp',
+            'skud': 'Skud_3F3F3F3F3F%29.webp',
+            'airi': 'Airi.webp',
+            'ignis': 'Ignis.webp',
+            'zuka': 'Zuka_3F3F3F3F%29.webp',
+            'raz': 'Raz.webp',
+            'murad': 'Murad.webp',
+            'zill': 'Zill.webp',
+            'lauriel': 'Lauriel.webp',
+            'arduin': 'Arduin.webp',
+            'astrid': 'Astrid.webp',
+            "tel'annas": 'Tel%27Annas.webp',
+            'superman': 'Superman.webp',
+            'wonder woman': 'Wonder_Woman.webp',
+            'xeniel': 'Xeniel.webp',
+            'ryoma': 'Ryoma.webp',
+            'moren': 'Moren.webp',
+            'teemee': 'TeeMee.webp',
+            'lindis': 'Lindis.webp',
+            'omen': 'Omen.webp',
+            'tulen': 'Tulen.webp',
+            'liliana': 'Liliana.webp',
+            'max': 'Max.webp',
+            "kil'groth": 'Kil%27Groth.webp',
+            'wisp': 'Wisp.webp',
+            'the flash': 'The_Flash.webp',
+            'arum': 'Arum.webp',
+            'rourke': 'Rourke.webp',
+            'marja': 'Marja.webp',
+            'baldum': 'Baldum.webp',
+            'roxie': 'Roxie-2.webp',
+            'annette': 'Annette.webp',
+            'amily': 'Amily.webp',
+            "y'bneth": 'Y%27bneth.webp',
+            'elsu': 'Elsu.webp',
+            'riktor': 'Riktor.webp',
+            'wiro': 'Wiro.webp',
+            'quillen': 'Quillen.webp',
+            'sephera': 'Sephera.webp',
+            'florentino': 'Florentino.webp',
+            'veres': 'Veres.webp',
+            "d'arcy": 'D%27Arcy.webp',
+            'hayate': 'Hayate.webp',
+            'capheny': 'Capheny.webp',
+            'errol': 'Errol.webp',
+            'yena': 'Yena.webp',
+            'enzo': 'Enzo.webp',
+            'zip': 'Zip.webp',
+            'qi': 'Qi.webp',
+            'celica': 'Celica.webp',
+            'volkath': 'Volkath.webp',
+            'krizzix': 'Krizzix.webp',
+            "eland'orr": 'Eland%27orr.webp',
+            'ishar': 'Ishar.webp',
+            'dirak': 'Dirak.webp',
+            'keera': 'Keera.webp',
+            'ata': 'Ata.webp',
+            'paine': 'Paine.webp',
+            'laville': 'Laville.webp',
+            'rouie': 'Rouie.webp',
+            'zata': 'Zata.webp',
+            'allain': 'Allain.webp',
+            'thorne': 'Thorne.webp',
+            'sinestrea': 'Sinestrea.webp',
+            'dextra': 'Dextra.webp',
+            'lorion': 'Lorion.webp',
+            'bright': 'Bright.webp',
+            'aoi': 'Aoi.webp',
+            'iggy': 'Iggy.webp',
+            'tachi': 'Tachi.webp',
+            'aya': 'Aya.webp',
+            'yue': 'Yue.webp',
+            'yan': 'Yan.webp',
+            'teeri': 'Teeri.webp',
+            'bonnie': 'Bonnie.webp',
+            'bijan': 'Bijan.webp',
+            'ming': 'Ming.webp',
+            'erin': 'Erin.webp',
+            'charlotte': 'Charlotte.webp',
+            'dolia': 'Dolia.webp',
+            'biron': 'Biron.webp',
+            'bolt baron': 'Bolt_Baron.webp',
+            'billow': 'Billow.webp',
+            'heino': 'Heino.webp',
+            'goverra': 'Goverra.jpg',
+            'edras': 'Edras.png',
+        };
+
+        function getHeroImage(heroName) {
+            if (!heroName) return null;
+            const normalized = heroName.toLowerCase().trim();
+            const fileName = HERO_IMAGE_MAP[normalized];
+            if (fileName) {
+                return `/src/rov/${fileName}`;
+            }
+            // Try direct match with .webp
+            return `/src/rov/${heroName}.webp`;
+        }
+
+        // Lane file mapping (English filenames)
+        function getLaneImage(laneName) {
+            if (!laneName) return null;
+            // Lane name is already English filename (ds_lane, jungle, mid, adc, support)
+            return `/lane/${laneName}.jpg`;
+        }
+
+        // State
+        let ws = null;
+        let currentState = null;
+
+        // Elements
+        const teamNameEl = document.getElementById('team-name');
+        const teamLogoEl = document.getElementById('team-logo');
+        const playersContainer = document.getElementById('players-container');
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('✅ WebSocket Connected');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'STATE_UPDATE' && msg.data) {
+                        currentState = msg.data;
+                        render();
+                    }
+                } catch (e) {
+                    console.error('Message parse error:', e);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('❌ WebSocket Disconnected, reconnecting...');
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+                ws?.close();
+            };
+        }
+
+        // Render Function
+        function render() {
+            if (!currentState) return;
+
+            const team = currentState.teams[TEAM_SIDE];
+            const teamColor = team.color || '#ef4444';
+
+            // Set CSS variables
+            document.documentElement.style.setProperty('--team-color', teamColor);
+            document.documentElement.style.setProperty('--team-color-glow', teamColor + '60');
+
+            // Update team banner
+            teamNameEl.textContent = team.name || `TEAM ${TEAM_SIDE}`;
+
+            if (team.logo) {
+                teamLogoEl.innerHTML = `<img src="${team.logo}" alt="Logo">`;
+            } else {
+                teamLogoEl.innerHTML = `<span style="font-size: 2em;">🎮</span>`;
+            }
+
+            // Render players
+            renderPlayers(team.players);
+        }
+
+        function renderPlayers(players) {
+            // Check if we need to rebuild or just update
+            const existingCards = playersContainer.querySelectorAll('.player-card');
+
+            if (existingCards.length !== players.length) {
+                // Rebuild
+                playersContainer.innerHTML = '';
+                players.forEach((player, index) => {
+                    const card = createPlayerCard(player, index);
+                    playersContainer.appendChild(card);
+                });
+            } else {
+                // Update existing cards
+                players.forEach((player, index) => {
+                    updatePlayerCard(existingCards[index], player, index);
+                });
+            }
+        }
+
+        function createPlayerCard(player, index) {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            card.dataset.slot = player.slot;
+            card.dataset.lane = player.lane || '';
+
+            const heroImage = getHeroImage(player.hero);
+            const laneIcon = getLaneImage(player.lane);
+
+            card.innerHTML = `
+                <div class="hero-image">
+                    <span class="slot-number">${player.slot}</span>
+                    ${laneIcon ? `<div class="lane-icon lane-pop"><img src="${laneIcon}" alt="${player.lane}" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                    ${heroImage
+                    ? `<img src="${heroImage}" alt="${player.hero || 'Hero'}" class="hero-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                       <div class="no-hero" style="display:none;">No Hero</div>`
+                    : '<div class="no-hero">No Hero</div>'
+                }
+                </div>
+                <div class="player-info">
+                    <div class="player-name">${player.name || `Player ${player.slot}`}</div>
+                    <div class="hero-name">${player.hero || 'Select Hero'}</div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function updatePlayerCard(card, player, index) {
+            const nameEl = card.querySelector('.player-name');
+            const heroNameEl = card.querySelector('.hero-name');
+            const heroImageEl = card.querySelector('.hero-image img.hero-img');
+            const heroImageContainer = card.querySelector('.hero-image');
+
+            // Update player name
+            const newName = player.name || `Player ${player.slot}`;
+            if (nameEl.textContent !== newName) {
+                nameEl.textContent = newName;
+            }
+
+            // Update lane icon
+            const currentLane = card.dataset.lane || '';
+            const newLane = player.lane || '';
+            if (currentLane !== newLane) {
+                card.dataset.lane = newLane;
+
+                // Remove existing lane icon
+                const existingLaneIcon = heroImageContainer.querySelector('.lane-icon');
+                if (existingLaneIcon) {
+                    existingLaneIcon.remove();
+                }
+
+                // Add new lane icon with animation
+                if (newLane) {
+                    const laneIconDiv = document.createElement('div');
+                    laneIconDiv.className = 'lane-icon lane-pop';
+                    laneIconDiv.innerHTML = `<img src="${getLaneImage(newLane)}" alt="${newLane}" onerror="this.parentElement.style.display='none'">`;
+                    heroImageContainer.insertBefore(laneIconDiv, heroImageContainer.firstChild.nextSibling);
+                }
+            }
+
+            // Update hero name
+            const newHeroName = player.hero || 'Select Hero';
+            if (heroNameEl.textContent !== newHeroName) {
+                heroNameEl.textContent = newHeroName;
+
+                // Update hero image
+                const heroImage = getHeroImage(player.hero);
+                const laneIcon = getLaneImage(player.lane);
+                if (heroImage) {
+                    if (heroImageEl) {
+                        heroImageEl.src = heroImage;
+                        heroImageEl.alt = player.hero;
+                    } else {
+                        heroImageContainer.innerHTML = `
+                            <span class="slot-number">${player.slot}</span>
+                            ${laneIcon ? `<div class="lane-icon lane-pop"><img src="${laneIcon}" alt="${player.lane}" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                            <img src="${heroImage}" alt="${player.hero}" class="hero-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="no-hero" style="display:none;">No Hero</div>
+                        `;
+                    }
+                } else {
+                    heroImageContainer.innerHTML = `
+                        <span class="slot-number">${player.slot}</span>
+                        ${laneIcon ? `<div class="lane-icon lane-pop"><img src="${laneIcon}" alt="${player.lane}" onerror="this.parentElement.style.display='none'"></div>` : ''}
+                        <div class="no-hero">No Hero</div>
+                    `;
+                }
+            }
+        }
+
+        // Initialize
+        async function init() {
+            // Fetch initial state
+            try {
+                const res = await fetch(`http://${window.location.host}/api/state`);
+                if (res.ok) {
+                    currentState = await res.json();
+                    render();
+                }
+            } catch (e) {
+                console.error('Failed to fetch initial state:', e);
+            }
+
+            // Connect WebSocket for real-time updates
+            connectWebSocket();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

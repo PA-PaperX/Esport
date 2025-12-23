@@ -8,7 +8,8 @@ export interface Player {
   slot: number;      // 1-5
   name: string;      // ชื่อในเกม e.g. "PaperX"
   realName?: string; // ชื่อจริง (เผื่อใช้)
-  hero?: string;     // Hero ที่เล่น (เผื่อ V2)
+  hero?: string;     // Hero ที่เล่น
+  lane?: string;     // ตำแหน่ง (ออฟเลน, ป่า, เมจ, แครี่, โรมมิ่ง)
 }
 
 export interface Team {

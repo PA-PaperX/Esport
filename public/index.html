@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Esport Control Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -18,30 +19,181 @@
         }
     </script>
     <style>
-        /* Custom Scrollbar */
+        /* ================================== */
+        /* GLASSMORPHISM THEME - iPhone Style */
+        /* ================================== */
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Animated Gradient Background */
+        body {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Custom Scrollbar - Glass Style */
         ::-webkit-scrollbar {
             width: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #4b5563;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 4px;
         }
 
-        body {
-            background-color: #0f172a;
-            color: #e2e8f0;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        /* Glass Input */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(99, 102, 241, 0.6) !important;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Glass Button */
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Primary Glass Button */
+        .glass-btn-primary {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .glass-btn-primary:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95));
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Team Color Accent Glow */
+        .team-glow-blue {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3), inset 0 0 60px rgba(59, 130, 246, 0.05);
+        }
+
+        .team-glow-red {
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), inset 0 0 60px rgba(239, 68, 68, 0.05);
+        }
+
+        /* Floating Header */
+        .glass-header {
+            background: rgba(15, 12, 41, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Labels */
+        .glass-label {
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+
+        /* Connection Status */
+        .status-connected {
+            color: #22c55e;
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .status-disconnected {
+            color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Selection Dropdown */
+        select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px !important;
+            color: white;
+        }
+
+        select option {
+            background: #1e1b4b;
+            color: white;
         }
     </style>
 </head>
 
 <body class="h-screen flex flex-col overflow-hidden font-sans">
 
-    <header class="bg-gray-900 border-b border-gray-700 p-4 flex justify-between items-center shadow-lg z-10 relative">
+    <header class="glass-header p-4 flex justify-between items-center shadow-lg z-10 relative">
         <div class="flex items-center gap-3">
             <!-- Hamburger Menu Button -->
             <button onclick="toggleSettingsMenu()" id="hamburger-btn"
@@ -97,27 +249,28 @@
     <div id="page-scoreboard" class="flex-1 flex flex-col overflow-hidden">
         <main class="flex-1 flex overflow-hidden">
 
-            <section id="teamA-section"
-                class="flex-1 bg-gray-900/50 p-6 flex flex-col border-r border-gray-700 overflow-y-auto"
-                style="border-left: 4px solid #3b82f6;">
-                <h2 id="teamA-header" class="font-bold mb-4 flex items-center gap-2" style="color: #3b82f6;">
-                    <span id="teamA-accent" class="w-2 h-6 rounded-sm" style="background: #3b82f6;"></span> TEAM A
+            <section id="teamA-section" class="flex-1 p-6 flex flex-col overflow-y-auto"
+                style="border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.03);">
+                <h2 id="teamA-header" class="font-bold mb-4 flex items-center gap-2 text-lg"
+                    style="color: #3b82f6; text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);">
+                    <span id="teamA-accent" class="w-2 h-6 rounded-sm"
+                        style="background: #3b82f6; box-shadow: 0 0 10px #3b82f6;"></span> TEAM A
                     (Home)
                 </h2>
 
                 <div class="mb-4 flex items-center gap-2">
                     <select id="teamA-template"
                         class="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
-                        <option value="">📋 Select Template...</option>
+                        <option value="">Select Template...</option>
                     </select>
                     <button onclick="loadTemplate('A')"
                         class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition">
-                        📥 Load
+                        <i class="ph-bold ph-download-simple"></i> Load
                     </button>
                 </div>
 
-                <div id="teamA-card" class="space-y-4 mb-8 bg-gray-800 p-4 rounded-lg border"
-                    style="border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);">
+                <div id="teamA-card" class="glass-card space-y-4 mb-8 p-5 team-glow-blue"
+                    style="border-left: 3px solid #3b82f6;">
                     <div>
                         <label class="text-xs text-gray-400 uppercase">Team Name</label>
                         <input type="text" id="teamA-name"
@@ -133,7 +286,7 @@
                                 <button onclick="pickColor('A')"
                                     class="h-8 w-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white transition"
                                     title="Pick color from screen">
-                                    💧
+                                    <i class="ph-bold ph-eyedropper"></i>
                                 </button>
                                 <span id="teamA-color-hex" class="text-xs font-mono text-gray-400">#3b82f6</span>
                             </div>
@@ -163,8 +316,8 @@
                                     accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" class="hidden"
                                     onchange="handleLogoSelect('A', this)">
                                 <button onclick="document.getElementById('teamA-logo-input').click()"
-                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition">
-                                    📁 Choose Logo
+                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition flex items-center justify-center gap-2">
+                                    <i class="ph-bold ph-folder-open"></i> Choose Logo
                                 </button>
                                 <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP, SVG (max 2MB)</p>
                             </div>
@@ -183,35 +336,37 @@
             </section>
 
             <!-- Swap Sides Button -->
-            <div class="flex flex-col items-center justify-center px-4 bg-gray-900/80 border-x border-gray-700">
+            <div class="flex flex-col items-center justify-center px-4 glass-card-light">
                 <button onclick="swapSides()" id="swap-btn"
-                    class="px-4 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition shadow-lg hover:shadow-purple-500/30 flex flex-col items-center gap-1">
-                    <span class="text-2xl">🔄</span>
+                    class="glass-btn-primary px-5 py-4 font-bold rounded-xl transition flex flex-col items-center gap-1">
+                    <i class="ph-bold ph-arrows-left-right text-2xl"></i>
                     <span class="text-xs uppercase tracking-wide">SWAP</span>
                 </button>
-                <span id="swap-status" class="text-xs text-gray-500 mt-2 text-center">ปกติ</span>
+                <span id="swap-status" class="text-xs text-gray-400 mt-2 text-center">ปกติ</span>
             </div>
 
-            <section id="teamB-section" class="flex-1 bg-gray-900/50 p-6 flex flex-col overflow-y-auto"
-                style="border-right: 4px solid #ef4444;">
-                <h2 id="teamB-header" class="font-bold mb-4 flex items-center gap-2" style="color: #ef4444;">
-                    <span id="teamB-accent" class="w-2 h-6 rounded-sm" style="background: #ef4444;"></span> TEAM B
+            <section id="teamB-section" class="flex-1 p-6 flex flex-col overflow-y-auto"
+                style="border-right: 4px solid #ef4444; background: rgba(239, 68, 68, 0.03);">
+                <h2 id="teamB-header" class="font-bold mb-4 flex items-center gap-2 text-lg"
+                    style="color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);">
+                    <span id="teamB-accent" class="w-2 h-6 rounded-sm"
+                        style="background: #ef4444; box-shadow: 0 0 10px #ef4444;"></span> TEAM B
                     (Away)
                 </h2>
 
                 <div class="mb-4 flex items-center gap-2">
                     <select id="teamB-template"
                         class="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
-                        <option value="">📋 Select Template...</option>
+                        <option value="">Select Template...</option>
                     </select>
                     <button onclick="loadTemplate('B')"
                         class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition">
-                        📥 Load
+                        <i class="ph-bold ph-download-simple"></i> Load
                     </button>
                 </div>
 
-                <div id="teamB-card" class="space-y-4 mb-8 bg-gray-800 p-4 rounded-lg border"
-                    style="border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);">
+                <div id="teamB-card" class="glass-card space-y-4 mb-8 p-5 team-glow-red"
+                    style="border-left: 3px solid #ef4444;">
                     <div>
                         <label class="text-xs text-gray-400 uppercase">Team Name</label>
                         <input type="text" id="teamB-name"
@@ -227,7 +382,7 @@
                                 <button onclick="pickColor('B')"
                                     class="h-8 w-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white transition"
                                     title="Pick color from screen">
-                                    💧
+                                    <i class="ph-bold ph-eyedropper"></i>
                                 </button>
                                 <span id="teamB-color-hex" class="text-xs font-mono text-gray-400">#ef4444</span>
                             </div>
@@ -257,8 +412,8 @@
                                     accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" class="hidden"
                                     onchange="handleLogoSelect('B', this)">
                                 <button onclick="document.getElementById('teamB-logo-input').click()"
-                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition">
-                                    📁 Choose Logo
+                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition flex items-center justify-center gap-2">
+                                    <i class="ph-bold ph-folder-open"></i> Choose Logo
                                 </button>
                                 <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP, SVG (max 2MB)</p>
                             </div>
@@ -285,12 +440,14 @@
     <div id="page-broadcast" class="flex-1 flex flex-col overflow-hidden hidden">
         <!-- Broadcast page content will go here -->
         <div class="flex-1 p-6 overflow-y-auto">
-            <h2 class="text-2xl font-bold text-white mb-6">📺 Broadcast Settings</h2>
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2"><i
+                    class="ph-duotone ph-television text-blue-400"></i> Broadcast Settings</h2>
 
             <!-- Transition Control -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
+            <!-- Transition Control -->
+            <div class="glass-card p-6 mb-6">
                 <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <span>🎬</span> Transition
+                    <i class="ph-duotone ph-film-strip text-purple-400"></i> Transition
                 </h3>
 
                 <!-- Logo Upload -->
@@ -298,20 +455,20 @@
                     <label class="text-sm text-gray-400 uppercase block mb-2 font-medium">โลโก้ Transition</label>
                     <div class="flex items-center gap-4">
                         <div id="transition-logo-preview"
-                            class="w-24 h-24 bg-gray-900 rounded-xl border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden">
+                            class="w-24 h-24 bg-white/5 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden">
                             <img id="transition-logo-img" src="" alt="Logo" class="w-full h-full object-contain hidden">
-                            <span id="transition-logo-placeholder" class="text-gray-500 text-sm">No Logo</span>
+                            <span id="transition-logo-placeholder" class="text-white/30 text-sm">No Logo</span>
                         </div>
                         <div class="flex-1 space-y-2">
                             <input type="file" id="transition-logo-input" accept="image/*" class="hidden"
                                 onchange="previewTransitionLogo(this)">
                             <button onclick="document.getElementById('transition-logo-input').click()"
-                                class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition flex items-center justify-center gap-2">
-                                <span>📁</span> Choose Logo
+                                class="w-full glass-btn py-3 px-4 flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-folder-open"></i> Choose Logo
                             </button>
                             <button onclick="uploadTransitionLogo()"
-                                class="w-full bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
-                                <span>💾</span> Upload Logo
+                                class="w-full glass-btn-primary py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-upload-simple"></i> Upload Logo
                             </button>
                             <p id="transition-logo-status" class="text-xs text-gray-500 text-center">
                                 เลือกรูป → กด Upload</p>
@@ -321,9 +478,10 @@
             </div>
 
             <!-- Lower Third Settings -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
+            <!-- Lower Third Settings -->
+            <div class="glass-card p-6 mb-6">
                 <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <span>📺</span> Lower Third (แถบล่าง)
+                    <i class="ph-duotone ph-rows text-indigo-400"></i> Lower Third (แถบล่าง)
                 </h3>
 
                 <!-- Enable/Disable Toggle -->
@@ -341,15 +499,15 @@
                 <!-- Main Title -->
                 <div class="mb-4">
                     <label class="text-sm text-gray-400 uppercase block mb-2">ข้อความหลัก</label>
-                    <input type="text" id="lower-third-title"
-                        class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white"
+                    <input type="text" id="lower-third-title" class="glass-input w-full p-3"
                         value="ROV PRO LEAGUE 2025 WINTER" placeholder="ข้อความหลัก..." onchange="updateLowerThird()">
                 </div>
 
                 <!-- Slots -->
                 <div class="space-y-4" id="lower-third-slots">
                     <!-- Slot 1 -->
-                    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                    <!-- Slot 1 -->
+                    <div class="glass-card-light p-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-white font-medium">Slot 1</span>
                             <label class="relative inline-flex items-center cursor-pointer">
@@ -362,21 +520,21 @@
                         </div>
                         <div class="flex gap-3">
                             <div class="flex-1">
-                                <input type="text" id="slot-1-text"
-                                    class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white text-sm"
+                                <input type="text" id="slot-1-text" class="glass-input w-full p-2 text-sm"
                                     value="Facebook" placeholder="Label..." onchange="updateLowerThird()">
                             </div>
                             <input type="file" id="slot-1-logo-input" accept="image/*" class="hidden"
                                 onchange="uploadSlotLogo(1, this)">
                             <button onclick="document.getElementById('slot-1-logo-input').click()"
-                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded transition">
-                                📁 Logo
+                                class="px-4 py-2 glass-btn text-sm flex items-center gap-2">
+                                <i class="ph-bold ph-image"></i> Logo
                             </button>
                         </div>
                     </div>
 
                     <!-- Slot 2 -->
-                    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                    <!-- Slot 2 -->
+                    <div class="glass-card-light p-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-white font-medium">Slot 2</span>
                             <label class="relative inline-flex items-center cursor-pointer">
@@ -389,21 +547,21 @@
                         </div>
                         <div class="flex gap-3">
                             <div class="flex-1">
-                                <input type="text" id="slot-2-text"
-                                    class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white text-sm"
+                                <input type="text" id="slot-2-text" class="glass-input w-full p-2 text-sm"
                                     value="YouTube" placeholder="Label..." onchange="updateLowerThird()">
                             </div>
                             <input type="file" id="slot-2-logo-input" accept="image/*" class="hidden"
                                 onchange="uploadSlotLogo(2, this)">
                             <button onclick="document.getElementById('slot-2-logo-input').click()"
-                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded transition">
+                                class="px-4 py-2 glass-btn text-sm">
                                 📁 Logo
                             </button>
                         </div>
                     </div>
 
                     <!-- Slot 3 -->
-                    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                    <!-- Slot 3 -->
+                    <div class="glass-card-light p-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-white font-medium">Slot 3</span>
                             <label class="relative inline-flex items-center cursor-pointer">
@@ -416,44 +574,43 @@
                         </div>
                         <div class="flex gap-3">
                             <div class="flex-1">
-                                <input type="text" id="slot-3-text"
-                                    class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white text-sm"
+                                <input type="text" id="slot-3-text" class="glass-input w-full p-2 text-sm"
                                     value="TikTok" placeholder="Label..." onchange="updateLowerThird()">
                             </div>
                             <input type="file" id="slot-3-logo-input" accept="image/*" class="hidden"
                                 onchange="uploadSlotLogo(3, this)">
                             <button onclick="document.getElementById('slot-3-logo-input').click()"
-                                class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded transition">
+                                class="px-4 py-2 glass-btn text-sm">
                                 📁 Logo
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6 border border-gray-700">
+            <div class="glass-card p-6 mb-6">
                 <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <span>🔗</span> Overlay URLs
+                    <i class="ph-duotone ph-link text-blue-400"></i> Overlay URLs
                 </h3>
                 <div class="space-y-4">
                     <div>
                         <label for="scoreboard-overlay-url"
                             class="block text-sm font-medium text-gray-400 mb-1">Scoreboard Overlay URL</label>
                         <input type="text" id="scoreboard-overlay-url" readonly
-                            class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white text-sm font-mono cursor-text"
+                            class="glass-input w-full p-3 text-sm font-mono cursor-text"
                             value="http://localhost:3000/scoreboard.html">
                         <button onclick="copyToClipboard('scoreboard-overlay-url')"
-                            class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition">
-                            📋 Copy URL
+                            class="mt-2 text-sm glass-btn px-4 py-2 flex items-center gap-2">
+                            <i class="ph-bold ph-copy"></i> Copy URL
                         </button>
                     </div>
                     <div>
                         <label for="transition-overlay-url"
                             class="block text-sm font-medium text-gray-400 mb-1">Transition Overlay URL</label>
                         <input type="text" id="transition-overlay-url" readonly
-                            class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white text-sm font-mono cursor-text"
+                            class="glass-input w-full p-3 text-sm font-mono cursor-text"
                             value="http://localhost:3000/transition.html">
                         <button onclick="copyToClipboard('transition-overlay-url')"
-                            class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition">
+                            class="mt-2 text-sm glass-btn px-4 py-2">
                             📋 Copy URL
                         </button>
                     </div>
@@ -461,10 +618,10 @@
                         <label for="lower-third-overlay-url" class="block text-sm font-medium text-gray-400 mb-1">Lower
                             Third Overlay URL</label>
                         <input type="text" id="lower-third-overlay-url" readonly
-                            class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white text-sm font-mono cursor-text"
+                            class="glass-input w-full p-3 text-sm font-mono cursor-text"
                             value="http://localhost:3000/lower-third.html">
                         <button onclick="copyToClipboard('lower-third-overlay-url')"
-                            class="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition">
+                            class="mt-2 text-sm glass-btn px-4 py-2">
                             📋 Copy URL
                         </button>
                     </div>
@@ -479,7 +636,8 @@
             class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <!-- Modal Header -->
             <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
-                <h2 id="settings-modal-title" class="font-bold text-xl text-white flex items-center gap-2">⚙️ Settings
+                <h2 id="settings-modal-title" class="font-bold text-xl text-white flex items-center gap-2"><i
+                        class="ph-duotone ph-gear"></i> Settings
                 </h2>
                 <button onclick="closeSettingsPanel()"
                     class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-400 hover:text-white">

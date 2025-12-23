@@ -6,24 +6,42 @@ let mainWindow;
 let serverProcess;
 const PORT = 3000;
 
-// Find bun executable
+// Find bun executable (Cross-platform: Windows + Linux/macOS)
 function getBunPath() {
-    // Try common locations
-    const paths = [
-        path.join(process.env.HOME || '', '.bun', 'bin', 'bun'),
-        '/usr/local/bin/bun',
-        'bun'
-    ];
+    const isWindows = process.platform === 'win32';
+
+    // Build paths based on platform
+    const paths = [];
+
+    if (isWindows) {
+        // Windows paths
+        const userProfile = process.env.USERPROFILE || process.env.HOME || '';
+        paths.push(
+            path.join(userProfile, '.bun', 'bin', 'bun.exe'),
+            path.join(process.env.LOCALAPPDATA || '', 'bun', 'bun.exe'),
+            path.join(process.env.ProgramFiles || '', 'bun', 'bun.exe'),
+            'bun.exe',
+            'bun'
+        );
+    } else {
+        // Linux/macOS paths
+        paths.push(
+            path.join(process.env.HOME || '', '.bun', 'bin', 'bun'),
+            '/usr/local/bin/bun',
+            '/opt/homebrew/bin/bun',
+            'bun'
+        );
+    }
 
     for (const p of paths) {
         try {
-            require('child_process').execSync(`${p} --version`, { stdio: 'ignore' });
+            require('child_process').execSync(`"${p}" --version`, { stdio: 'ignore' });
             return p;
         } catch (e) {
             continue;
         }
     }
-    return 'bun'; // fallback
+    return isWindows ? 'bun.exe' : 'bun'; // fallback
 }
 
 // Start the Bun server
@@ -51,10 +69,20 @@ function startServer() {
     });
 }
 
-// Stop the server
+// Stop the server (Cross-platform)
 function stopServer() {
     if (serverProcess) {
-        serverProcess.kill('SIGTERM');
+        if (process.platform === 'win32') {
+            // Windows: use taskkill to terminate the process tree
+            try {
+                require('child_process').execSync(`taskkill /pid ${serverProcess.pid} /T /F`, { stdio: 'ignore' });
+            } catch (e) {
+                // Process may have already exited
+            }
+        } else {
+            // Unix: use SIGTERM
+            serverProcess.kill('SIGTERM');
+        }
         serverProcess = null;
     }
 }

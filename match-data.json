@@ -5,11 +5,11 @@
   "swapped": false,
   "teams": {
     "A": {
-      "name": "KUY",
+      "name": "HOME TEAM",
       "shortName": "HOME",
       "color": "#3b82f6",
       "logo": "",
-      "score": 2,
+      "score": 0,
       "players": [
         {
           "slot": 1,
@@ -19,22 +19,25 @@
         {
           "slot": 2,
           "name": "Home Player 2",
-          "hero": ""
+          "hero": "Ata",
+          "lane": "adc"
         },
         {
           "slot": 3,
           "name": "Home Player 3",
-          "hero": ""
+          "hero": "Slimz",
+          "lane": "mid"
         },
         {
           "slot": 4,
           "name": "Home Player 4",
-          "hero": ""
+          "hero": "Dolia",
+          "lane": "support"
         },
         {
           "slot": 5,
           "name": "Home Player 5",
-          "hero": ""
+          "hero": "Grakk"
         }
       ]
     },
@@ -43,7 +46,7 @@
       "shortName": "AWAY",
       "color": "#ef4444",
       "logo": "",
-      "score": 2,
+      "score": 0,
       "players": [
         {
           "slot": 1,
