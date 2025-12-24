@@ -10,6 +10,7 @@ interface Player {
     realName?: string;
     hero?: string;
     lane?: string;
+    isCaptain?: boolean;
 }
 
 interface Team {
@@ -17,6 +18,7 @@ interface Team {
     shortName: string;
     color: string;
     logo: string;
+    logoFit?: 'contain' | 'cover';
     score: number;
     players: Player[];
 }
@@ -55,6 +57,12 @@ const API_BASE = `http://${window.location.host}`;
 const getElement = <T extends HTMLElement>(id: string): T | null =>
     document.getElementById(id) as T | null;
 
+// Logo Cache Busting
+let logoVersions: { A: number; B: number } = {
+    A: Date.now(),
+    B: Date.now()
+};
+
 const elements = {
     statusDot: () => getElement<HTMLDivElement>('status-dot'),
     connectionStatus: () => getElement<HTMLDivElement>('connection-status'),
@@ -83,15 +91,13 @@ function updateConnectionStatus(connected: boolean): void {
     const status = elements.connectionStatus();
 
     if (dot) {
-        dot.classList.remove('bg-red-500', 'bg-green-500');
-        dot.classList.add(connected ? 'bg-green-500' : 'bg-red-500');
-        dot.classList.toggle('animate-pulse', !connected);
+        // Use 'connected' class for neon glow effect
+        dot.classList.toggle('connected', connected);
     }
 
     if (status) {
         status.textContent = connected ? 'CONNECTED' : 'DISCONNECTED';
-        status.classList.remove('text-red-400', 'text-green-400');
-        status.classList.add(connected ? 'text-green-400' : 'text-red-400');
+        status.style.color = connected ? '#00FF66' : '';
     }
 }
 
@@ -202,28 +208,69 @@ function renderUI(): void {
         swapStatus.textContent = swapped ? '🔀 สลับฝั่ง' : 'ปกติ';
     }
 
+    // Update panel titles based on swap state
+    const teamATitle = document.querySelector('#teamA-section .team-panel__title');
+    const teamBTitle = document.querySelector('#teamB-section .team-panel__title');
+
+    if (teamATitle) {
+        teamATitle.textContent = swapped ? 'Team B' : 'Team A';
+    }
+    if (teamBTitle) {
+        teamBTitle.textContent = swapped ? 'Team A' : 'Team B';
+    }
+
     // Update button labels and colors based on swap state
     const teamABtn = document.querySelector('#teamA-section button[onclick*="saveTeam"]') as HTMLButtonElement;
     const teamBBtn = document.querySelector('#teamB-section button[onclick*="saveTeam"]') as HTMLButtonElement;
 
     if (teamABtn) {
         teamABtn.textContent = swapped ? 'UPDATE TEAM B' : 'UPDATE TEAM A';
-        // Swap button colors
-        teamABtn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'bg-red-600', 'hover:bg-red-500', 'shadow-blue-600/20', 'shadow-red-600/20');
+        // Set button color dynamically based on the team it represents
+        // If swapped, Team A panel (Left) controls Team B. Team B color is currentState.teams.B.color
+        // Wait, renderTeamData updates colorInput. The color passed to applyThemeColor is the source of truth for "current color".
+        // But here we need to read it from state or DOM.
+        // Easiest is to set it in applyThemeColor? No, that applies to section/card.
+        // Let's set it here based on state.
+
+        let btnColor = '#007AFF'; // Default Blue
         if (swapped) {
-            teamABtn.classList.add('bg-red-600', 'hover:bg-red-500', 'shadow-red-600/20');
+            btnColor = currentState.teams.B.color;
         } else {
-            teamABtn.classList.add('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-600/20');
+            btnColor = currentState.teams.A.color;
+        }
+
+        // Remove old classes that force color
+        teamABtn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'bg-red-600', 'hover:bg-red-500');
+        teamABtn.style.backgroundColor = btnColor;
+
+        // Add hover effect via JS or assume simple CSS transition. 
+        // Since we can't easily add hover pseudo-state via inline style, 
+        // we might leave it or use a utility class that darkens on hover if available, or just set background.
+        // For now, setting background is better than wrong color.
+
+        // Also update shadow if possible
+        const rgb = hexToRgb(btnColor);
+        if (rgb) {
+            teamABtn.style.boxShadow = `0 4px 6px -1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
         }
     }
+
     if (teamBBtn) {
         teamBBtn.textContent = swapped ? 'UPDATE TEAM A' : 'UPDATE TEAM B';
-        // Swap button colors
-        teamBBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'bg-red-600', 'hover:bg-red-500', 'shadow-blue-600/20', 'shadow-red-600/20');
+
+        let btnColor = '#FF3B30'; // Default Red
         if (swapped) {
-            teamBBtn.classList.add('bg-blue-600', 'hover:bg-blue-500', 'shadow-blue-600/20');
+            btnColor = currentState.teams.A.color; // Right panel controls Team A
         } else {
-            teamBBtn.classList.add('bg-red-600', 'hover:bg-red-500', 'shadow-red-600/20');
+            btnColor = currentState.teams.B.color;
+        }
+
+        teamBBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'bg-red-600', 'hover:bg-red-500');
+        teamBBtn.style.backgroundColor = btnColor;
+
+        const rgb = hexToRgb(btnColor);
+        if (rgb) {
+            teamBBtn.style.boxShadow = `0 4px 6px -1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
         }
     }
 }
@@ -247,12 +294,32 @@ function renderTeamData(side: 'A' | 'B', team: Team): void {
     }
 
     // Render logo preview
+    // Render logo preview
     const logoPreview = side === 'A' ? elements.teamALogoPreview() : elements.teamBLogoPreview();
     if (logoPreview) {
         if (team.logo) {
-            logoPreview.innerHTML = `<img src="${team.logo}" alt="${team.name} Logo" class="w-full h-full object-contain">`;
+            // Determine logical team to use correct cachebuster
+            let version = Date.now();
+            if (currentState) {
+                if (team === currentState.teams.A) version = logoVersions.A;
+                else if (team === currentState.teams.B) version = logoVersions.B;
+            }
+
+            // Append version
+            const logoUrl = team.logo.includes('?') ? `${team.logo}&v=${version}` : `${team.logo}?v=${version}`;
+
+            // Display cropped logo - basically always contain because crop handles the aspect ratio
+            logoPreview.innerHTML = `
+                <div class="relative w-full h-full group">
+                    <img src="${logoUrl}" alt="${team.name} Logo" class="w-full h-full object-contain" 
+                         style="border-radius: var(--radius-md);">
+                </div>`;
         } else {
-            logoPreview.innerHTML = '<span class="text-gray-500 text-xs">No Logo</span>';
+            logoPreview.innerHTML = `
+                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
+                <span class="logo-dropzone__text">Click to upload logo</span>
+                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
+            `;
         }
     }
 
@@ -276,18 +343,35 @@ function applyThemeColor(side: 'A' | 'B', color: string): void {
     const shadowColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)` : 'rgba(100, 100, 100, 0.15)';
 
     if (section) {
-        section.style.borderLeftColor = side === 'A' ? color : '';
-        section.style.borderRightColor = side === 'B' ? color : '';
+        // Section A has border-right (separator), Section B has border-left (separator)
+        // Keep this strictly Side Color (Blue/Red) to avoid confusion
+        // if (side === 'A') {
+        //     section.style.borderRightColor = color;
+        // } else {
+        //     section.style.borderLeftColor = color;
+        // }
     }
     if (header) {
-        header.style.color = color;
+        // header.style.color = color;
     }
     if (accent) {
-        accent.style.background = color;
+        // Do not change accent color - keep it as Side Identity (Blue/Red)
+        // accent.style.backgroundColor = color;
     }
     if (card) {
-        card.style.borderColor = color;
-        card.style.boxShadow = `0 0 20px ${shadowColor}`;
+        // Both cards have border-left in CSS
+        card.style.borderLeftColor = color;
+        card.style.boxShadow = `0 4px 6px -1px ${shadowColor}`;
+    }
+
+    // Apply color to roster items
+    const rosterList = document.getElementById(`team${side}-players`);
+    if (rosterList) {
+        // renderPlayers generates elements with class 'player-card'
+        const items = rosterList.querySelectorAll('.player-card') as NodeListOf<HTMLElement>;
+        items.forEach(item => {
+            item.style.borderLeftColor = color;
+        });
     }
 }
 
@@ -301,36 +385,64 @@ function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
 }
 
 function renderPlayers(side: 'A' | 'B', players: Player[], container: HTMLDivElement): void {
-    const colorClass = side === 'A' ? 'focus:border-blue-500' : 'focus:border-red-500';
-    const buttonColor = side === 'A' ? 'bg-blue-600 hover:bg-blue-500' : 'bg-red-600 hover:bg-red-500';
+    const sideClass = side === 'A' ? 'player-card--a' : 'player-card--b';
 
-    container.innerHTML = players.map((player) => `
-    <div class="flex items-center gap-2">
-      <span class="w-6 h-6 flex items-center justify-center bg-gray-700 rounded text-xs font-bold">${player.slot}</span>
-      <input 
-        type="text" 
-        value="${escapeHtml(player.name)}" 
-        onchange="updatePlayer('${side}', ${player.slot}, this.value)"
-        class="flex-1 bg-gray-900 border border-gray-600 rounded p-2 text-white ${colorClass} focus:outline-none transition text-sm"
-        placeholder="Player ${player.slot}"
-      />
-      <button 
-        onclick="${player.hero ? `openLanePicker('${side}', ${player.slot})` : ''}"
-        class="px-2 py-2 ${player.hero ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-800 cursor-not-allowed opacity-50'} text-white text-xs rounded transition"
-        title="${player.hero ? (player.lane || 'Select Lane') : 'Select Hero first'}"
-        ${player.hero ? '' : 'disabled'}
-      >
-        ${player.lane ? `<img src="/lane/${encodeURIComponent(player.lane)}.jpg" class="w-5 h-5 rounded" alt="${escapeHtml(player.lane)}">` : '🛤️'}
-      </button>
-      <button 
-        onclick="openHeroPicker('${side}', ${player.slot})"
-        class="px-3 py-2 ${buttonColor} text-white text-xs rounded transition truncate max-w-24"
-        title="${player.hero || 'Select Hero'}"
-      >
-        ${player.hero ? escapeHtml(player.hero) : '🎮 Hero'}
+    container.innerHTML = players.map((player) => {
+        // Hero image path (use ROV hero images with filename mapping)
+        const heroImgPath = player.hero ? getHeroImagePath(player.hero) : '';
+        const laneImgPath = player.lane ? `/lane/${encodeURIComponent(player.lane)}.jpg` : '';
+
+        return `
+    <div class="player-card ${sideClass}" 
+         draggable="true" 
+         data-side="${side}" 
+         data-slot="${player.slot}"
+         ondragstart="handleDragStart(event)"
+         ondragend="handleDragEnd(event)"
+         ondragover="handleDragOver(event)"
+         ondrop="handleDrop(event)">
+      
+      <!-- Drag Handle -->
+      <div class="player-card__drag">
+        <i class="ph-bold ph-dots-six-vertical"></i>
+      </div>
+      
+      <!-- Lane/Role -->
+      <div class="player-card__role ${player.hero ? '' : 'disabled'}" 
+           onclick="handleLaneClick('${side}', ${player.slot}, ${player.hero ? 'true' : 'false'})"
+           title="${player.lane || (player.hero ? 'Select Lane' : 'Select Hero first')}">
+        ${laneImgPath
+                ? `<img src="${laneImgPath}" alt="${escapeHtml(player.lane || '')}">`
+                : '<i class="ph-duotone ph-map-pin"></i>'}
+      </div>
+      
+      <!-- Name Input -->
+      <div class="player-card__name">
+        <input 
+          type="text" 
+          value="${escapeHtml(player.name)}" 
+          onchange="updatePlayer('${side}', ${player.slot}, this.value)"
+          placeholder="Player ${player.slot}"
+        />
+      </div>
+      
+      <!-- Hero Avatar -->
+      <div class="player-card__hero ${player.hero ? 'has-hero' : ''}" 
+           onclick="openHeroPicker('${side}', ${player.slot})"
+           title="${player.hero || 'Select Hero'}">
+        ${heroImgPath
+                ? `<img src="${heroImgPath}" alt="${escapeHtml(player.hero || '')}">`
+                : '<i class="ph-duotone ph-game-controller"></i>'}
+      </div>
+      
+      <!-- Captain Toggle -->
+      <button class="player-card__captain ${player.isCaptain ? 'active' : ''}" 
+              onclick="toggleCaptain('${side}', ${player.slot})"
+              title="${player.isCaptain ? 'Captain' : 'Set as Captain'}">
+        <i class="ph-${player.isCaptain ? 'fill' : 'duotone'} ph-crown"></i>
       </button>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function escapeHtml(text: string): string {
@@ -666,7 +778,9 @@ async function loadLowerThird(): Promise<void> {
 function toggleSettingsMenu(): void {
     const menu = document.getElementById('settings-menu');
     if (menu) {
-        menu.classList.toggle('hidden');
+        // Always remove 'hidden' first otherwise it will override 'active' due to !important
+        menu.classList.remove('hidden');
+        menu.classList.toggle('active');
     }
 }
 
@@ -676,36 +790,28 @@ let currentPage: string = 'scoreboard';
 function switchPage(page: string): void {
     currentPage = page;
 
-    // Hide all pages
+    // Hide all pages by removing 'active'
     const pageScoreboard = document.getElementById('page-scoreboard');
     const pageBroadcast = document.getElementById('page-broadcast');
 
-    if (pageScoreboard) pageScoreboard.classList.add('hidden');
-    if (pageBroadcast) pageBroadcast.classList.add('hidden');
+    if (pageScoreboard) pageScoreboard.classList.remove('active');
+    if (pageBroadcast) pageBroadcast.classList.remove('active');
 
-    // Show selected page
+    // Show selected page by adding 'active'
     const targetPage = document.getElementById(`page-${page}`);
-    if (targetPage) targetPage.classList.remove('hidden');
+    if (targetPage) targetPage.classList.add('active');
 
-    // Update nav menu styling
+    // Update nav items active state
     const navScoreboard = document.getElementById('nav-scoreboard');
     const navBroadcast = document.getElementById('nav-broadcast');
 
-    const activeClasses = 'text-white bg-purple-600/20 border-l-4 border-purple-500';
-    const inactiveClasses = 'text-gray-300 hover:text-white border-l-4 border-transparent';
+    navScoreboard?.classList.toggle('active', page === 'scoreboard');
+    navBroadcast?.classList.toggle('active', page === 'broadcast');
 
-    if (navScoreboard && navBroadcast) {
-        if (page === 'scoreboard') {
-            navScoreboard.className = `w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 ${activeClasses}`;
-            navBroadcast.className = `w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 ${inactiveClasses}`;
-        } else {
-            navScoreboard.className = `w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 ${inactiveClasses}`;
-            navBroadcast.className = `w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 ${activeClasses}`;
-        }
-    }
+    // Close the menu after switching
+    const menu = document.getElementById('settings-menu');
+    if (menu) menu.classList.remove('active');
 
-    // Close menu
-    toggleSettingsMenu();
     console.log(`📄 Switched to page: ${page}`);
 }
 
@@ -889,6 +995,18 @@ function getOverlayURLsContent(): string {
                         class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded text-white text-sm transition">Copy</button>
                 </div>
             </div>
+
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <label class="text-xs text-gray-400 uppercase block mb-2">✨ Versus Screen (Full)</label>
+                <div class="flex items-center gap-2">
+                    <input type="text" value="${baseUrl}/versus.html" readonly
+                        class="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white text-sm font-mono">
+                    <button onclick="copyToClipboard('${baseUrl}/versus.html')"
+                        class="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded text-white text-sm transition">Copy</button>
+                    <button onclick="window.open('${baseUrl}/versus.html', '_blank', 'width=1920,height=1080')"
+                        class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white text-sm transition" title="Open Preview">Open</button>
+                </div>
+            </div>
         </div>
     `;
 }
@@ -991,9 +1109,218 @@ async function handleLogoSelect(side: 'A' | 'B', input: HTMLInputElement): Promi
         return;
     }
 
-    // Upload logo
-    await uploadLogo(side, file);
+    // When swapped, panel A contains Team B data, panel B contains Team A data
+    const swapped = currentState?.swapped || false;
+    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+
+    // Open Crop Modal instead of direct upload
+    openCropModal(file, actualSide);
     input.value = '';
+}
+
+// Crop State
+let cropImage: HTMLImageElement | null = null;
+let cropCanvas: HTMLCanvasElement | null = null;
+let cropCtx: CanvasRenderingContext2D | null = null;
+let cropScale = 1;
+let cropOffsetX = 0;
+let cropOffsetY = 0;
+let isDragging = false;
+let lastX = 0;
+let lastY = 0;
+let currentCropSide: 'A' | 'B' | null = null;
+
+function openCropModal(file: File, side: 'A' | 'B'): void {
+    const modal = document.getElementById('crop-modal');
+    cropCanvas = document.getElementById('crop-canvas') as HTMLCanvasElement;
+    const zoomInput = document.getElementById('crop-zoom') as HTMLInputElement;
+
+    if (!modal || !cropCanvas || !zoomInput) return;
+
+    currentCropSide = side;
+    cropCtx = cropCanvas.getContext('2d');
+
+    // Reset state
+    cropScale = 1;
+    cropOffsetX = 0;
+    cropOffsetY = 0;
+    zoomInput.value = '1';
+
+    // Load Image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        cropImage = new Image();
+        cropImage.onload = () => {
+            if (!cropCanvas || !cropImage) return;
+
+            // Set fixed canvas size (e.g., 600x300 for 2:1 ratio)
+            // Match the container ratio roughly. Let's say 400x200 for good quality.
+            cropCanvas.width = 400;
+            cropCanvas.height = 400;
+
+            // Initial center
+            const scaleX = cropCanvas.width / cropImage.width;
+            const scaleY = cropCanvas.height / cropImage.height;
+            // "Fit" initially - use smaller scale
+            const initialScale = Math.max(scaleX, scaleY);
+
+            // Or "Fill" initially? User prefers crop, likely fill.
+            // Let's start with "Contain" (Fit) so they see whole image, then they zoom.
+            // Actually, let's start with a scale that fills at least one dimension perfectly.
+
+            cropScale = initialScale;
+            // Center image
+            cropOffsetX = (cropCanvas.width - cropImage.width * cropScale) / 2;
+            cropOffsetY = (cropCanvas.height - cropImage.height * cropScale) / 2;
+
+            drawCrop();
+            modal.classList.remove('hidden');
+
+            // Add Listeners
+            cropCanvas.addEventListener('mousedown', startDrag);
+            cropCanvas.addEventListener('mousemove', drag);
+            cropCanvas.addEventListener('mouseup', endDrag);
+            cropCanvas.addEventListener('mouseleave', endDrag);
+            // Wheel zoom
+            cropCanvas.addEventListener('wheel', handleWheel);
+        };
+        cropImage.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+}
+
+function closeCropModal(): void {
+    const modal = document.getElementById('crop-modal');
+    if (modal) modal.classList.add('hidden');
+    cropImage = null;
+    currentCropSide = null;
+}
+
+function updateCropZoom(): void {
+    const zoomInput = document.getElementById('crop-zoom') as HTMLInputElement;
+    if (!zoomInput || !cropImage || !cropCanvas) return;
+
+    // Zoom relative to center would be nice, but simple scale is okay for now.
+    // Better: maintain center point.
+
+    const newScale = parseFloat(zoomInput.value);
+    // Adjust offsets to keep center? 
+    // Simplified: just update scale and let user pan. 
+    // But multiplying by base scale.
+
+    // We need a base scale to reference.
+    // Let's assume zoomInput is a multiplier on the *initial* fit scale?
+    // Or just a raw multiplier? 
+    // Let's use raw multiplier logic relative to image size.
+    // Re-calculate based on slider.
+
+    // To smooth experience:
+    // oldScale
+    const oldScale = cropScale;
+
+    // Calculate base fit scale again
+    const scaleX = cropCanvas.width / cropImage.width;
+    const scaleY = cropCanvas.height / cropImage.height;
+    const baseScale = Math.min(scaleX, scaleY); // Fit scale
+
+    cropScale = baseScale * newScale;
+
+    // Maintain center
+    // CenterX of canvas in image coords
+    // This is complex to do perfectly without more state.
+    // Simple approach: Center image on canvas when zooming if not dragged?
+    // Let's just redraw.
+    drawCrop();
+}
+
+function startDrag(e: MouseEvent): void {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+}
+
+function drag(e: MouseEvent): void {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    cropOffsetX += dx;
+    cropOffsetY += dy;
+    drawCrop();
+}
+
+function endDrag(): void {
+    isDragging = false;
+}
+
+function handleWheel(e: WheelEvent): void {
+    e.preventDefault();
+    const zoomInput = document.getElementById('crop-zoom') as HTMLInputElement;
+    if (!zoomInput) return;
+
+    let val = parseFloat(zoomInput.value);
+    if (e.deltaY < 0) val += 0.1;
+    else val -= 0.1;
+
+    val = Math.max(1, Math.min(3, val));
+    zoomInput.value = val.toString();
+    updateCropZoom();
+}
+
+function drawCrop(): void {
+    if (!cropCtx || !cropCanvas || !cropImage) return;
+
+    // Clear
+    cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+    // Draw background
+    cropCtx.fillStyle = '#111';
+    cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+    // Save context for clipping
+    cropCtx.save();
+
+    // Draw Image
+    cropCtx.drawImage(
+        cropImage,
+        cropOffsetX,
+        cropOffsetY,
+        cropImage.width * cropScale,
+        cropImage.height * cropScale
+    );
+
+    // Draw Overlay: Semi-transparent dark outside the circle
+    cropCtx.restore(); // Restore to draw overlay on top
+
+    cropCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    cropCtx.beginPath();
+    // Exterior of circle
+    cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
+    // Cut out circle
+    cropCtx.arc(cropCanvas.width / 2, cropCanvas.height / 2, cropCanvas.width / 2, 0, Math.PI * 2, true);
+    cropCtx.fill();
+
+    // Draw Circle Border
+    cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    cropCtx.lineWidth = 2;
+    cropCtx.beginPath();
+    cropCtx.arc(cropCanvas.width / 2, cropCanvas.height / 2, cropCanvas.width / 2 - 2, 0, Math.PI * 2);
+    cropCtx.stroke();
+}
+
+
+function confirmCrop(): void {
+    if (!cropCanvas || !currentCropSide) return;
+
+    cropCanvas.toBlob(async (blob) => {
+        if (blob && currentCropSide) {
+            const file = new File([blob], "logo_cropped.png", { type: "image/png" });
+            await uploadLogo(currentCropSide, file);
+            closeCropModal();
+        }
+    }, 'image/png');
 }
 
 async function uploadLogo(side: 'A' | 'B', file: File): Promise<void> {
@@ -1008,7 +1335,20 @@ async function uploadLogo(side: 'A' | 'B', file: File): Promise<void> {
         });
 
         if (response.ok) {
-            console.log(`✅ Logo for Team ${side} uploaded successfully`);
+            const result = await response.json();
+            console.log(`✅ Logo for Team ${side} uploaded successfully`, result);
+
+            // Update logo version to force refresh
+            logoVersions[side] = Date.now();
+
+            // Update local state is optional if WS sends update, but good for immediate feedback.
+            // However, WS update might not have the version param, so relying on logoVersions global is better.
+            if (currentState) {
+                const logoPath = result.logoPath || result.path || (side === 'A' ? '/logos/team-a.png' : '/logos/team-b.png');
+                if (side === 'A') currentState.teams.A.logo = logoPath;
+                else currentState.teams.B.logo = logoPath;
+                renderUI();
+            }
         } else {
             const error = await response.text();
             console.error(`❌ Failed to upload logo: ${error}`);
@@ -1022,38 +1362,48 @@ async function uploadLogo(side: 'A' | 'B', file: File): Promise<void> {
 
 // Color picker state
 let activePickerSide: 'A' | 'B' | null = null;
+let activePickerPanelSide: 'A' | 'B' | null = null;
 let pickerOverlay: HTMLDivElement | null = null;
 
-async function pickColor(side: 'A' | 'B'): Promise<void> {
-    // Try EyeDropper API first (Chrome/Edge)
+async function pickScreenColor(side: 'A' | 'B'): Promise<void> {
+    // Try EyeDropper API (Chrome/Edge)
     if ('EyeDropper' in window) {
         try {
             // @ts-ignore - EyeDropper is not in TypeScript types yet
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
-            applyColor(side, result.sRGBHex);
-            return;
+            // When swapped, panel A contains Team B data
+            const swapped = currentState?.swapped || false;
+            const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+            applyColor(actualSide, result.sRGBHex, side);
         } catch (err) {
             console.log('Color picking cancelled');
-            return;
         }
+    } else {
+        alert('ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)');
     }
+}
 
-    // Fallback: Open pixel picker modal for logo
+async function pickLogoColor(side: 'A' | 'B'): Promise<void> {
     const logoPreview = side === 'A' ? elements.teamALogoPreview() : elements.teamBLogoPreview();
     const logoImg = logoPreview?.querySelector('img') as HTMLImageElement | null;
 
-    if (!logoImg) {
-        alert('กรุณาอัพโหลดโลโก้ก่อน แล้วจึงดูดสีจากโลโก้ได้\n\n(หรือใช้ Chrome/Edge สำหรับดูดสีจากทุกที่บนหน้าจอ)');
+    if (!logoImg || logoImg.style.display === 'none') {
+        alert('กรุณาอัพโหลดโลโก้ก่อน เพื่อดูดสีจากโลโก้');
         return;
     }
 
-    // Open pixel picker modal
-    openPixelPickerModal(side, logoImg.src);
+    // When swapped, panel A contains Team B data
+    const swapped = currentState?.swapped || false;
+    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+
+    // Open pixel picker modal with both actual and panel side
+    openPixelPickerModal(actualSide, side, logoImg.src);
 }
 
-function openPixelPickerModal(side: 'A' | 'B', imageSrc: string): void {
-    activePickerSide = side;
+function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', imageSrc: string): void {
+    activePickerSide = actualSide;
+    activePickerPanelSide = panelSide;
 
     // Create overlay
     pickerOverlay = document.createElement('div');
@@ -1082,7 +1432,7 @@ function openPixelPickerModal(side: 'A' | 'B', imageSrc: string): void {
         text-align: center;
     `;
     header.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 8px;">🎨 คลิกเลือกสีจากโลโก้ Team ${side}</div>
+        <div style="font-weight: bold; margin-bottom: 8px;">🎨 คลิกเลือกสีจากโลโก้ Team ${panelSide}</div>
         <div style="font-size: 14px; color: #888;">กด ESC หรือคลิกนอกภาพเพื่อยกเลิก</div>
     `;
 
@@ -1167,7 +1517,7 @@ function openPixelPickerModal(side: 'A' | 'B', imageSrc: string): void {
     // Click - select color
     canvas.addEventListener('click', (e) => {
         const ctx = canvas.getContext('2d');
-        if (!ctx || !activePickerSide) return;
+        if (!ctx || !activePickerSide || !activePickerPanelSide) return;
 
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -1178,7 +1528,7 @@ function openPixelPickerModal(side: 'A' | 'B', imageSrc: string): void {
         const pixel = ctx.getImageData(x, y, 1, 1).data;
         const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
 
-        applyColor(activePickerSide, hex);
+        applyColor(activePickerSide, hex, activePickerPanelSide);
         closePixelPickerModal();
     });
 
@@ -1211,15 +1561,19 @@ function closePixelPickerModal(): void {
         pickerOverlay = null;
     }
     activePickerSide = null;
+    activePickerPanelSide = null;
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
     return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
-function applyColor(side: 'A' | 'B', color: string): void {
-    const colorInput = side === 'A' ? elements.teamAColor() : elements.teamBColor();
-    const colorHex = side === 'A' ? elements.teamAColorHex() : elements.teamBColorHex();
+function applyColor(actualSide: 'A' | 'B', color: string, panelSide?: 'A' | 'B'): void {
+    // panelSide is the UI panel, actualSide is the real team (after swap adjustment)
+    // If panelSide not provided, assume no swap adjustment needed for UI
+    const uiSide = panelSide || actualSide;
+    const colorInput = uiSide === 'A' ? elements.teamAColor() : elements.teamBColor();
+    const colorHex = uiSide === 'A' ? elements.teamAColorHex() : elements.teamBColorHex();
 
     if (colorInput) {
         colorInput.value = color;
@@ -1229,7 +1583,24 @@ function applyColor(side: 'A' | 'B', color: string): void {
         colorHex.textContent = color;
     }
 
-    console.log(`🎨 Picked color for Team ${side}: ${color}`);
+    console.log(`🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`);
+}
+
+function toggleLogoFit(side: 'A' | 'B'): void {
+    if (!currentState) return;
+
+    const swapped = currentState.swapped || false;
+    let targetTeam: Team;
+
+    // Determine which team is currently in the panel 'side'
+    if (side === 'A') {
+        targetTeam = swapped ? currentState.teams.B : currentState.teams.A;
+    } else {
+        targetTeam = swapped ? currentState.teams.A : currentState.teams.B;
+    }
+
+    targetTeam.logoFit = targetTeam.logoFit === 'cover' ? 'contain' : 'cover';
+    renderUI();
 }
 
 // ==========================================
@@ -1242,7 +1613,8 @@ declare global {
         adjustScore: typeof adjustScore;
         updatePlayer: typeof updatePlayer;
         handleLogoSelect: typeof handleLogoSelect;
-        pickColor: typeof pickColor;
+        pickScreenColor: typeof pickScreenColor;
+        pickLogoColor: typeof pickLogoColor;
         openHeroPicker: typeof openHeroPicker;
         swapSides: typeof swapSides;
         updateSwapUI: typeof updateSwapUI;
@@ -1262,6 +1634,9 @@ declare global {
         updateLowerThird: typeof updateLowerThird;
         uploadSlotLogo: typeof uploadSlotLogo;
         loadLowerThird: typeof loadLowerThird;
+        closeCropModal: typeof closeCropModal;
+        confirmCrop: typeof confirmCrop;
+        updateCropZoom: typeof updateCropZoom;
     }
 }
 
@@ -1269,7 +1644,11 @@ window.saveTeam = saveTeam;
 window.adjustScore = adjustScore;
 window.updatePlayer = updatePlayer;
 window.handleLogoSelect = handleLogoSelect;
-window.pickColor = pickColor;
+window.closeCropModal = closeCropModal;
+window.confirmCrop = confirmCrop;
+window.updateCropZoom = updateCropZoom;
+window.pickScreenColor = pickScreenColor;
+window.pickLogoColor = pickLogoColor;
 window.openHeroPicker = openHeroPicker;
 window.swapSides = swapSides;
 window.updateSwapUI = updateSwapUI;
@@ -1298,22 +1677,59 @@ setTimeout(loadLowerThird, 200);
 // Hero Picker Modal
 // ==========================================
 
-// ROV Heroes list (125 heroes) - Sorted A-Z
+// ROV Heroes list - Updated to match actual image files
 const HEROES = [
     "Airi", "Aleister", "Alice", "Allain", "Amily", "Annette", "Aoi", "Arduin", "Arum", "Astrid",
-    "Ata", "Aya", "Azzen'Ka", "Baldum", "Batman", "Bijan", "Billow", "Biron", "Bolt Baron", "Bonnie",
+    "Ata", "Aya", "Baldum", "Bijan", "Billow", "Biron", "Bolt Baron", "Bonnie",
     "Bright", "Butterfly", "Capheny", "Celica", "Charlotte", "Chaugnar", "Cresht", "D'Arcy", "Dextra", "Diao Chan",
     "Dirak", "Dolia", "Edras", "Eland'orr", "Elsu", "Enzo", "Erin", "Errol", "Fennik", "Florentino",
-    "Gildur", "Goverra", "Grakk", "Hayate", "Heino", "Iggy", "Ignis", "Ilumia", "Ishar", "Jinna",
-    "Kahlii", "Keera", "Kil'Groth", "Kriknak", "Krixi", "Krizzix", "Lauriel", "Laville", "Liliana", "Lindis",
+    "Gildur", "Goverra", "Grakk", "Hayate", "Heino", "Helen", "Iggy", "Ignis", "Ilumia", "Ishar", "Jinna",
+    "Kahlii", "Kaine", "Keera", "Kil'Groth", "Kriknak", "Krixi", "Krizzix", "Lauriel", "Laville", "Liliana", "Lindis",
     "Lorion", "Lu Bu", "Lumburr", "Maloch", "Marja", "Max", "Mganga", "Mina", "Ming", "Moren",
     "Mortos", "Murad", "Nakroth", "Natalya", "Omega", "Omen", "Ormarr", "Paine", "Payna", "Preyta",
     "Qi", "Quillen", "Raz", "Riktor", "Rouie", "Rourke", "Roxie", "Ryoma", "Sephera", "Sinestrea",
-    "Skud", "Slimz", "Superman", "Taara", "Tachi", "TeeMee", "Teeri", "Tel'Annas", "Thane", "The Flash",
-    "The Joker", "Thorne", "Toro", "Tulen", "Valhein", "Veera", "Veres", "Violet", "Volkath", "Wisp",
+    "Skud", "Slimz", "Stuart", "Superman", "Taara", "Tachi", "TeeMee", "Teeri", "Tel'Annas", "Thane", "The Flash",
+    "Thorne", "Toro", "Tulen", "Valhein", "Veera", "Veres", "Violet", "Volkath", "Wisp",
     "Wiro", "Wonder Woman", "WuKong", "Xeniel", "Y'bneth", "Yan", "Yena", "Yorn", "Yue", "Zanis",
     "Zata", "Zephys", "Zill", "Zip", "Zuka"
 ];
+
+// Heroes with special filenames (map hero name to actual filename)
+const HERO_FILE_MAP: Record<string, { name: string; ext: string }> = {
+    // Different filename (with dash or number)
+    "Aleister": { name: "Aleister-3", ext: "webp" },
+    "Mortos": { name: "Mortos-3", ext: "webp" },
+    "Roxie": { name: "Roxie-2", ext: "webp" },
+    // Different extension
+    "Edras": { name: "Edras", ext: "png" },
+    "Goverra": { name: "Goverra", ext: "jpg" },
+    // Space to underscore
+    "Bolt Baron": { name: "Bolt_Baron", ext: "webp" },
+    "Diao Chan": { name: "Diao_Chan", ext: "webp" },
+    "Lu Bu": { name: "Lu_Bu", ext: "webp" },
+    "The Flash": { name: "The_Flash", ext: "webp" },
+    "Wonder Woman": { name: "Wonder_Woman", ext: "webp" },
+    // Apostrophe removed
+    "D'Arcy": { name: "DArcy", ext: "webp" },
+    "Eland'orr": { name: "Elandorr", ext: "webp" },
+    "Kil'Groth": { name: "KilGroth", ext: "webp" },
+    "Tel'Annas": { name: "TelAnnas", ext: "webp" },
+    "Y'bneth": { name: "Ybneth", ext: "webp" },
+};
+
+// Updated for PNG assets (standardized)
+function getHeroImagePath(heroName: string): string {
+    // Standardize: "Lu Bu" -> "Lu_Bu", "D'Arcy" -> "D'Arcy" (file has quote)
+    let formatted = heroName.trim();
+    formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+    // Check specific manual overrides if needed (e.g. for files that don't match simple logic)
+    // But D'Arcy.png exists.
+    // Replace spaces with underscores
+    formatted = formatted.replace(/\s+/g, '_');
+
+    return `/src/ROV/${formatted}.png`;
+}
 
 let heroPickerOverlay: HTMLDivElement | null = null;
 let heroPickerSide: 'A' | 'B' | null = null;
@@ -1326,47 +1742,134 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     // Create overlay
     heroPickerOverlay = document.createElement('div');
     heroPickerOverlay.id = 'hero-picker-overlay';
-    heroPickerOverlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center';
+    heroPickerOverlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
 
     // Create modal container
     const modal = document.createElement('div');
-    modal.className = 'glass-card w-[90%] max-w-2xl max-h-[85vh] p-6 flex flex-col shadow-2xl border border-white/20';
+    modal.style.cssText = `
+        background: var(--color-bg-elevated, #1c1c1e);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 800px;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+    `;
 
     // Header
     const header = document.createElement('div');
-    header.className = 'text-white text-xl font-bold mb-4 text-center pb-4 border-b border-white/10';
-    header.innerHTML = `<i class="ph-duotone ph-game-controller text-blue-400"></i> Select Hero for Team ${side} - Player ${slot}`;
+    header.style.cssText = `
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    `;
+    header.innerHTML = `
+        <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.25rem; font-weight: 600; margin: 0;">
+            <i class="ph-duotone ph-game-controller" style="color: var(--color-accent, #0a84ff); margin-right: 8px;"></i>
+            Select Hero - Team ${side} Player ${slot}
+        </h2>
+        <button id="hero-picker-close" style="
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); border: none;
+            color: var(--color-text-secondary, #a1a1a6); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+        ">
+            <i class="ph-bold ph-x"></i>
+        </button>
+    `;
 
     // Search input
     const searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.placeholder = 'Search hero...';
-    searchInput.className = 'glass-input w-full p-3 mb-4 text-lg';
+    searchInput.style.cssText = `
+        margin: 16px 24px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        color: var(--color-text-primary, #f5f5f7);
+        background: var(--color-bg-tertiary, #2c2c2e);
+        border: 1px solid var(--color-border, #38383a);
+        border-radius: 12px;
+        outline: none;
+    `;
 
     // Hero grid container
     const gridContainer = document.createElement('div');
     gridContainer.id = 'hero-grid';
-    gridContainer.className = 'grid grid-cols-4 sm:grid-cols-5 gap-2 overflow-y-auto pr-2 custom-scrollbar';
-    gridContainer.style.maxHeight = '50vh';
+    gridContainer.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 12px;
+        padding: 0 24px 24px;
+        overflow-y: auto;
+        max-height: 50vh;
+    `;
 
-    // Render heroes
+    // Render heroes with images
     const renderHeroes = (filter: string = '') => {
         const filteredHeroes = filter
-            ? HEROES.filter(h => h.toLowerCase().startsWith(filter.toLowerCase()))
+            ? HEROES.filter(h => h.toLowerCase().includes(filter.toLowerCase()))
             : HEROES;
 
         gridContainer.innerHTML = filteredHeroes.map(hero => `
             <button 
-                onclick="selectHero('${escapeHtml(hero)}')"
-                class="hero-btn"
-                class="glass-btn p-3 text-xs sm:text-sm hover:scale-105 transition-transform truncate"
+                data-hero-name="${hero.replace(/"/g, '&quot;')}"
+                onclick="selectHero(this.dataset.heroName)"
+                style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px;
+                    background: var(--color-bg-tertiary, #2c2c2e);
+                    border: 2px solid transparent;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                "
+                onmouseover="this.style.borderColor='var(--color-accent, #0a84ff)'; this.style.transform='scale(1.05)';"
+                onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)';"
+                title="${hero.replace(/"/g, '&quot;')}"
             >
-                ${escapeHtml(hero)}
+                <img 
+                    src="${getHeroImagePath(hero)}" 
+                    alt="${hero.replace(/"/g, '&quot;')}"
+                    style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #1a1a1a;"
+                    onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); } else { this.style.display='none'; this.nextElementSibling.style.display='flex'; }"
+                >
+                <div style="display: none; width: 60px; height: 60px; border-radius: 8px; background: var(--color-bg-secondary, #1c1c1e); align-items: center; justify-content: center;">
+                    <i class="ph-duotone ph-game-controller" style="font-size: 1.5rem; color: var(--color-text-tertiary, #636366);"></i>
+                </div>
+                <span style="
+                    font-size: 0.7rem;
+                    color: var(--color-text-secondary, #a1a1a6);
+                    text-align: center;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    width: 100%;
+                ">${hero}</span>
             </button>
         `).join('');
 
         if (filteredHeroes.length === 0) {
-            gridContainer.innerHTML = '<div style="color: #6b7280; text-align: center; padding: 20px;">No heroes found</div>';
+            gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary, #636366);">No heroes found</div>';
         }
     };
 
@@ -1377,11 +1880,13 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
         renderHeroes((e.target as HTMLInputElement).value);
     });
 
-    // Close button
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '<i class="ph-bold ph-x"></i> Close';
-    closeBtn.className = 'mt-4 glass-btn bg-red-600/20 hover:bg-red-600/40 text-red-300 hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2';
-    closeBtn.onclick = closeHeroPicker;
+    // Close button event
+    setTimeout(() => {
+        const closeBtn = document.getElementById('hero-picker-close');
+        if (closeBtn) {
+            closeBtn.onclick = closeHeroPicker;
+        }
+    }, 0);
 
     // Click outside to close
     heroPickerOverlay.addEventListener('click', (e) => {
@@ -1403,7 +1908,6 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     modal.appendChild(header);
     modal.appendChild(searchInput);
     modal.appendChild(gridContainer);
-    modal.appendChild(closeBtn);
     heroPickerOverlay.appendChild(modal);
     document.body.appendChild(heroPickerOverlay);
 
@@ -1466,49 +1970,103 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
     // Create overlay
     lanePickerOverlay = document.createElement('div');
     lanePickerOverlay.id = 'lane-picker-overlay';
-    lanePickerOverlay.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center';
+    lanePickerOverlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
 
     // Create modal container
     const modal = document.createElement('div');
-    modal.className = 'glass-card w-[90%] max-w-md p-6 flex flex-col shadow-2xl border border-white/20';
+    modal.style.cssText = `
+        background: var(--color-bg-elevated, #1c1c1e);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+    `;
 
     // Header
     const header = document.createElement('div');
-    header.className = 'text-white text-xl font-bold mb-4 text-center pb-4 border-b border-white/10';
-    header.innerHTML = `<i class="ph-duotone ph-path text-yellow-400"></i> Select Lane for Team ${side} - Player ${slot}`;
+    header.style.cssText = `
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    `;
+    header.innerHTML = `
+        <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.125rem; font-weight: 600; margin: 0;">
+            <i class="ph-duotone ph-map-pin" style="color: var(--color-warning, #ff9f0a); margin-right: 8px;"></i>
+            Select Lane - Player ${slot}
+        </h2>
+        <button id="lane-picker-close" style="
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); border: none;
+            color: var(--color-text-secondary, #a1a1a6); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+        ">
+            <i class="ph-bold ph-x"></i>
+        </button>
+    `;
 
     // Lane grid container
     const gridContainer = document.createElement('div');
-    gridContainer.className = 'flex flex-col gap-3';
+    gridContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px 24px 24px;
+    `;
 
     // Render lanes
     gridContainer.innerHTML = LANES.map(lane => `
         <button 
             onclick="selectLane('${lane.name}')"
-            class="glass-btn w-full p-4 flex items-center gap-4 hover:bg-white/10 transition-colors"
+            style="
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                background: var(--color-bg-tertiary, #2c2c2e);
+                border: 1px solid transparent;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                text-align: left;
+            "
+            onmouseover="this.style.borderColor='var(--color-accent, #0a84ff)'; this.style.background='var(--color-team-a-bg, rgba(10,132,255,0.15))';"
+            onmouseout="this.style.borderColor='transparent'; this.style.background='var(--color-bg-tertiary, #2c2c2e)';"
         >
             <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
-                 style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;" 
+                 style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #1a1a1a;" 
                  alt="${lane.name}"
-                 onerror="this.style.display='none'">
-            <div>
-                <div style="font-weight: bold;">${lane.label}</div>
-                <div style="font-size: 12px; color: #9ca3af;">${lane.thaiName}</div>
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon}%3C/text%3E%3C/svg%3E';">
+            <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--color-text-primary, #f5f5f7); font-size: 0.95rem;">${lane.label}</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-tertiary, #636366);">${lane.thaiName}</div>
             </div>
         </button>
     `).join('');
 
-    // Clear Lane button
-    const clearBtn = document.createElement('button');
-    clearBtn.innerHTML = '<i class="ph-bold ph-prohibit"></i> Clear Lane';
-    clearBtn.className = 'mt-4 glass-btn bg-gray-600/50 hover:bg-gray-500 font-bold py-3 rounded-xl transition flex items-center justify-center gap-2';
-    clearBtn.onclick = () => selectLane('');
-
-    // Close button
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '<i class="ph-bold ph-x"></i> Close';
-    closeBtn.className = 'mt-2 glass-btn bg-red-600/20 hover:bg-red-600/40 text-red-300 hover:text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2';
-    closeBtn.onclick = closeLanePicker;
+    // Close button event
+    setTimeout(() => {
+        const closeBtn = document.getElementById('lane-picker-close');
+        if (closeBtn) {
+            closeBtn.onclick = closeLanePicker;
+        }
+    }, 0);
 
     // Click outside to close
     lanePickerOverlay.addEventListener('click', (e) => {
@@ -1529,8 +2087,6 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
     // Assemble modal
     modal.appendChild(header);
     modal.appendChild(gridContainer);
-    modal.appendChild(clearBtn);
-    modal.appendChild(closeBtn);
     lanePickerOverlay.appendChild(modal);
     document.body.appendChild(lanePickerOverlay);
 }
@@ -1566,6 +2122,19 @@ async function selectLane(laneName: string): Promise<void> {
 (window as any).openLanePicker = openLanePicker;
 (window as any).closeLanePicker = closeLanePicker;
 (window as any).selectLane = selectLane;
+
+// Handle lane click with validation
+function handleLaneClick(side: 'A' | 'B', slot: number, hasHero: boolean): void {
+    if (hasHero) {
+        openLanePicker(side, slot);
+    } else {
+        // Show notification that hero must be selected first
+        if ((window as any).showNotification) {
+            (window as any).showNotification('กรุณาเลือกตัวละครก่อน', 'เลือก Hero ก่อนถึงจะเลือกตำแหน่งเลนได้', 'warning');
+        }
+    }
+}
+(window as any).handleLaneClick = handleLaneClick;
 
 // ==========================================
 // Template Management
@@ -2060,6 +2629,205 @@ function handleTemplateLogoSelect(input: HTMLInputElement): void {
 (window as any).loadTemplateToForm = loadTemplateToForm;
 
 // ==========================================
+// Drag & Drop Player Reordering
+// ==========================================
+
+// Track mouse down target for accurate drag source detection
+let dragSourceElement: HTMLElement | null = null;
+document.addEventListener('mousedown', (e) => {
+    dragSourceElement = e.target as HTMLElement;
+});
+
+let draggedPlayer: { side: string; slot: number; mode: 'full' | 'hero' } | null = null;
+
+function handleDragStart(event: DragEvent): void {
+    const card = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    if (!card) return;
+
+    // Check if the initial click was within the hero section
+    const heroSection = dragSourceElement?.closest('.player-card__hero');
+
+    // Debug
+    console.log('Drag Start Source:', {
+        source: dragSourceElement?.className,
+        isHero: !!heroSection
+    });
+
+    draggedPlayer = {
+        side: card.dataset.side || 'A',
+        slot: parseInt(card.dataset.slot || '1'),
+        mode: heroSection ? 'hero' : 'full'
+    };
+
+    card.classList.add('dragging');
+    if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        // Optional: Set custom drag image if needed
+    }
+}
+
+function handleDragEnd(event: DragEvent): void {
+    const card = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    if (card) {
+        card.classList.remove('dragging');
+    }
+    document.querySelectorAll('.player-card').forEach(c => c.classList.remove('drag-over'));
+    draggedPlayer = null;
+}
+
+function handleDragOver(event: DragEvent): void {
+    event.preventDefault();
+    const card = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    if (!card || !draggedPlayer) return;
+
+    const targetSide = card.dataset.side;
+    if (targetSide !== draggedPlayer.side) return; // Only allow same-team drag
+
+    card.classList.add('drag-over');
+}
+
+async function handleDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    const targetCard = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    if (!targetCard || !draggedPlayer) return;
+
+    const targetSide = targetCard.dataset.side;
+    const targetSlot = parseInt(targetCard.dataset.slot || '1');
+
+    if (targetSide !== draggedPlayer.side) return;
+    if (targetSlot === draggedPlayer.slot) return;
+
+    // Swap players via API
+    const side = draggedPlayer.side as 'A' | 'B';
+    await swapPlayers(side, draggedPlayer.slot, targetSlot, draggedPlayer.mode);
+
+    targetCard.classList.remove('drag-over');
+    draggedPlayer = null;
+}
+
+async function swapPlayers(side: 'A' | 'B', slot1: number, slot2: number, mode: 'full' | 'hero' = 'full'): Promise<void> {
+    if (!currentState) return;
+
+    const team = currentState.teams[side];
+    const player1 = team.players.find(p => p.slot === slot1);
+    const player2 = team.players.find(p => p.slot === slot2);
+
+    if (!player1 || !player2) return;
+
+    if (mode === 'hero') {
+        // Swap ONLY Heroes
+        await postAPI('/api/player/update', { side, slot: slot1, hero: player2.hero || '' });
+        await postAPI('/api/player/update', { side, slot: slot2, hero: player1.hero || '' });
+
+        if ((window as any).showNotification) {
+            (window as any).showNotification('Heroes Swapped', `Slot ${slot1} ↔ Slot ${slot2}`, 'success');
+        }
+    } else {
+        // Full Swap (Reorder)
+        const data1 = {
+            name: player1.name,
+            hero: player1.hero || '',
+            lane: player1.lane || '',
+            isCaptain: player1.isCaptain || false
+        };
+        const data2 = {
+            name: player2.name,
+            hero: player2.hero || '',
+            lane: player2.lane || '',
+            isCaptain: player2.isCaptain || false
+        };
+
+        await postAPI('/api/player/update', {
+            side, slot: slot1,
+            name: data2.name,
+            hero: data2.hero,
+            lane: data2.lane,
+            isCaptain: data2.isCaptain
+        });
+
+        await postAPI('/api/player/update', {
+            side, slot: slot2,
+            name: data1.name,
+            hero: data1.hero,
+            lane: data1.lane,
+            isCaptain: data1.isCaptain
+        });
+
+        if ((window as any).showNotification) {
+            (window as any).showNotification('Players Reordered', `Slot ${slot1} ↔ Slot ${slot2}`, 'success');
+        }
+    }
+}
+
+// ==========================================
+// Captain Toggle
+// ==========================================
+
+async function toggleCaptain(side: 'A' | 'B', slot: number): Promise<void> {
+    if (!currentState) return;
+
+    const team = currentState.teams[side];
+
+    // Clear captain from all other players in this team
+    for (const player of team.players) {
+        if (player.slot !== slot && player.isCaptain) {
+            await postAPI('/api/player/update', { side, slot: player.slot, isCaptain: false });
+        }
+    }
+
+    // Toggle captain for selected player
+    const currentPlayer = team.players.find(p => p.slot === slot);
+    const newCaptainStatus = !currentPlayer?.isCaptain;
+    await postAPI('/api/player/update', { side, slot, isCaptain: newCaptainStatus });
+
+    if ((window as any).showNotification) {
+        if (newCaptainStatus) {
+            (window as any).showNotification('Captain set', `Player ${slot} is now captain`, 'success');
+        } else {
+            (window as any).showNotification('Captain removed', '', 'info');
+        }
+    }
+}
+
+// ==========================================
+// Theme Toggle
+// ==========================================
+
+function toggleTheme(): void {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+
+    // Update icon
+    const icon = document.getElementById('theme-icon');
+    if (icon) {
+        icon.className = newTheme === 'dark' ? 'ph-bold ph-moon' : 'ph-bold ph-sun';
+    }
+
+    // Save preference
+    localStorage.setItem('esport-theme', newTheme);
+}
+
+// Expose drag & drop and captain functions
+(window as any).handleDragStart = handleDragStart;
+(window as any).handleDragEnd = handleDragEnd;
+(window as any).handleDragOver = handleDragOver;
+(window as any).handleDrop = handleDrop;
+(window as any).toggleCaptain = toggleCaptain;
+
+// Expose UI Navigation
+(window as any).toggleSettingsMenu = toggleSettingsMenu;
+(window as any).switchPage = switchPage;
+(window as any).toggleTheme = toggleTheme;
+(window as any).saveTeam = saveTeam;
+(window as any).adjustScore = adjustScore;
+(window as any).swapSides = swapSides;
+(window as any).handleLogoSelect = handleLogoSelect;
+(window as any).pickScreenColor = pickScreenColor;
+(window as any).pickLogoColor = pickLogoColor;
+
+// ==========================================
 // Initialization
 // ==========================================
 
@@ -2073,5 +2841,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchTemplates();
 
     // Connect to WebSocket for real-time updates
+    // Connect to WebSocket for real-time updates
     connectWebSocket();
+
+    // Bind UI Events explicitly (Fixes Module Scope issues)
+    document.getElementById('hamburger-btn')?.addEventListener('click', toggleSettingsMenu);
+    document.getElementById('nav-scoreboard')?.addEventListener('click', () => switchPage('scoreboard'));
+    document.getElementById('nav-broadcast')?.addEventListener('click', () => switchPage('broadcast'));
+
+    // Theme toggle button
+    document.getElementById('theme-toggle-btn')?.addEventListener('click', toggleTheme);
+
+    // Helper to bind close on menu outside click
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('settings-menu');
+        const btn = document.getElementById('hamburger-btn');
+        if (menu && menu.classList.contains('active') &&
+            !menu.contains(e.target as Node) &&
+            !btn?.contains(e.target as Node)) {
+            menu.classList.remove('active');
+        }
+    });
 });

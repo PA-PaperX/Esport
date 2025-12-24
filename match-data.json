@@ -9,35 +9,35 @@
       "shortName": "HOME",
       "color": "#3b82f6",
       "logo": "",
-      "score": 0,
+      "logoVersion": 1766597396494,
+      "score": 1,
       "players": [
         {
           "slot": 1,
           "name": "Home Player 1",
-          "hero": ""
+          "hero": "Krixi",
+          "lane": "ds_lane"
         },
         {
           "slot": 2,
           "name": "Home Player 2",
-          "hero": "Ata",
-          "lane": "adc"
+          "hero": "Lauriel",
+          "lane": "jungle"
         },
         {
           "slot": 3,
           "name": "Home Player 3",
-          "hero": "Slimz",
-          "lane": "mid"
+          "hero": "Kahlii"
         },
         {
           "slot": 4,
           "name": "Home Player 4",
-          "hero": "Dolia",
-          "lane": "support"
+          "hero": "Ilumia"
         },
         {
           "slot": 5,
           "name": "Home Player 5",
-          "hero": "Grakk"
+          "hero": "Sinestrea"
         }
       ]
     },
@@ -46,12 +46,13 @@
       "shortName": "AWAY",
       "color": "#ef4444",
       "logo": "",
-      "score": 0,
+      "logoVersion": 1766597396495,
+      "score": 2,
       "players": [
         {
           "slot": 1,
           "name": "Away Player 1",
-          "hero": ""
+          "hero": "Dextra"
         },
         {
           "slot": 2,

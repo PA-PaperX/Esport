@@ -1,669 +1,1097 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Esport Control Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/tokens.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        gray: { 850: '#1f2937', 900: '#111827' }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        /* ================================== */
-        /* GLASSMORPHISM THEME - iPhone Style */
-        /* ================================== */
-
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        /* Animated Gradient Background */
-        body {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            color: #ffffff;
+        /* App Layout */
+        .app-container {
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
         }
 
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+        /* Header */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-4) var(--space-6);
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        /* Custom Scrollbar - Glass Style */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .app-header__brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
         }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
+        .app-header__logo {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text-primary);
+            letter-spacing: -0.5px;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+        .app-header__version {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-tertiary);
+            background: var(--color-bg-tertiary);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-full);
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Glassmorphism Card */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .glass-card-light {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-        }
-
-        /* Glass Input */
-        .glass-input {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            color: white !important;
-            border-radius: 12px !important;
-            transition: all 0.3s ease;
-        }
-
-        .glass-input:focus {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(99, 102, 241, 0.6) !important;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
-            outline: none;
-        }
-
-        .glass-input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        /* Glass Button */
-        .glass-btn {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .glass-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Primary Glass Button */
-        .glass-btn-primary {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .glass-btn-primary:hover {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(139, 92, 246, 0.95));
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
-        }
-
-        /* Team Color Accent Glow */
-        .team-glow-blue {
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3), inset 0 0 60px rgba(59, 130, 246, 0.05);
-        }
-
-        .team-glow-red {
-            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), inset 0 0 60px rgba(239, 68, 68, 0.05);
-        }
-
-        /* Floating Header */
-        .glass-header {
-            background: rgba(15, 12, 41, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Labels */
-        .glass-label {
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
+        .app-header__actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
         }
 
         /* Connection Status */
-        .status-connected {
-            color: #22c55e;
-            text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
         }
 
-        .status-disconnected {
-            color: #ef4444;
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-danger);
+            transition: all var(--transition-normal);
         }
 
-        /* Selection Dropdown */
-        select {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            border-radius: 12px !important;
+        .status-dot.connected {
+            background: #00FF66;
+            box-shadow:
+                0 0 4px #00FF66,
+                0 0 8px #00FF66,
+                0 0 16px rgba(0, 255, 102, 0.5);
+            animation: neon-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes neon-pulse {
+
+            0%,
+            100% {
+                box-shadow:
+                    0 0 4px #00FF66,
+                    0 0 8px #00FF66,
+                    0 0 16px rgba(0, 255, 102, 0.5);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 6px #00FF66,
+                    0 0 12px #00FF66,
+                    0 0 24px rgba(0, 255, 102, 0.7);
+            }
+        }
+
+        /* Main Layout */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Team Panel */
+        .team-panel {
+            padding: var(--space-6);
+            overflow-y: auto;
+            background: var(--color-bg-primary);
+        }
+
+        .team-panel--a {
+            border-right: 1px solid var(--color-border-light);
+        }
+
+        .team-panel--b {
+            border-left: 1px solid var(--color-border-light);
+        }
+
+        .team-panel__header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .team-panel__indicator {
+            width: 4px;
+            height: 24px;
+            border-radius: var(--radius-full);
+        }
+
+        .team-panel--a .team-panel__indicator {
+            background: var(--color-team-a);
+        }
+
+        .team-panel--b .team-panel__indicator {
+            background: var(--color-team-b);
+        }
+
+        .team-panel__title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+        }
+
+        .team-panel__subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            margin-left: var(--space-2);
+        }
+
+        /* Team Card */
+        .team-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-6);
+        }
+
+        .team-card--a {
+            border-left: 3px solid var(--color-team-a);
+        }
+
+        .team-card--b {
+            border-left: 3px solid var(--color-team-b);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+        }
+
+        /* Color Picker Row */
+        .color-picker-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-1);
+        }
+
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--color-border);
+            cursor: pointer;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .color-swatch::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-swatch::-webkit-color-swatch {
+            border: none;
+            border-radius: var(--radius-sm);
+        }
+
+        .color-hex {
+            font-size: var(--font-size-xs);
+            font-family: monospace;
+            color: var(--color-text-tertiary);
+        }
+
+        /* Score Control */
+        .score-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-1);
+        }
+
+        .score-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .score-btn--minus {
+            background: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+        }
+
+        .score-btn--minus:hover {
+            background: var(--color-border);
+        }
+
+        .score-btn--plus-a {
+            background: var(--color-team-a);
             color: white;
         }
 
-        select option {
-            background: #1e1b4b;
+        .score-btn--plus-b {
+            background: var(--color-team-b);
             color: white;
+        }
+
+        .score-display {
+            width: 56px;
+            height: 36px;
+            text-align: center;
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text-primary);
+            background: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+
+        /* Logo Upload */
+        .logo-upload {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-top: var(--space-2);
+        }
+
+        .logo-preview {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            background: var(--color-bg-tertiary);
+            border: 2px dashed var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .logo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .logo-preview__placeholder {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-tertiary);
+        }
+
+        .logo-upload__actions {
+            flex: 1;
+        }
+
+        .logo-upload__hint {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-tertiary);
+            margin-top: var(--space-1);
+        }
+
+        /* Update Button */
+        .btn-update {
+            width: 100%;
+            padding: var(--space-3);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            margin-top: var(--space-4);
+        }
+
+        .btn-update--a {
+            background: var(--color-team-a);
+            color: white;
+        }
+
+        .btn-update--a:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-update--b {
+            background: var(--color-team-b);
+            color: white;
+        }
+
+        .btn-update--b:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Roster Section */
+        .roster-section {
+            margin-top: var(--space-2);
+        }
+
+        .roster-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-3);
+        }
+
+        .roster-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .roster-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .roster-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .roster-item:hover {
+            border-color: var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .roster-item__slot {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-tertiary);
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+
+        .roster-item__name {
+            flex: 1;
+        }
+
+        .roster-item__name input {
+            width: 100%;
+            padding: var(--space-1) var(--space-2);
+            font-size: var(--font-size-sm);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            color: var(--color-text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .roster-item__name input:hover {
+            background: var(--color-bg-primary);
+            border-color: var(--color-border-light);
+        }
+
+        .roster-item__name input:focus {
+            outline: none;
+            background: var(--color-bg-primary);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+        }
+
+        .roster-item__actions {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        .roster-btn {
+            padding: var(--space-1) var(--space-2);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            background: var(--color-bg-primary);
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .roster-btn:hover {
+            background: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+        }
+
+        /* Center Column - Swap */
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+            background: var(--color-bg-secondary);
+            border-left: 1px solid var(--color-border-light);
+            border-right: 1px solid var(--color-border-light);
+            min-width: 80px;
+        }
+
+        .swap-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-4);
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .swap-btn:hover {
+            background: var(--color-bg-tertiary);
+            box-shadow: var(--shadow-md);
+            transform: scale(1.02);
+        }
+
+        .swap-btn i {
+            font-size: var(--font-size-2xl);
+            color: var(--color-text-primary);
+        }
+
+        .swap-btn span {
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .swap-status {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-tertiary);
+            margin-top: var(--space-3);
+            text-align: center;
+        }
+
+        /* Template Selector */
+        .template-selector {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .template-selector select {
+            flex: 1;
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 280px;
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            margin-top: var(--space-2);
+            overflow: hidden;
+            display: none;
+            z-index: 200;
+        }
+
+        .nav-menu.active {
+            display: block;
+        }
+
+        .nav-menu__header {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--color-border-light);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-secondary);
+        }
+
+        .nav-menu__item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            color: var(--color-text-primary);
+        }
+
+        .nav-menu__item:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .nav-menu__item.active {
+            background: var(--color-team-a-bg);
+            border-left: 3px solid var(--color-accent);
+        }
+
+        .nav-menu__item i {
+            font-size: var(--font-size-xl);
+            color: var(--color-text-secondary);
+        }
+
+        .nav-menu__item-text {
+            flex: 1;
+        }
+
+        .nav-menu__item-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+        }
+
+        .nav-menu__item-desc {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-tertiary);
+        }
+
+        /* Hidden pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
         }
     </style>
 </head>
 
-<body class="h-screen flex flex-col overflow-hidden font-sans">
-
-    <header class="glass-header p-4 flex justify-between items-center shadow-lg z-10 relative">
-        <div class="flex items-center gap-3">
-            <!-- Hamburger Menu Button -->
-            <button onclick="toggleSettingsMenu()" id="hamburger-btn"
-                class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-400 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-                    </path>
-                </svg>
+<body class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+        <div class="app-header__brand" style="position: relative;">
+            <button id="hamburger-btn" class="btn btn-secondary btn-icon">
+                <i class="ph-bold ph-list"></i>
             </button>
-            <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse" id="status-dot"></div>
-            <h1 class="font-bold text-xl tracking-wide text-white">ESPORT CONTROL <span
-                    class="text-xs text-gray-500 font-normal">v1.0 Local</span></h1>
-        </div>
-        <div class="flex gap-4 text-sm items-center">
-            <button onclick="openTemplateManager()"
-                class="px-3 py-1 bg-purple-600 hover:bg-purple-500 rounded text-white transition">
-                📋 Template Manager
-            </button>
-            <button onclick="location.reload()" class="hover:text-white text-gray-400 transition">⟳ Reload UI</button>
-            <div id="connection-status" class="text-red-400 font-mono">DISCONNECTED</div>
-        </div>
+            <span class="app-header__logo">Esport Control</span>
+            <span class="app-header__version">v1.0</span>
 
-        <!-- Page Navigation Menu (Dropdown) -->
-        <div id="settings-menu"
-            class="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl hidden z-50">
-            <div class="p-3 border-b border-gray-700">
-                <h3 class="font-bold text-white text-sm">📋 เมนู</h3>
-            </div>
-            <div class="py-2">
-                <button onclick="switchPage('scoreboard')" id="nav-scoreboard"
-                    class="w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 text-white bg-purple-600/20 border-l-4 border-purple-500">
-                    <span>🎮</span>
-                    <div>
-                        <div class="font-medium">Scoreboard</div>
-                        <div class="text-xs text-gray-400">จัดการทีม, คะแนน, ผู้เล่น</div>
+            <!-- Navigation Menu -->
+            <nav id="settings-menu" class="nav-menu">
+                <div class="nav-menu__header">Menu</div>
+                <button id="nav-scoreboard" class="nav-menu__item active">
+                    <i class="ph-duotone ph-game-controller"></i>
+                    <div class="nav-menu__item-text">
+                        <div class="nav-menu__item-title">Scoreboard</div>
+                        <div class="nav-menu__item-desc">Teams, scores, players</div>
                     </div>
                 </button>
-                <button onclick="switchPage('broadcast')" id="nav-broadcast"
-                    class="w-full text-left px-4 py-3 hover:bg-gray-700 transition flex items-center gap-3 text-gray-300 hover:text-white border-l-4 border-transparent">
-                    <span>📺</span>
-                    <div>
-                        <div class="font-medium">Broadcast</div>
-                        <div class="text-xs text-gray-500">Transition, Overlay URLs</div>
+                <button id="nav-broadcast" class="nav-menu__item">
+                    <i class="ph-duotone ph-broadcast"></i>
+                    <div class="nav-menu__item-text">
+                        <div class="nav-menu__item-title">Broadcast</div>
+                        <div class="nav-menu__item-desc">Transitions, overlays</div>
                     </div>
                 </button>
+            </nav>
+        </div>
+
+        <div class="app-header__actions">
+            <button onclick="openTemplateManager()" class="btn btn-primary">
+                <i class="ph-bold ph-folders"></i>
+                Templates
+            </button>
+            <button onclick="location.reload()" class="btn btn-secondary">
+                <i class="ph-bold ph-arrows-clockwise"></i>
+            </button>
+            <button id="theme-toggle-btn" class="btn btn-secondary btn-icon" title="Toggle theme">
+                <i class="ph-bold ph-moon" id="theme-icon"></i>
+            </button>
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="connection-status">Disconnected</span>
             </div>
         </div>
     </header>
 
-    <!-- ======================== -->
-    <!-- PAGE: SCOREBOARD -->
-    <!-- ======================== -->
-    <div id="page-scoreboard" class="flex-1 flex flex-col overflow-hidden">
-        <main class="flex-1 flex overflow-hidden">
+    <!-- Page: Scoreboard -->
+    <div id="page-scoreboard" class="page active">
+        <main class="main-content">
+            <!-- Team A Panel -->
+            <section class="team-panel team-panel--a" id="teamA-section">
+                <div class="team-panel__header" id="teamA-header">
+                    <div class="team-panel__indicator" id="teamA-accent"></div>
+                    <h2 class="team-panel__title">Team A</h2>
+                    <span class="team-panel__subtitle">(Home)</span>
+                </div>
 
-            <section id="teamA-section" class="flex-1 p-6 flex flex-col overflow-y-auto"
-                style="border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.03);">
-                <h2 id="teamA-header" class="font-bold mb-4 flex items-center gap-2 text-lg"
-                    style="color: #3b82f6; text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);">
-                    <span id="teamA-accent" class="w-2 h-6 rounded-sm"
-                        style="background: #3b82f6; box-shadow: 0 0 10px #3b82f6;"></span> TEAM A
-                    (Home)
-                </h2>
-
-                <div class="mb-4 flex items-center gap-2">
-                    <select id="teamA-template"
-                        class="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                <!-- Template Selector -->
+                <div class="template-selector">
+                    <select id="teamA-template" class="input">
                         <option value="">Select Template...</option>
                     </select>
-                    <button onclick="loadTemplate('A')"
-                        class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition">
-                        <i class="ph-bold ph-download-simple"></i> Load
+                    <button onclick="loadTemplate('A')" class="btn btn-secondary">
+                        <i class="ph-bold ph-download-simple"></i>
+                        Load
                     </button>
                 </div>
 
-                <div id="teamA-card" class="glass-card space-y-4 mb-8 p-5 team-glow-blue"
-                    style="border-left: 3px solid #3b82f6;">
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase">Team Name</label>
-                        <input type="text" id="teamA-name"
-                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 focus:outline-none transition"
-                            placeholder="Enter Team Name">
+                <!-- Team Card -->
+                <div class="team-card team-card--a" id="teamA-card">
+                    <div class="form-group">
+                        <label class="label">Team Name</label>
+                        <input type="text" id="teamA-name" class="input" placeholder="Enter team name">
                     </div>
-                    <div class="flex gap-4">
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-400 uppercase">Color</label>
-                            <div class="flex items-center gap-2 mt-1">
-                                <input type="color" id="teamA-color"
-                                    class="h-8 w-8 bg-transparent cursor-pointer border-none" value="#3b82f6">
-                                <button onclick="pickColor('A')"
-                                    class="h-8 w-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white transition"
-                                    title="Pick color from screen">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="label">Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" id="teamA-color" class="color-swatch" value="#007AFF">
+                                <button onclick="pickScreenColor('A')" class="btn btn-secondary btn-icon"
+                                    title="Pick from screen">
                                     <i class="ph-bold ph-eyedropper"></i>
                                 </button>
-                                <span id="teamA-color-hex" class="text-xs font-mono text-gray-400">#3b82f6</span>
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-400 uppercase">Score</label>
-                            <div class="flex items-center gap-2">
-                                <button onclick="adjustScore('A', -1)"
-                                    class="bg-gray-700 hover:bg-gray-600 w-8 h-8 rounded text-white">-</button>
-                                <input type="number" id="teamA-score"
-                                    class="w-16 bg-gray-900 border border-gray-600 rounded p-1 text-center font-bold text-xl"
-                                    value="0" readonly>
-                                <button onclick="adjustScore('A', 1)"
-                                    class="bg-blue-600 hover:bg-blue-500 w-8 h-8 rounded text-white shadow-lg shadow-blue-500/20">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase">Team Logo</label>
-                        <div class="flex items-center gap-3 mt-1">
-                            <div id="teamA-logo-preview"
-                                class="w-16 h-16 bg-gray-700 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden">
-                                <span class="text-gray-500 text-xs">No Logo</span>
-                            </div>
-                            <div class="flex-1">
-                                <input type="file" id="teamA-logo-input"
-                                    accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" class="hidden"
-                                    onchange="handleLogoSelect('A', this)">
-                                <button onclick="document.getElementById('teamA-logo-input').click()"
-                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition flex items-center justify-center gap-2">
-                                    <i class="ph-bold ph-folder-open"></i> Choose Logo
+                                <button onclick="pickLogoColor('A')" class="btn btn-secondary btn-icon"
+                                    title="Pick from logo">
+                                    <i class="ph-bold ph-image"></i>
                                 </button>
-                                <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP, SVG (max 2MB)</p>
+                                <span id="teamA-color-hex" class="color-hex">#007AFF</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Score</label>
+                            <div class="score-control">
+                                <button onclick="adjustScore('A', -1)" class="score-btn score-btn--minus">−</button>
+                                <input type="number" id="teamA-score" class="score-display" value="0" readonly>
+                                <button onclick="adjustScore('A', 1)" class="score-btn score-btn--plus-a">+</button>
                             </div>
                         </div>
                     </div>
-                    <button onclick="saveTeam('A')"
-                        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded transition shadow-lg shadow-blue-600/20">UPDATE
-                        TEAM A</button>
+
+                    <div class="form-group">
+                        <label class="label">Team Logo</label>
+                        <div class="logo-dropzone" id="teamA-dropzone"
+                            onclick="document.getElementById('teamA-logo-input').click()">
+                            <input type="file" id="teamA-logo-input" accept="image/*" style="display: none;"
+                                onchange="handleLogoSelect('A', this)">
+                            <div id="teamA-logo-preview" class="logo-dropzone__preview">
+                                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
+                                <span class="logo-dropzone__text">Click to upload logo</span>
+                                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="saveTeam('A')" class="btn btn-update btn-update--a">
+                        Update Team A
+                    </button>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-400 uppercase mb-2 block">Active Roster</label>
-                    <div id="teamA-players" class="space-y-2">
+                <!-- Roster -->
+                <div class="roster-section">
+                    <div class="roster-header">
+                        <span class="roster-title">Active Roster</span>
                     </div>
+                    <div id="teamA-players" class="roster-list"></div>
                 </div>
             </section>
 
-            <!-- Swap Sides Button -->
-            <div class="flex flex-col items-center justify-center px-4 glass-card-light">
-                <button onclick="swapSides()" id="swap-btn"
-                    class="glass-btn-primary px-5 py-4 font-bold rounded-xl transition flex flex-col items-center gap-1">
-                    <i class="ph-bold ph-arrows-left-right text-2xl"></i>
-                    <span class="text-xs uppercase tracking-wide">SWAP</span>
+            <!-- Swap Button -->
+            <div class="center-column">
+                <button onclick="swapSides()" class="swap-btn" id="swap-btn">
+                    <i class="ph-bold ph-arrows-left-right"></i>
+                    <span>Swap</span>
                 </button>
-                <span id="swap-status" class="text-xs text-gray-400 mt-2 text-center">ปกติ</span>
+                <span id="swap-status" class="swap-status">Normal</span>
             </div>
 
-            <section id="teamB-section" class="flex-1 p-6 flex flex-col overflow-y-auto"
-                style="border-right: 4px solid #ef4444; background: rgba(239, 68, 68, 0.03);">
-                <h2 id="teamB-header" class="font-bold mb-4 flex items-center gap-2 text-lg"
-                    style="color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);">
-                    <span id="teamB-accent" class="w-2 h-6 rounded-sm"
-                        style="background: #ef4444; box-shadow: 0 0 10px #ef4444;"></span> TEAM B
-                    (Away)
-                </h2>
+            <!-- Team B Panel -->
+            <section class="team-panel team-panel--b" id="teamB-section">
+                <div class="team-panel__header" id="teamB-header">
+                    <div class="team-panel__indicator" id="teamB-accent"></div>
+                    <h2 class="team-panel__title">Team B</h2>
+                    <span class="team-panel__subtitle">(Away)</span>
+                </div>
 
-                <div class="mb-4 flex items-center gap-2">
-                    <select id="teamB-template"
-                        class="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm">
+                <!-- Template Selector -->
+                <div class="template-selector">
+                    <select id="teamB-template" class="input">
                         <option value="">Select Template...</option>
                     </select>
-                    <button onclick="loadTemplate('B')"
-                        class="px-3 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition">
-                        <i class="ph-bold ph-download-simple"></i> Load
+                    <button onclick="loadTemplate('B')" class="btn btn-secondary">
+                        <i class="ph-bold ph-download-simple"></i>
+                        Load
                     </button>
                 </div>
 
-                <div id="teamB-card" class="glass-card space-y-4 mb-8 p-5 team-glow-red"
-                    style="border-left: 3px solid #ef4444;">
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase">Team Name</label>
-                        <input type="text" id="teamB-name"
-                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 focus:outline-none transition"
-                            placeholder="Enter Team Name">
+                <!-- Team Card -->
+                <div class="team-card team-card--b" id="teamB-card">
+                    <div class="form-group">
+                        <label class="label">Team Name</label>
+                        <input type="text" id="teamB-name" class="input" placeholder="Enter team name">
                     </div>
-                    <div class="flex gap-4">
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-400 uppercase">Color</label>
-                            <div class="flex items-center gap-2 mt-1">
-                                <input type="color" id="teamB-color"
-                                    class="h-8 w-8 bg-transparent cursor-pointer border-none" value="#ef4444">
-                                <button onclick="pickColor('B')"
-                                    class="h-8 w-8 bg-gray-700 hover:bg-gray-600 rounded flex items-center justify-center text-white transition"
-                                    title="Pick color from screen">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="label">Color</label>
+                            <div class="color-picker-row">
+                                <input type="color" id="teamB-color" class="color-swatch" value="#FF3B30">
+                                <button onclick="pickScreenColor('B')" class="btn btn-secondary btn-icon"
+                                    title="Pick from screen">
                                     <i class="ph-bold ph-eyedropper"></i>
                                 </button>
-                                <span id="teamB-color-hex" class="text-xs font-mono text-gray-400">#ef4444</span>
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-400 uppercase">Score</label>
-                            <div class="flex items-center gap-2">
-                                <button onclick="adjustScore('B', -1)"
-                                    class="bg-gray-700 hover:bg-gray-600 w-8 h-8 rounded text-white">-</button>
-                                <input type="number" id="teamB-score"
-                                    class="w-16 bg-gray-900 border border-gray-600 rounded p-1 text-center font-bold text-xl"
-                                    value="0" readonly>
-                                <button onclick="adjustScore('B', 1)"
-                                    class="bg-red-600 hover:bg-red-500 w-8 h-8 rounded text-white shadow-lg shadow-red-500/20">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase">Team Logo</label>
-                        <div class="flex items-center gap-3 mt-1">
-                            <div id="teamB-logo-preview"
-                                class="w-16 h-16 bg-gray-700 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center overflow-hidden">
-                                <span class="text-gray-500 text-xs">No Logo</span>
-                            </div>
-                            <div class="flex-1">
-                                <input type="file" id="teamB-logo-input"
-                                    accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" class="hidden"
-                                    onchange="handleLogoSelect('B', this)">
-                                <button onclick="document.getElementById('teamB-logo-input').click()"
-                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition flex items-center justify-center gap-2">
-                                    <i class="ph-bold ph-folder-open"></i> Choose Logo
+                                <button onclick="pickLogoColor('B')" class="btn btn-secondary btn-icon"
+                                    title="Pick from logo">
+                                    <i class="ph-bold ph-image"></i>
                                 </button>
-                                <p class="text-xs text-gray-500 mt-1">PNG, JPG, WEBP, SVG (max 2MB)</p>
+                                <span id="teamB-color-hex" class="color-hex">#FF3B30</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Score</label>
+                            <div class="score-control">
+                                <button onclick="adjustScore('B', -1)" class="score-btn score-btn--minus">−</button>
+                                <input type="number" id="teamB-score" class="score-display" value="0" readonly>
+                                <button onclick="adjustScore('B', 1)" class="score-btn score-btn--plus-b">+</button>
                             </div>
                         </div>
                     </div>
-                    <button onclick="saveTeam('B')"
-                        class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded transition shadow-lg shadow-red-600/20">UPDATE
-                        TEAM B</button>
+
+                    <div class="form-group">
+                        <label class="label">Team Logo</label>
+                        <div class="logo-dropzone" id="teamB-dropzone"
+                            onclick="document.getElementById('teamB-logo-input').click()">
+                            <input type="file" id="teamB-logo-input" accept="image/*" style="display: none;"
+                                onchange="handleLogoSelect('B', this)">
+                            <div id="teamB-logo-preview" class="logo-dropzone__preview">
+                                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
+                                <span class="logo-dropzone__text">Click to upload logo</span>
+                                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="saveTeam('B')" class="btn btn-update btn-update--b">
+                        Update Team B
+                    </button>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-400 uppercase mb-2 block">Active Roster</label>
-                    <div id="teamB-players" class="space-y-2">
+                <!-- Roster -->
+                <div class="roster-section">
+                    <div class="roster-header">
+                        <span class="roster-title">Active Roster</span>
                     </div>
+                    <div id="teamB-players" class="roster-list"></div>
                 </div>
             </section>
-
         </main>
     </div>
 
-    <!-- ======================== -->
-    <!-- PAGE: BROADCAST -->
-    <!-- ======================== -->
-    <div id="page-broadcast" class="flex-1 flex flex-col overflow-hidden hidden">
-        <!-- Broadcast page content will go here -->
-        <div class="flex-1 p-6 overflow-y-auto">
-            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2"><i
-                    class="ph-duotone ph-television text-blue-400"></i> Broadcast Settings</h2>
+    <!-- Page: Broadcast (Placeholder) -->
+    <div id="page-broadcast" class="page">
+        <main style="padding: var(--space-6); overflow-y: auto;">
+            <h2
+                style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-6);">
+                Broadcast Settings</h2>
 
-            <!-- Transition Control -->
-            <!-- Transition Control -->
-            <div class="glass-card p-6 mb-6">
-                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-film-strip text-purple-400"></i> Transition
-                </h3>
-
-                <!-- Logo Upload -->
-                <div>
-                    <label class="text-sm text-gray-400 uppercase block mb-2 font-medium">โลโก้ Transition</label>
-                    <div class="flex items-center gap-4">
-                        <div id="transition-logo-preview"
-                            class="w-24 h-24 bg-white/5 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden">
-                            <img id="transition-logo-img" src="" alt="Logo" class="w-full h-full object-contain hidden">
-                            <span id="transition-logo-placeholder" class="text-white/30 text-sm">No Logo</span>
-                        </div>
-                        <div class="flex-1 space-y-2">
-                            <input type="file" id="transition-logo-input" accept="image/*" class="hidden"
-                                onchange="previewTransitionLogo(this)">
-                            <button onclick="document.getElementById('transition-logo-input').click()"
-                                class="w-full glass-btn py-3 px-4 flex items-center justify-center gap-2">
-                                <i class="ph-bold ph-folder-open"></i> Choose Logo
-                            </button>
-                            <button onclick="uploadTransitionLogo()"
-                                class="w-full glass-btn-primary py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
-                                <i class="ph-bold ph-upload-simple"></i> Upload Logo
-                            </button>
-                            <p id="transition-logo-status" class="text-xs text-gray-500 text-center">
-                                เลือกรูป → กด Upload</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lower Third Settings -->
-            <!-- Lower Third Settings -->
-            <div class="glass-card p-6 mb-6">
-                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-rows text-indigo-400"></i> Lower Third (แถบล่าง)
-                </h3>
-
-                <!-- Enable/Disable Toggle -->
-                <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
-                    <span class="text-gray-300">เปิดใช้งาน Lower Third</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="lower-third-enabled" class="sr-only peer" checked
-                            onchange="updateLowerThird()">
-                        <div
-                            class="w-11 h-6 bg-gray-600 peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600">
-                        </div>
-                    </label>
-                </div>
-
-                <!-- Main Title -->
-                <div class="mb-4">
-                    <label class="text-sm text-gray-400 uppercase block mb-2">ข้อความหลัก</label>
-                    <input type="text" id="lower-third-title" class="glass-input w-full p-3"
-                        value="ROV PRO LEAGUE 2025 WINTER" placeholder="ข้อความหลัก..." onchange="updateLowerThird()">
-                </div>
-
-                <!-- Slots -->
-                <div class="space-y-4" id="lower-third-slots">
-                    <!-- Slot 1 -->
-                    <!-- Slot 1 -->
-                    <div class="glass-card-light p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-white font-medium">Slot 1</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="slot-1-enabled" class="sr-only peer" checked
-                                    onchange="updateLowerThird()">
-                                <div
-                                    class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500">
-                                </div>
-                            </label>
-                        </div>
-                        <div class="flex gap-3">
-                            <div class="flex-1">
-                                <input type="text" id="slot-1-text" class="glass-input w-full p-2 text-sm"
-                                    value="Facebook" placeholder="Label..." onchange="updateLowerThird()">
-                            </div>
-                            <input type="file" id="slot-1-logo-input" accept="image/*" class="hidden"
-                                onchange="uploadSlotLogo(1, this)">
-                            <button onclick="document.getElementById('slot-1-logo-input').click()"
-                                class="px-4 py-2 glass-btn text-sm flex items-center gap-2">
-                                <i class="ph-bold ph-image"></i> Logo
+            <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4);">
+                <h3
+                    style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4);">
+                    Overlay URLs</h3>
+                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                    <div>
+                        <label class="label">Scoreboard Overlay</label>
+                        <div style="display: flex; gap: var(--space-2);">
+                            <input type="text" class="input" id="overlay-rov-url" readonly>
+                            <button onclick="copyUrlById('overlay-rov-url')" class="btn btn-secondary">
+                                <i class="ph-bold ph-copy"></i>
                             </button>
                         </div>
                     </div>
-
-                    <!-- Slot 2 -->
-                    <!-- Slot 2 -->
-                    <div class="glass-card-light p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-white font-medium">Slot 2</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="slot-2-enabled" class="sr-only peer" checked
-                                    onchange="updateLowerThird()">
-                                <div
-                                    class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500">
-                                </div>
-                            </label>
-                        </div>
-                        <div class="flex gap-3">
-                            <div class="flex-1">
-                                <input type="text" id="slot-2-text" class="glass-input w-full p-2 text-sm"
-                                    value="YouTube" placeholder="Label..." onchange="updateLowerThird()">
-                            </div>
-                            <input type="file" id="slot-2-logo-input" accept="image/*" class="hidden"
-                                onchange="uploadSlotLogo(2, this)">
-                            <button onclick="document.getElementById('slot-2-logo-input').click()"
-                                class="px-4 py-2 glass-btn text-sm">
-                                📁 Logo
+                    <div>
+                        <label class="label">Hero Roster - Team A</label>
+                        <div style="display: flex; gap: var(--space-2);">
+                            <input type="text" class="input" id="hero-team-a-url" readonly>
+                            <button onclick="copyUrlById('hero-team-a-url')" class="btn btn-secondary">
+                                <i class="ph-bold ph-copy"></i>
                             </button>
                         </div>
                     </div>
-
-                    <!-- Slot 3 -->
-                    <!-- Slot 3 -->
-                    <div class="glass-card-light p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-white font-medium">Slot 3</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="slot-3-enabled" class="sr-only peer" checked
-                                    onchange="updateLowerThird()">
-                                <div
-                                    class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500">
-                                </div>
-                            </label>
+                    <div>
+                        <label class="label">Hero Roster - Team B</label>
+                        <div style="display: flex; gap: var(--space-2);">
+                            <input type="text" class="input" id="hero-team-b-url" readonly>
+                            <button onclick="copyUrlById('hero-team-b-url')" class="btn btn-secondary">
+                                <i class="ph-bold ph-copy"></i>
+                            </button>
                         </div>
-                        <div class="flex gap-3">
-                            <div class="flex-1">
-                                <input type="text" id="slot-3-text" class="glass-input w-full p-2 text-sm"
-                                    value="TikTok" placeholder="Label..." onchange="updateLowerThird()">
-                            </div>
-                            <input type="file" id="slot-3-logo-input" accept="image/*" class="hidden"
-                                onchange="uploadSlotLogo(3, this)">
-                            <button onclick="document.getElementById('slot-3-logo-input').click()"
-                                class="px-4 py-2 glass-btn text-sm">
-                                📁 Logo
+                    </div>
+                    <div>
+                        <label class="label">Smart Transition</label>
+                        <div style="display: flex; gap: var(--space-2);">
+                            <input type="text" class="input" id="smart-transition-url" readonly>
+                            <button onclick="copyUrlById('smart-transition-url')" class="btn btn-secondary">
+                                <i class="ph-bold ph-copy"></i>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="glass-card p-6 mb-6">
-                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-link text-blue-400"></i> Overlay URLs
-                </h3>
-                <div class="space-y-4">
-                    <div>
-                        <label for="scoreboard-overlay-url"
-                            class="block text-sm font-medium text-gray-400 mb-1">Scoreboard Overlay URL</label>
-                        <input type="text" id="scoreboard-overlay-url" readonly
-                            class="glass-input w-full p-3 text-sm font-mono cursor-text"
-                            value="http://localhost:3000/scoreboard.html">
-                        <button onclick="copyToClipboard('scoreboard-overlay-url')"
-                            class="mt-2 text-sm glass-btn px-4 py-2 flex items-center gap-2">
-                            <i class="ph-bold ph-copy"></i> Copy URL
-                        </button>
+        </main>
+    </div>
+
+    <!-- Load main.ts -->
+    <script src="/main.js"></script>
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            const theme = document.documentElement.getAttribute('data-theme');
+            icon.className = theme === 'dark' ? 'ph-bold ph-moon' : 'ph-bold ph-sun';
+        }
+
+        // Load saved theme
+        (function () {
+            const savedTheme = localStorage.getItem('theme') ||
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon();
+        })();
+
+        // Navigation Menu Toggle
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settings-menu');
+            menu.classList.toggle('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('settings-menu');
+            const btn = document.getElementById('hamburger-btn');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // Page Switching
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-menu__item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(`page-${pageName}`).classList.add('active');
+            document.getElementById(`nav-${pageName}`).classList.add('active');
+
+            document.getElementById('settings-menu').classList.remove('active');
+        }
+
+        // Set Overlay URLs
+        const baseUrl = window.location.origin;
+        document.getElementById('overlay-rov-url').value = `${baseUrl}/overlay-rov.html`;
+        document.getElementById('hero-team-a-url').value = `${baseUrl}/hero-team-a.html`;
+        document.getElementById('hero-team-b-url').value = `${baseUrl}/hero-team-b.html`;
+        document.getElementById('smart-transition-url').value = `${baseUrl}/smart-transition.html`;
+
+        function copyUrlById(inputId) {
+            const input = document.getElementById(inputId);
+            navigator.clipboard.writeText(input.value);
+            showNotification('Copied!', 'URL copied to clipboard', 'success');
+        }
+
+        // ===========================================
+        // DYNAMIC ISLAND NOTIFICATION SYSTEM
+        // ===========================================
+
+        let notificationTimeout = null;
+
+        function showNotification(title, subtitle = '', type = 'info', duration = 3000) {
+            // Get or create island element
+            let island = document.getElementById('dynamic-island');
+            if (!island) {
+                island = document.createElement('div');
+                island.id = 'dynamic-island';
+                island.className = 'dynamic-island';
+                island.innerHTML = `
+                    <div class="dynamic-island__content">
+                        <div class="dynamic-island__icon"></div>
+                        <div class="dynamic-island__text">
+                            <div class="dynamic-island__title"></div>
+                            <div class="dynamic-island__subtitle"></div>
+                        </div>
                     </div>
-                    <div>
-                        <label for="transition-overlay-url"
-                            class="block text-sm font-medium text-gray-400 mb-1">Transition Overlay URL</label>
-                        <input type="text" id="transition-overlay-url" readonly
-                            class="glass-input w-full p-3 text-sm font-mono cursor-text"
-                            value="http://localhost:3000/transition.html">
-                        <button onclick="copyToClipboard('transition-overlay-url')"
-                            class="mt-2 text-sm glass-btn px-4 py-2">
-                            📋 Copy URL
-                        </button>
-                    </div>
-                    <div>
-                        <label for="lower-third-overlay-url" class="block text-sm font-medium text-gray-400 mb-1">Lower
-                            Third Overlay URL</label>
-                        <input type="text" id="lower-third-overlay-url" readonly
-                            class="glass-input w-full p-3 text-sm font-mono cursor-text"
-                            value="http://localhost:3000/lower-third.html">
-                        <button onclick="copyToClipboard('lower-third-overlay-url')"
-                            class="mt-2 text-sm glass-btn px-4 py-2">
-                            📋 Copy URL
-                        </button>
-                    </div>
+                `;
+                document.body.appendChild(island);
+            }
+
+            // Clear any existing timeout
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+            }
+
+            // Update content
+            const iconEl = island.querySelector('.dynamic-island__icon');
+            const titleEl = island.querySelector('.dynamic-island__title');
+            const subtitleEl = island.querySelector('.dynamic-island__subtitle');
+
+            // Set icon based on type
+            const icons = {
+                success: '<i class="ph-bold ph-check"></i>',
+                error: '<i class="ph-bold ph-x"></i>',
+                warning: '<i class="ph-bold ph-warning"></i>',
+                info: '<i class="ph-bold ph-info"></i>'
+            };
+
+            iconEl.innerHTML = icons[type] || icons.info;
+            iconEl.className = `dynamic-island__icon dynamic-island__icon--${type}`;
+            titleEl.textContent = title;
+            subtitleEl.textContent = subtitle;
+            subtitleEl.style.display = subtitle ? 'block' : 'none';
+
+            // Show with animation
+            island.classList.remove('animate-out', 'show', 'compact');
+            island.classList.add(subtitle ? 'expanded' : 'compact');
+
+            // Force reflow
+            void island.offsetWidth;
+
+            island.classList.add('animate-in', 'show');
+
+            // Auto hide
+            notificationTimeout = setTimeout(() => {
+                hideNotification();
+            }, duration);
+        }
+
+        function hideNotification() {
+            const island = document.getElementById('dynamic-island');
+            if (island) {
+                island.classList.remove('animate-in');
+                island.classList.add('animate-out');
+                setTimeout(() => {
+                    island.classList.remove('show', 'animate-out');
+                }, 300);
+            }
+        }
+
+        // Expose globally for main.ts to use
+        window.showNotification = showNotification;
+        window.hideNotification = hideNotification;
+
+        // ===========================================
+        // LOGO UPLOAD HANDLER
+        // ===========================================
+
+        function handleLogoSelect(side, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Validate file size (2MB max)
+            if (file.size > 2 * 1024 * 1024) {
+                showNotification('File too large', 'Maximum size is 2MB', 'error');
+                input.value = '';
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showNotification('Invalid file', 'Please select an image file', 'error');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewId = `team${side}-logo-preview`;
+                const dropzoneId = `team${side}-dropzone`;
+                const preview = document.getElementById(previewId);
+                const dropzone = document.getElementById(dropzoneId);
+
+                if (preview && dropzone) {
+                    // Add has-logo class to dropzone
+                    dropzone.classList.add('has-logo');
+
+                    // Replace preview content with image
+                    preview.innerHTML = `<img src="${e.target.result}" class="logo-dropzone__image" alt="Team ${side} Logo">`;
+
+                    // Show success notification
+                    showNotification('Logo uploaded', `Team ${side} logo updated`, 'success');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Expose globally
+        window.handleLogoSelect = handleLogoSelect;
+    </script>
+
+    <!-- Crop Modal -->
+    <div id="crop-modal" class="modal-overlay hidden">
+        <div class="modal crop-modal">
+            <div class="modal-header">
+                <h3>Adjust Logo</h3>
+                <button onclick="closeCropModal()" class="close-btn"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="crop-area">
+                    <canvas id="crop-canvas"></canvas>
                 </div>
+                <div class="crop-controls">
+                    <i class="ph-bold ph-minus-circle"></i>
+                    <input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1" oninput="updateCropZoom()">
+                    <i class="ph-bold ph-plus-circle"></i>
+                </div>
+                <div class="crop-hint">Drag to Pan • Scale to Zoom</div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeCropModal()" class="btn btn-secondary">Cancel</button>
+                <button onclick="confirmCrop()" class="btn btn-primary">
+                    <i class="ph-bold ph-check"></i>
+                    Confirm & Upload
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Full Page Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-8">
-        <div
-            class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <!-- Modal Header -->
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-800">
-                <h2 id="settings-modal-title" class="font-bold text-xl text-white flex items-center gap-2"><i
-                        class="ph-duotone ph-gear"></i> Settings
-                </h2>
-                <button onclick="closeSettingsPanel()"
-                    class="p-2 hover:bg-gray-700 rounded-lg transition text-gray-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Modal Content -->
-            <div id="settings-modal-content" class="flex-1 overflow-y-auto p-6">
-                <!-- Content loaded dynamically -->
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="p-4 border-t border-gray-700 bg-gray-800">
-                <button onclick="saveCurrentSettings()"
-                    class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg shadow-purple-600/30">
-                    💾 Save Settings
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script src="/src/main.ts" type="module"></script>
+    <!-- Load main application logic -->
+    <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>

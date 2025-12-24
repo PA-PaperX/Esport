@@ -276,9 +276,9 @@ const server = Bun.serve({
         const buffer = await logoFile.arrayBuffer();
         await Bun.write(filepath, buffer);
 
-        // Update state with logo path
+        // Update state with logo path and version
         const logoPath = `/logos/${filename}`;
-        stateManager.updateTeam(side as "A" | "B", { logo: logoPath });
+        stateManager.updateTeam(side as "A" | "B", { logo: logoPath, logoVersion: Date.now() });
 
         // Broadcast
         const newState = stateManager.getState();
@@ -451,6 +451,7 @@ const server = Bun.serve({
 
     // Serve src folder (เผื่อ import js/css module)
     if (url.pathname.startsWith("/src/")) {
+      console.log(`📂 Requesting source file: ${url.pathname}`);
       const srcFile = Bun.file(`.${url.pathname}`);
       if (await srcFile.exists()) {
         // Handle TypeScript files - transpile to JavaScript

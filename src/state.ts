@@ -10,6 +10,7 @@ export interface Player {
   realName?: string; // ชื่อจริง (เผื่อใช้)
   hero?: string;     // Hero ที่เล่น
   lane?: string;     // ตำแหน่ง (ออฟเลน, ป่า, เมจ, แครี่, โรมมิ่ง)
+  isCaptain?: boolean; // กัปตันทีม
 }
 
 export interface Team {
@@ -17,6 +18,7 @@ export interface Team {
   shortName: string; // ตัวย่อ e.g. "BRU"
   color: string;     // สีทีม (Hex) e.g. "#00008b"
   logo: string;      // Path โลโก้ (ว่างได้)
+  logoVersion?: number; // Version สำหรับ Cache Busting
   score: number;     // คะแนนปัจจุบัน
   players: Player[]; // รายชื่อผู้เล่น 5 คน
 }
@@ -72,6 +74,7 @@ export const INITIAL_STATE: MatchState = {
       shortName: "HOME",
       color: "#3b82f6", // Blue-500
       logo: "",
+      logoVersion: Date.now(),
       score: 0,
       players: DEFAULT_PLAYERS("Home")
     },
@@ -80,6 +83,7 @@ export const INITIAL_STATE: MatchState = {
       shortName: "AWAY",
       color: "#ef4444", // Red-500
       logo: "",
+      logoVersion: Date.now(),
       score: 0,
       players: DEFAULT_PLAYERS("Away")
     }

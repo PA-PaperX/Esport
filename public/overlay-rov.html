@@ -340,19 +340,19 @@
             if (swapped) {
                 elements.teamAName.textContent = teamB.name;
                 updateScore('A', teamB.score);
-                updateLogo('A', teamB.logo);
+                updateLogo('A', teamB.logo, teamB.logoVersion);
 
                 elements.teamBName.textContent = teamA.name;
                 updateScore('B', teamA.score);
-                updateLogo('B', teamA.logo);
+                updateLogo('B', teamA.logo, teamA.logoVersion);
             } else {
                 elements.teamAName.textContent = teamA.name;
                 updateScore('A', teamA.score);
-                updateLogo('A', teamA.logo);
+                updateLogo('A', teamA.logo, teamA.logoVersion);
 
                 elements.teamBName.textContent = teamB.name;
                 updateScore('B', teamB.score);
-                updateLogo('B', teamB.logo);
+                updateLogo('B', teamB.logo, teamB.logoVersion);
             }
         }
 
@@ -367,9 +367,10 @@
             }
         }
 
-        function updateLogo(side, logoPath) {
+        function updateLogo(side, logoPath, version) {
             const el = side === 'A' ? elements.teamALogo : elements.teamBLogo;
-            el.innerHTML = logoPath ? `<img src="${logoPath}" alt="">` : '';
+            const src = version ? `${logoPath}?v=${version}` : logoPath;
+            el.innerHTML = logoPath ? `<img src="${src}" alt="">` : '';
         }
 
         function updateTeamColor(side, color) {
