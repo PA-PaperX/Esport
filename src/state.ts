@@ -5,29 +5,29 @@ import { join } from "path";
 // ==========================================
 
 export interface Player {
-  slot: number;      // 1-5
-  name: string;      // ชื่อในเกม e.g. "PaperX"
+  slot: number; // 1-5
+  name: string; // ชื่อในเกม e.g. "PaperX"
   realName?: string; // ชื่อจริง (เผื่อใช้)
-  hero?: string;     // Hero ที่เล่น
-  lane?: string;     // ตำแหน่ง (ออฟเลน, ป่า, เมจ, แครี่, โรมมิ่ง)
+  hero?: string; // Hero ที่เล่น
+  lane?: string; // ตำแหน่ง (ออฟเลน, ป่า, เมจ, แครี่, โรมมิ่ง)
   isCaptain?: boolean; // กัปตันทีม
 }
 
 export interface Team {
-  name: string;      // ชื่อทีม e.g. "Buriram United"
+  name: string; // ชื่อทีม e.g. "Buriram United"
   shortName: string; // ตัวย่อ e.g. "BRU"
-  color: string;     // สีทีม (Hex) e.g. "#00008b"
-  logo: string;      // Path โลโก้ (ว่างได้)
+  color: string; // สีทีม (Hex) e.g. "#00008b"
+  logo: string; // Path โลโก้ (ว่างได้)
   logoVersion?: number; // Version สำหรับ Cache Busting
-  score: number;     // คะแนนปัจจุบัน
+  score: number; // คะแนนปัจจุบัน
   players: Player[]; // รายชื่อผู้เล่น 5 คน
 }
 
 export interface MatchState {
   matchId: string;
-  bestOf: number;    // แข่งกี่เกม (Bo1, Bo3, Bo5)
+  bestOf: number; // แข่งกี่เกม (Bo1, Bo3, Bo5)
   currentGame: number;
-  swapped: boolean;  // สลับฝั่ง: false = Team A ซ้าย, true = Team A ขวา
+  swapped: boolean; // สลับฝั่ง: false = Team A ซ้าย, true = Team A ขวา
   teams: {
     A: Team;
     B: Team;
@@ -36,20 +36,20 @@ export interface MatchState {
 
 // Lower Third / Bottom Bar State
 export interface LowerThirdSlot {
-  id: number;          // 1, 2, 3
-  enabled: boolean;    // เปิด/ปิดช่อง
-  type: 'logo' | 'text'; // โหมด logo หรือ text
-  logoPath: string;    // path ของโลโก้
-  text: string;        // ข้อความ
-  label: string;       // ชื่อช่อง (เช่น "Facebook", "YouTube")
+  id: number; // 1, 2, 3
+  enabled: boolean; // เปิด/ปิดช่อง
+  type: "logo" | "text"; // โหมด logo หรือ text
+  logoPath: string; // path ของโลโก้
+  text: string; // ข้อความ
+  label: string; // ชื่อช่อง (เช่น "Facebook", "YouTube")
 }
 
 export interface LowerThirdState {
-  enabled: boolean;              // เปิด/ปิดทั้ง Bar
-  title: string;                 // ข้อความหลัก (เช่น "ROV PRO LEAGUE 2025 WINTER")
-  backgroundColor: string;       // สีพื้นหลัง
-  textColor: string;             // สีข้อความ
-  slots: LowerThirdSlot[];       // 3 ช่อง
+  enabled: boolean; // เปิด/ปิดทั้ง Bar
+  title: string; // ข้อความหลัก (เช่น "ROV PRO LEAGUE 2025 WINTER")
+  backgroundColor: string; // สีพื้นหลัง
+  textColor: string; // สีข้อความ
+  slots: LowerThirdSlot[]; // 3 ช่อง
 }
 
 // ==========================================
@@ -60,7 +60,7 @@ const DEFAULT_PLAYERS = (prefix: string) =>
   Array.from({ length: 5 }, (_, i) => ({
     slot: i + 1,
     name: `${prefix} Player ${i + 1}`,
-    hero: ""
+    hero: "",
   }));
 
 export const INITIAL_STATE: MatchState = {
@@ -76,7 +76,7 @@ export const INITIAL_STATE: MatchState = {
       logo: "",
       logoVersion: Date.now(),
       score: 0,
-      players: DEFAULT_PLAYERS("Home")
+      players: DEFAULT_PLAYERS("Home"),
     },
     B: {
       name: "AWAY TEAM",
@@ -85,9 +85,9 @@ export const INITIAL_STATE: MatchState = {
       logo: "",
       logoVersion: Date.now(),
       score: 0,
-      players: DEFAULT_PLAYERS("Away")
-    }
-  }
+      players: DEFAULT_PLAYERS("Away"),
+    },
+  },
 };
 
 // ==========================================
@@ -122,15 +122,15 @@ export class StateManager {
   }
 
   // อัปเดตข้อมูลทีม (Partial update)
-  public updateTeam(side: 'A' | 'B', data: Partial<Team>) {
+  public updateTeam(side: "A" | "B", data: Partial<Team>) {
     this.state.teams[side] = { ...this.state.teams[side], ...data };
     this.saveToDisk();
   }
 
   // อัปเดตข้อมูลผู้เล่นรายคน
-  public updatePlayer(side: 'A' | 'B', slot: number, data: Partial<Player>) {
+  public updatePlayer(side: "A" | "B", slot: number, data: Partial<Player>) {
     const team = this.state.teams[side];
-    const index = team.players.findIndex(p => p.slot === slot);
+    const index = team.players.findIndex((p) => p.slot === slot);
 
     if (index !== -1) {
       team.players[index] = { ...team.players[index], ...data };

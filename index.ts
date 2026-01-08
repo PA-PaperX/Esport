@@ -11,10 +11,12 @@ const server = Bun.serve({
     open(ws) {
       console.log("🔌 Client Connected via WebSocket");
       // พอ connect ปุ๊บ ส่ง state ล่าสุดไปให้ render ทันที
-      ws.send(JSON.stringify({
-        type: "STATE_UPDATE",
-        data: stateManager.getState()
-      }));
+      ws.send(
+        JSON.stringify({
+          type: "STATE_UPDATE",
+          data: stateManager.getState(),
+        }),
+      );
       // Subscribe เข้าห้องชื่อ "overlay" ไว้รอรับ update
       ws.subscribe("overlay");
     },
@@ -58,7 +60,7 @@ const server = Bun.serve({
         // body expect: { side: 'A' | 'B', ...data }
         const { side, ...data } = body;
 
-        if (side !== 'A' && side !== 'B') {
+        if (side !== "A" && side !== "B") {
           return new Response("Invalid side", { status: 400 });
         }
 
@@ -67,10 +69,13 @@ const server = Bun.serve({
 
         // 2. Broadcast to Overlay (Real-time!)
         const newState = stateManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "STATE_UPDATE",
-          data: newState
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
 
         return Response.json({ success: true, state: newState }, { headers });
       } catch (err) {
@@ -89,10 +94,13 @@ const server = Bun.serve({
 
         // Broadcast
         const newState = stateManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "STATE_UPDATE",
-          data: newState
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
 
         return Response.json({ success: true }, { headers });
       } catch (err) {
@@ -108,13 +116,19 @@ const server = Bun.serve({
         const state = stateManager.getState();
 
         // Broadcast to overlay
-        server.publish("overlay", JSON.stringify({
-          type: "STATE_UPDATE",
-          data: state
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: state,
+          }),
+        );
 
         console.log(`🔄 Swap toggled: ${newSwapped}`);
-        return Response.json({ success: true, swapped: newSwapped }, { headers });
+        return Response.json(
+          { success: true, swapped: newSwapped },
+          { headers },
+        );
       } catch (err) {
         return new Response("Swap failed", { status: 500 });
       }
@@ -131,10 +145,13 @@ const server = Bun.serve({
         }
 
         // Broadcast transition trigger to all overlay clients
-        server.publish("overlay", JSON.stringify({
-          type: "TRANSITION_TRIGGER",
-          data: config
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "TRANSITION_TRIGGER",
+            data: config,
+          }),
+        );
 
         console.log("🎬 Transition triggered");
         return Response.json({ success: true }, { headers });
@@ -159,7 +176,10 @@ const server = Bun.serve({
         await Bun.write(logoPath, arrayBuffer);
 
         console.log("✅ Transition logo uploaded:", logoPath);
-        return Response.json({ success: true, path: "/assets/transition-logo.png" }, { headers });
+        return Response.json(
+          { success: true, path: "/assets/transition-logo.png" },
+          { headers },
+        );
       } catch (err) {
         console.error("Logo upload error:", err);
         return new Response("Logo upload failed", { status: 500 });
@@ -173,7 +193,10 @@ const server = Bun.serve({
       const exists = await file.exists();
 
       if (exists) {
-        return Response.json({ path: "/assets/transition-logo.png" }, { headers });
+        return Response.json(
+          { path: "/assets/transition-logo.png" },
+          { headers },
+        );
       } else {
         return Response.json({ path: null }, { headers });
       }
@@ -195,21 +218,31 @@ const server = Bun.serve({
         lowerThirdManager.updateState(data);
 
         // Broadcast to all overlay clients
-        server.publish("overlay", JSON.stringify({
-          type: "LOWER_THIRD_UPDATE",
-          data: lowerThirdManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "LOWER_THIRD_UPDATE",
+            data: lowerThirdManager.getState(),
+          }),
+        );
 
-        return Response.json({ success: true, state: lowerThirdManager.getState() }, { headers });
+        return Response.json(
+          { success: true, state: lowerThirdManager.getState() },
+          { headers },
+        );
       } catch (err) {
         return new Response("Update failed", { status: 500 });
       }
     }
 
     // POST /api/lower-third/slot/:id/logo - Upload logo for specific slot
-    if (url.pathname.startsWith("/api/lower-third/slot/") && url.pathname.endsWith("/logo") && req.method === "POST") {
+    if (
+      url.pathname.startsWith("/api/lower-third/slot/") &&
+      url.pathname.endsWith("/logo") &&
+      req.method === "POST"
+    ) {
       try {
-        const pathParts = url.pathname.split('/');
+        const pathParts = url.pathname.split("/");
         const slotId = parseInt(pathParts[4]);
 
         if (isNaN(slotId) || slotId < 1 || slotId > 3) {
@@ -229,16 +262,25 @@ const server = Bun.serve({
         await Bun.write(logoPath, arrayBuffer);
 
         // Update state
-        lowerThirdManager.setSlotLogo(slotId, `/assets/lower-third-slot-${slotId}.png`);
+        lowerThirdManager.setSlotLogo(
+          slotId,
+          `/assets/lower-third-slot-${slotId}.png`,
+        );
 
         // Broadcast update
-        server.publish("overlay", JSON.stringify({
-          type: "LOWER_THIRD_UPDATE",
-          data: lowerThirdManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "LOWER_THIRD_UPDATE",
+            data: lowerThirdManager.getState(),
+          }),
+        );
 
         console.log(`✅ Lower Third slot ${slotId} logo uploaded`);
-        return Response.json({ success: true, path: `/assets/lower-third-slot-${slotId}.png` }, { headers });
+        return Response.json(
+          { success: true, path: `/assets/lower-third-slot-${slotId}.png` },
+          { headers },
+        );
       } catch (err) {
         console.error("Logo upload error:", err);
         return new Response("Logo upload failed", { status: 500 });
@@ -261,16 +303,26 @@ const server = Bun.serve({
         const { name, type, teams, teamData } = body;
 
         if (!name || !teams || !Array.isArray(teams) || teams.length < 2) {
-          return new Response("Name and at least 2 teams required", { status: 400 });
+          return new Response("Name and at least 2 teams required", {
+            status: 400,
+          });
         }
 
-        const bracket = bracketManager.createBracket(name, type || 'single', teams, teamData);
+        const bracket = bracketManager.createBracket(
+          name,
+          type || "single",
+          teams,
+          teamData,
+        );
 
         // Broadcast to overlay
-        server.publish("overlay", JSON.stringify({
-          type: "BRACKET_UPDATE",
-          data: bracket
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: bracket,
+          }),
+        );
 
         console.log(`🏆 Bracket created: ${name} with ${teams.length} teams`);
         return Response.json({ success: true, bracket }, { headers });
@@ -290,17 +342,24 @@ const server = Bun.serve({
           return new Response("matchId required", { status: 400 });
         }
 
-        const match = bracketManager.updateMatch(matchId, { scoreA, scoreB, winner });
+        const match = bracketManager.updateMatch(matchId, {
+          scoreA,
+          scoreB,
+          winner,
+        });
         if (!match) {
           return new Response("Match not found", { status: 404 });
         }
 
         // Get full bracket state and broadcast
         const bracket = bracketManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "BRACKET_UPDATE",
-          data: bracket
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: bracket,
+          }),
+        );
 
         console.log(`📊 Match updated: ${matchId}`);
         return Response.json({ success: true, match, bracket }, { headers });
@@ -316,8 +375,10 @@ const server = Bun.serve({
         const body = await req.json();
         const { matchId, winner } = body;
 
-        if (!matchId || !winner || (winner !== 'A' && winner !== 'B')) {
-          return new Response("matchId and winner (A/B) required", { status: 400 });
+        if (!matchId || !winner || (winner !== "A" && winner !== "B")) {
+          return new Response("matchId and winner (A/B) required", {
+            status: 400,
+          });
         }
 
         const match = bracketManager.setMatchWinner(matchId, winner);
@@ -327,10 +388,13 @@ const server = Bun.serve({
 
         // Broadcast
         const bracket = bracketManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "BRACKET_UPDATE",
-          data: bracket
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: bracket,
+          }),
+        );
 
         console.log(`🏆 Winner set: ${matchId} -> ${winner}`);
         return Response.json({ success: true, match, bracket }, { headers });
@@ -347,7 +411,9 @@ const server = Bun.serve({
         const { matchId, roundName } = body;
 
         if (!matchId || !roundName) {
-          return new Response("matchId and roundName required", { status: 400 });
+          return new Response("matchId and roundName required", {
+            status: 400,
+          });
         }
 
         const match = bracketManager.updateRoundTitle(matchId, roundName);
@@ -357,10 +423,13 @@ const server = Bun.serve({
 
         // Broadcast
         const bracket = bracketManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "BRACKET_UPDATE",
-          data: bracket
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: bracket,
+          }),
+        );
 
         return Response.json({ success: true, match }, { headers });
       } catch (err) {
@@ -374,10 +443,13 @@ const server = Bun.serve({
         bracketManager.resetBracket();
 
         // Broadcast reset
-        server.publish("overlay", JSON.stringify({
-          type: "BRACKET_UPDATE",
-          data: null
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: null,
+          }),
+        );
 
         console.log("🗑️ Bracket reset");
         return Response.json({ success: true }, { headers });
@@ -396,24 +468,30 @@ const server = Bun.serve({
         }
 
         // Check if any scoring has started (any score > 0)
-        const scoringStarted = bracket.matches.some((m: any) =>
-          (m.scoreA && m.scoreA > 0) || (m.scoreB && m.scoreB > 0) || m.winner
+        const scoringStarted = bracket.matches.some(
+          (m: any) =>
+            (m.scoreA && m.scoreA > 0) ||
+            (m.scoreB && m.scoreB > 0) ||
+            m.winner,
         );
 
         if (scoringStarted) {
-          return Response.json({
-            success: false,
-            locked: true,
-            message: "Cannot shuffle after scoring has started"
-          }, { status: 400, headers });
+          return Response.json(
+            {
+              success: false,
+              locked: true,
+              message: "Cannot shuffle after scoring has started",
+            },
+            { status: 400, headers },
+          );
         }
 
         // Get all teams from round 1 matches
         const round1Matches = bracket.matches.filter((m: any) => m.round === 1);
         const teams: any[] = [];
         round1Matches.forEach((m: any) => {
-          if (m.teamA && m.teamA.name !== 'BYE') teams.push(m.teamA);
-          if (m.teamB && m.teamB.name !== 'BYE') teams.push(m.teamB);
+          if (m.teamA && m.teamA.name !== "BYE") teams.push(m.teamA);
+          if (m.teamB && m.teamB.name !== "BYE") teams.push(m.teamB);
         });
 
         // Fisher-Yates shuffle
@@ -426,18 +504,24 @@ const server = Bun.serve({
         const newBracket = bracketManager.createBracket(
           bracket.name,
           bracket.type,
-          teams.map(t => t.name),
-          teams
+          teams.map((t) => t.name),
+          teams,
         );
 
         // Broadcast update
-        server.publish("overlay", JSON.stringify({
-          type: "BRACKET_UPDATE",
-          data: newBracket
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: newBracket,
+          }),
+        );
 
         console.log("🔀 Bracket teams shuffled");
-        return Response.json({ success: true, bracket: newBracket }, { headers });
+        return Response.json(
+          { success: true, bracket: newBracket },
+          { headers },
+        );
       } catch (err) {
         console.error("Shuffle bracket error detail:", err);
         return new Response("Shuffle bracket failed", { status: 500 });
@@ -452,13 +536,24 @@ const server = Bun.serve({
         const side = formData.get("side") as string;
 
         if (!logoFile || !side || (side !== "A" && side !== "B")) {
-          return new Response("Invalid request: logo and side required", { status: 400 });
+          return new Response("Invalid request: logo and side required", {
+            status: 400,
+          });
         }
 
         // Validate file type
-        const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml", "image/gif"];
+        const allowedTypes = [
+          "image/png",
+          "image/jpeg",
+          "image/webp",
+          "image/svg+xml",
+          "image/gif",
+        ];
         if (!allowedTypes.includes(logoFile.type)) {
-          return new Response("Invalid file type. Allowed: PNG, JPG, WEBP, SVG, GIF", { status: 400 });
+          return new Response(
+            "Invalid file type. Allowed: PNG, JPG, WEBP, SVG, GIF",
+            { status: 400 },
+          );
         }
 
         // Validate file size (max 2MB)
@@ -478,14 +573,20 @@ const server = Bun.serve({
 
         // Update state with logo path and version
         const logoPath = `/logos/${filename}`;
-        stateManager.updateTeam(side as "A" | "B", { logo: logoPath, logoVersion: Date.now() });
+        stateManager.updateTeam(side as "A" | "B", {
+          logo: logoPath,
+          logoVersion: Date.now(),
+        });
 
         // Broadcast
         const newState = stateManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "STATE_UPDATE",
-          data: newState
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
 
         return Response.json({ success: true, logoPath }, { headers });
       } catch (err) {
@@ -500,7 +601,7 @@ const server = Bun.serve({
     if (url.pathname === "/api/templates" && req.method === "GET") {
       try {
         const file = Bun.file("data/templates.json");
-        const templates = await file.exists() ? await file.json() : [];
+        const templates = (await file.exists()) ? await file.json() : [];
         return Response.json(templates, { headers });
       } catch (err) {
         return Response.json([], { headers });
@@ -518,7 +619,7 @@ const server = Bun.serve({
         }
 
         const file = Bun.file("data/templates.json");
-        const templates = await file.exists() ? await file.json() : [];
+        const templates = (await file.exists()) ? await file.json() : [];
 
         const newTemplate = {
           id: `tpl_${Date.now()}`,
@@ -526,20 +627,29 @@ const server = Bun.serve({
           color: color || "#3b82f6",
           logo: logo || "",
           players: players || [],
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
 
         templates.push(newTemplate);
-        await Bun.write("data/templates.json", JSON.stringify(templates, null, 2));
+        await Bun.write(
+          "data/templates.json",
+          JSON.stringify(templates, null, 2),
+        );
 
         // Broadcast template update to all clients
-        server.publish("overlay", JSON.stringify({
-          type: "TEMPLATES_UPDATE",
-          data: templates
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "TEMPLATES_UPDATE",
+            data: templates,
+          }),
+        );
 
         console.log(`📁 Template created: ${name}`);
-        return Response.json({ success: true, template: newTemplate }, { headers });
+        return Response.json(
+          { success: true, template: newTemplate },
+          { headers },
+        );
       } catch (err) {
         console.error("Save template error:", err);
         return new Response("Save template failed", { status: 500 });
@@ -547,20 +657,30 @@ const server = Bun.serve({
     }
 
     // DELETE /api/templates/:id - Delete template
-    if (url.pathname.startsWith("/api/templates/") && url.pathname !== "/api/templates/apply" && req.method === "DELETE") {
+    if (
+      url.pathname.startsWith("/api/templates/") &&
+      url.pathname !== "/api/templates/apply" &&
+      req.method === "DELETE"
+    ) {
       try {
         const id = url.pathname.split("/").pop();
         const file = Bun.file("data/templates.json");
-        let templates = await file.exists() ? await file.json() : [];
+        let templates = (await file.exists()) ? await file.json() : [];
 
         templates = templates.filter((t: any) => t.id !== id);
-        await Bun.write("data/templates.json", JSON.stringify(templates, null, 2));
+        await Bun.write(
+          "data/templates.json",
+          JSON.stringify(templates, null, 2),
+        );
 
         // Broadcast template update to all clients
-        server.publish("overlay", JSON.stringify({
-          type: "TEMPLATES_UPDATE",
-          data: templates
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "TEMPLATES_UPDATE",
+            data: templates,
+          }),
+        );
 
         console.log(`🗑️ Template deleted: ${id}`);
         return Response.json({ success: true }, { headers });
@@ -570,14 +690,18 @@ const server = Bun.serve({
     }
 
     // PUT /api/templates/:id - Update template
-    if (url.pathname.startsWith("/api/templates/") && url.pathname !== "/api/templates/apply" && req.method === "PUT") {
+    if (
+      url.pathname.startsWith("/api/templates/") &&
+      url.pathname !== "/api/templates/apply" &&
+      req.method === "PUT"
+    ) {
       try {
         const id = url.pathname.split("/").pop();
         const body = await req.json();
         const { name, color, logo, players } = body;
 
         const file = Bun.file("data/templates.json");
-        let templates = await file.exists() ? await file.json() : [];
+        let templates = (await file.exists()) ? await file.json() : [];
 
         const index = templates.findIndex((t: any) => t.id === id);
         if (index === -1) {
@@ -590,19 +714,28 @@ const server = Bun.serve({
           color: color || templates[index].color,
           logo: logo !== undefined ? logo : templates[index].logo,
           players: players || templates[index].players,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
 
-        await Bun.write("data/templates.json", JSON.stringify(templates, null, 2));
+        await Bun.write(
+          "data/templates.json",
+          JSON.stringify(templates, null, 2),
+        );
 
         // Broadcast template update to all clients
-        server.publish("overlay", JSON.stringify({
-          type: "TEMPLATES_UPDATE",
-          data: templates
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "TEMPLATES_UPDATE",
+            data: templates,
+          }),
+        );
 
         console.log(`📝 Template updated: ${templates[index].name}`);
-        return Response.json({ success: true, template: templates[index] }, { headers });
+        return Response.json(
+          { success: true, template: templates[index] },
+          { headers },
+        );
       } catch (err) {
         console.error("Update template error:", err);
         return new Response("Update template failed", { status: 500 });
@@ -616,11 +749,13 @@ const server = Bun.serve({
         const { templateId, side } = body;
 
         if (!templateId || !side || (side !== "A" && side !== "B")) {
-          return new Response("templateId and side (A/B) required", { status: 400 });
+          return new Response("templateId and side (A/B) required", {
+            status: 400,
+          });
         }
 
         const file = Bun.file("data/templates.json");
-        const templates = await file.exists() ? await file.json() : [];
+        const templates = (await file.exists()) ? await file.json() : [];
         const template = templates.find((t: any) => t.id === templateId);
 
         if (!template) {
@@ -631,7 +766,7 @@ const server = Bun.serve({
         stateManager.updateTeam(side, {
           name: template.name,
           color: template.color,
-          logo: template.logo
+          logo: template.logo,
         });
 
         // Apply players
@@ -643,10 +778,13 @@ const server = Bun.serve({
 
         // Broadcast
         const newState = stateManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "STATE_UPDATE",
-          data: newState
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
 
         return Response.json({ success: true }, { headers });
       } catch (err) {
@@ -681,12 +819,15 @@ const server = Bun.serve({
           const transpiler = new Bun.Transpiler({ loader: "ts" });
           const jsCode = transpiler.transformSync(tsCode);
           return new Response(jsCode, {
-            headers: { "Content-Type": "text/javascript" }
+            headers: { "Content-Type": "text/javascript" },
           });
         }
         // Simple MIME type handling for JS/CSS
-        const type = url.pathname.endsWith(".css") ? "text/css" :
-          url.pathname.endsWith(".js") ? "text/javascript" : "text/plain";
+        const type = url.pathname.endsWith(".css")
+          ? "text/css"
+          : url.pathname.endsWith(".js")
+            ? "text/javascript"
+            : "text/plain";
         return new Response(srcFile, { headers: { "Content-Type": type } });
       }
     }

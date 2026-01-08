@@ -213,10 +213,10 @@ function renderUI(): void {
 
   // Update panel titles based on swap state
   const teamATitle = document.querySelector(
-    "#teamA-section .team-panel__title"
+    "#teamA-section .team-panel__title",
   );
   const teamBTitle = document.querySelector(
-    "#teamB-section .team-panel__title"
+    "#teamB-section .team-panel__title",
   );
 
   if (teamATitle) {
@@ -228,10 +228,10 @@ function renderUI(): void {
 
   // Update button labels and colors based on swap state
   const teamABtn = document.querySelector(
-    '#teamA-section button[onclick*="saveTeam"]'
+    '#teamA-section button[onclick*="saveTeam"]',
   ) as HTMLButtonElement;
   const teamBBtn = document.querySelector(
-    '#teamB-section button[onclick*="saveTeam"]'
+    '#teamB-section button[onclick*="saveTeam"]',
   ) as HTMLButtonElement;
 
   if (teamABtn) {
@@ -255,7 +255,7 @@ function renderUI(): void {
       "bg-blue-600",
       "hover:bg-blue-500",
       "bg-red-600",
-      "hover:bg-red-500"
+      "hover:bg-red-500",
     );
     teamABtn.style.backgroundColor = btnColor;
 
@@ -285,7 +285,7 @@ function renderUI(): void {
       "bg-blue-600",
       "hover:bg-blue-500",
       "bg-red-600",
-      "hover:bg-red-500"
+      "hover:bg-red-500",
     );
     teamBBtn.style.backgroundColor = btnColor;
 
@@ -399,7 +399,7 @@ function applyThemeColor(side: "A" | "B", color: string): void {
   if (rosterList) {
     // renderPlayers generates elements with class 'player-card'
     const items = rosterList.querySelectorAll(
-      ".player-card"
+      ".player-card",
     ) as NodeListOf<HTMLElement>;
     items.forEach((item) => {
       item.style.borderLeftColor = color;
@@ -421,7 +421,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 function renderPlayers(
   side: "A" | "B",
   players: Player[],
-  container: HTMLDivElement
+  container: HTMLDivElement,
 ): void {
   const sideClass = side === "A" ? "player-card--a" : "player-card--b";
 
@@ -451,15 +451,15 @@ function renderPlayers(
       <!-- Lane/Role -->
       <div class="player-card__role ${player.hero ? "" : "disabled"}" 
            onclick="handleLaneClick('${side}', ${player.slot}, ${
-        player.hero ? "true" : "false"
-      })"
+             player.hero ? "true" : "false"
+           })"
            title="${
              player.lane || (player.hero ? "Select Lane" : "Select Hero first")
            }">
         ${
           laneImgPath
             ? `<img src="${laneImgPath}" alt="${escapeHtml(
-                player.lane || ""
+                player.lane || "",
               )}">`
             : '<i class="ph-duotone ph-map-pin"></i>'
         }
@@ -482,7 +482,7 @@ function renderPlayers(
         ${
           heroImgPath
             ? `<img src="${heroImgPath}" alt="${escapeHtml(
-                player.hero || ""
+                player.hero || "",
               )}">`
             : '<i class="ph-duotone ph-game-controller"></i>'
         }
@@ -567,7 +567,7 @@ async function swapSides(): Promise<void> {
       console.log(
         `✅ Sides swapped: ${
           result.swapped ? "Team A → Right, Team B → Left" : "Normal"
-        }`
+        }`,
       );
     } else {
       console.error("❌ Swap failed");
@@ -608,7 +608,7 @@ function previewTransitionLogo(input: HTMLInputElement): void {
 
   transitionLogoFile = file;
   const img = document.getElementById(
-    "transition-logo-img"
+    "transition-logo-img",
   ) as HTMLImageElement;
   const placeholder = document.getElementById("transition-logo-placeholder");
   const status = document.getElementById("transition-logo-status");
@@ -682,13 +682,13 @@ async function uploadTransitionLogo(): Promise<void> {
 
 // Combined function: select and upload in one step
 async function uploadTransitionLogoFromInput(
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
 
   const img = document.getElementById(
-    "transition-logo-img"
+    "transition-logo-img",
   ) as HTMLImageElement;
   const placeholder = document.getElementById("transition-logo-placeholder");
   const status = document.getElementById("transition-logo-status");
@@ -738,10 +738,10 @@ async function loadTransitionLogo(): Promise<void> {
       const result = await response.json();
       if (result.path) {
         const img = document.getElementById(
-          "transition-logo-img"
+          "transition-logo-img",
         ) as HTMLImageElement;
         const placeholder = document.getElementById(
-          "transition-logo-placeholder"
+          "transition-logo-placeholder",
         );
         if (img && placeholder) {
           img.src = result.path;
@@ -803,7 +803,7 @@ async function updateLowerThird(): Promise<void> {
 // Upload logo for specific slot
 async function uploadSlotLogo(
   slotId: number,
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
@@ -817,7 +817,7 @@ async function uploadSlotLogo(
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
 
     if (response.ok) {
@@ -839,10 +839,10 @@ async function loadLowerThird(): Promise<void> {
 
       // Update UI from state
       const enabledEl = document.getElementById(
-        "lower-third-enabled"
+        "lower-third-enabled",
       ) as HTMLInputElement;
       const titleEl = document.getElementById(
-        "lower-third-title"
+        "lower-third-title",
       ) as HTMLInputElement;
 
       if (enabledEl) enabledEl.checked = state.enabled;
@@ -851,15 +851,15 @@ async function loadLowerThird(): Promise<void> {
       state.slots?.forEach(
         (slot: { id: number; enabled: boolean; text: string }) => {
           const slotEnabled = document.getElementById(
-            `slot-${slot.id}-enabled`
+            `slot-${slot.id}-enabled`,
           ) as HTMLInputElement;
           const slotText = document.getElementById(
-            `slot-${slot.id}-text`
+            `slot-${slot.id}-text`,
           ) as HTMLInputElement;
 
           if (slotEnabled) slotEnabled.checked = slot.enabled;
           if (slotText) slotText.value = slot.text || "";
-        }
+        },
       );
     }
   } catch (err) {
@@ -1124,10 +1124,10 @@ function loadPanelData(panelType: string): void {
 
     setTimeout(() => {
       const eventInput = document.getElementById(
-        "event-name"
+        "event-name",
       ) as HTMLInputElement;
       const colorInput = document.getElementById(
-        "transition-color"
+        "transition-color",
       ) as HTMLInputElement;
       const colorHex = document.getElementById("transition-color-hex");
       const altInput = document.getElementById("alt-color") as HTMLInputElement;
@@ -1187,7 +1187,7 @@ function updateSwapUI(swapped: boolean): void {
 async function updatePlayer(
   side: "A" | "B",
   slot: number,
-  name: string
+  name: string,
 ): Promise<void> {
   const success = await postAPI("/api/player/update", {
     side,
@@ -1204,7 +1204,7 @@ async function updatePlayer(
 
 async function handleLogoSelect(
   side: "A" | "B",
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
@@ -1410,7 +1410,7 @@ function drawCrop(): void {
     cropOffsetX,
     cropOffsetY,
     cropImage.width * cropScale,
-    cropImage.height * cropScale
+    cropImage.height * cropScale,
   );
 
   // Draw Overlay: Semi-transparent dark outside the circle
@@ -1427,7 +1427,7 @@ function drawCrop(): void {
     cropCanvas.width / 2,
     0,
     Math.PI * 2,
-    true
+    true,
   );
   cropCtx.fill();
 
@@ -1440,7 +1440,7 @@ function drawCrop(): void {
     cropCanvas.height / 2,
     cropCanvas.width / 2 - 2,
     0,
-    Math.PI * 2
+    Math.PI * 2,
   );
   cropCtx.stroke();
 }
@@ -1518,7 +1518,7 @@ async function pickScreenColor(side: "A" | "B"): Promise<void> {
     }
   } else {
     alert(
-      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)"
+      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)",
     );
   }
 }
@@ -1544,7 +1544,7 @@ async function pickLogoColor(side: "A" | "B"): Promise<void> {
 function openPixelPickerModal(
   actualSide: "A" | "B",
   panelSide: "A" | "B",
-  imageSrc: string
+  imageSrc: string,
 ): void {
   activePickerSide = actualSide;
   activePickerPanelSide = panelSide;
@@ -1715,7 +1715,7 @@ function rgbToHex(r: number, g: number, b: number): string {
 function applyColor(
   actualSide: "A" | "B",
   color: string,
-  panelSide?: "A" | "B"
+  panelSide?: "A" | "B",
 ): void {
   // panelSide is the UI panel, actualSide is the real team (after swap adjustment)
   // If panelSide not provided, assume no swap adjustment needed for UI
@@ -1734,7 +1734,7 @@ function applyColor(
   }
 
   console.log(
-    `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`
+    `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`,
   );
 }
 
@@ -2132,7 +2132,7 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
                     width: 100%;
                 ">${hero}</span>
             </button>
-        `
+        `,
       )
       .join("");
 
@@ -2204,7 +2204,7 @@ async function selectHero(heroName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`
+      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`,
     );
   } else {
     console.error("❌ Failed to update hero");
@@ -2336,7 +2336,7 @@ function openLanePicker(side: "A" | "B", slot: number): void {
                 }</div>
             </div>
         </button>
-    `
+    `,
   ).join("");
 
   // Close button event
@@ -2392,7 +2392,7 @@ async function selectLane(laneName: string): Promise<void> {
     console.log(
       `✅ Lane ${
         laneName || "cleared"
-      } for Team ${lanePickerSide} Player ${lanePickerSlot}`
+      } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
     );
   } else {
     console.error("❌ Failed to update lane");
@@ -2410,7 +2410,7 @@ async function selectLane(laneName: string): Promise<void> {
 function handleLaneClick(
   side: "A" | "B",
   slot: number,
-  hasHero: boolean
+  hasHero: boolean,
 ): void {
   if (hasHero) {
     openLanePicker(side, slot);
@@ -2420,7 +2420,7 @@ function handleLaneClick(
       (window as any).showNotification(
         "กรุณาเลือกตัวละครก่อน",
         "เลือก Hero ก่อนถึงจะเลือกตำแหน่งเลนได้",
-        "warning"
+        "warning",
       );
     }
   }
@@ -2460,10 +2460,10 @@ async function fetchTemplates(): Promise<void> {
 
 function renderTemplateDropdowns(): void {
   const teamASelect = document.getElementById(
-    "teamA-template"
+    "teamA-template",
   ) as HTMLSelectElement;
   const teamBSelect = document.getElementById(
-    "teamB-template"
+    "teamB-template",
   ) as HTMLSelectElement;
 
   const optionsHtml = templates
@@ -2612,15 +2612,14 @@ function openTemplateManager(): void {
 
   // Left: Create New Template Form
   const createSection = document.createElement("div");
+  createSection.classList.add("list-selection");
   createSection.style.cssText = `
         flex: 1;
-        background: #111827;
-        border-radius: 12px;
         padding: 16px;
         overflow-y: auto;
     `;
   createSection.innerHTML = `
-        <h3 style="color: #a855f7; font-weight: bold; margin-bottom: 12px;">Create New Template</h3>
+        <h3>Create New Template</h3>
         <div style="margin-bottom: 12px;">
             <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">TEAM NAME *</label>
             <input type="text" id="tpl-name" placeholder="e.g. T1, LOUD, Gen.G" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white;">
@@ -2703,7 +2702,7 @@ function openTemplateManager(): void {
                         }')"><i class="ph ph-backspace"></i></button>
                     </div>
                 </div>
-            `
+            `,
                     )
                     .join("")
             }
@@ -2728,7 +2727,7 @@ function openTemplateManager(): void {
   // Color sync
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
   const colorText = document.getElementById(
-    "tpl-color-text"
+    "tpl-color-text",
   ) as HTMLInputElement;
   colorInput.oninput = () => {
     colorText.value = colorInput.value;
@@ -2886,7 +2885,7 @@ function loadTemplateToForm(id: string): void {
   const nameInput = document.getElementById("tpl-name") as HTMLInputElement;
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
   const colorText = document.getElementById(
-    "tpl-color-text"
+    "tpl-color-text",
   ) as HTMLInputElement;
 
   if (nameInput) nameInput.value = template.name;
@@ -2896,7 +2895,7 @@ function loadTemplateToForm(id: string): void {
   // Populate players
   for (let i = 1; i <= 5; i++) {
     const playerInput = document.getElementById(
-      `tpl-p${i}`
+      `tpl-p${i}`,
     ) as HTMLInputElement;
     const player = template.players?.find((p) => p.slot === i);
     if (playerInput) {
@@ -2958,7 +2957,7 @@ let draggedPlayer: {
 
 function handleDragStart(event: DragEvent): void {
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!card) return;
 
@@ -2986,7 +2985,7 @@ function handleDragStart(event: DragEvent): void {
 
 function handleDragEnd(event: DragEvent): void {
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (card) {
     card.classList.remove("dragging");
@@ -3000,7 +2999,7 @@ function handleDragEnd(event: DragEvent): void {
 function handleDragOver(event: DragEvent): void {
   event.preventDefault();
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!card || !draggedPlayer) return;
 
@@ -3013,7 +3012,7 @@ function handleDragOver(event: DragEvent): void {
 async function handleDrop(event: DragEvent): Promise<void> {
   event.preventDefault();
   const targetCard = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!targetCard || !draggedPlayer) return;
 
@@ -3035,7 +3034,7 @@ async function swapPlayers(
   side: "A" | "B",
   slot1: number,
   slot2: number,
-  mode: "full" | "hero" = "full"
+  mode: "full" | "hero" = "full",
 ): Promise<void> {
   if (!currentState) return;
 
@@ -3062,7 +3061,7 @@ async function swapPlayers(
       (window as any).showNotification(
         "Heroes Swapped",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
       );
     }
   } else {
@@ -3102,7 +3101,7 @@ async function swapPlayers(
       (window as any).showNotification(
         "Players Reordered",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
       );
     }
   }
@@ -3142,7 +3141,7 @@ async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
       (window as any).showNotification(
         "Captain set",
         `Player ${slot} is now captain`,
-        "success"
+        "success",
       );
     } else {
       (window as any).showNotification("Captain removed", "", "info");

@@ -1,540 +1,559 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hero Roster - Team A</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        @font-face {
-            font-family: 'Rajdhani';
-            src: local('Rajdhani Bold'), local('Rajdhani-Bold'), url('https://fonts.gstatic.com/s/rajdhani/v15/LDI2apCSOBg7S-QT7pb0PPE.woff2') format('woff2');
-            font-weight: 700;
+      @font-face {
+        font-family: "Rajdhani";
+        src:
+          local("Rajdhani Bold"),
+          local("Rajdhani-Bold"),
+          url("https://fonts.gstatic.com/s/rajdhani/v15/LDI2apCSOBg7S-QT7pb0PPE.woff2")
+            format("woff2");
+        font-weight: 700;
+      }
+
+      :root {
+        --team-color: #3b82f6;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        margin: 0px auto;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0);
+        font-family: "Rajdhani", sans-serif;
+        color: white;
+      }
+
+      /* Animations */
+      @keyframes herowipe {
+        0% {
+          clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
         }
 
-        :root {
-            --team-color: #3b82f6;
+        100% {
+          clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+        }
+      }
+
+      @keyframes topmove {
+        0% {
+          top: -150px;
         }
 
-        body {
-            width: 1920px;
-            height: 1080px;
-            margin: 0px auto;
-            overflow: hidden;
-            background-color: rgba(0, 0, 0, 0);
-            font-family: 'Rajdhani', sans-serif;
-            color: white;
+        100% {
+          top: 30px;
+        }
+      }
+
+      @keyframes roleslide {
+        0% {
+          clip-path: polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%);
         }
 
-        /* Animations */
-        @keyframes herowipe {
-            0% {
-                clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
-            }
+        100% {
+          clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+        }
+      }
 
-            100% {
-                clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-            }
+      @keyframes heroRise {
+        0% {
+          transform: translateY(30%);
+          opacity: 0;
         }
 
-        @keyframes topmove {
-            0% {
-                top: -150px;
-            }
-
-            100% {
-                top: 30px;
-            }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
         }
+      }
 
-        @keyframes roleslide {
-            0% {
-                clip-path: polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%);
-            }
+      /* Top Header */
+      .top {
+        position: absolute;
+        top: 30px;
+        left: 230px;
+        width: 1453px;
+        height: 132px;
+        border-style: solid;
+        border-width: 0px 0px 0px 8px;
+        border-color: #333333 #333333 #333333 var(--team-color);
+        clip-path: polygon(0% 0, 100% 0%, 100% 100%, 0% 100%);
+        /* Dark Glass Gradient */
+        background: linear-gradient(
+          90deg,
+          rgba(15, 20, 30, 0.95) 0%,
+          rgba(30, 35, 45, 0.9) 100%
+        );
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        animation: topmove 1.34s backwards;
+        animation-delay: 0.5s;
+      }
 
-            100% {
-                clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-            }
-        }
+      .logo {
+        width: 140px;
+        height: 120px;
+        position: absolute;
+        top: 6px;
+        left: 30px;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+      }
 
-        @keyframes heroRise {
-            0% {
-                transform: translateY(30%);
-                opacity: 0;
-            }
+      .teamname {
+        margin: 0;
+        position: absolute;
+        top: 25px;
+        left: 200px;
+        font-family: "Rajdhani";
+        text-transform: uppercase;
+        font-size: 5em;
+        font-weight: 700;
+        line-height: 1;
+        color: #fff;
+        text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+      }
 
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
+      /* Players Grid */
+      .players-grid {
+        position: absolute;
+        top: 200px;
+        left: 230px;
+        /* Align strictly with top bar */
+        display: flex;
+        gap: 10px;
+      }
 
-        /* Top Header */
-        .top {
-            position: absolute;
-            top: 30px;
-            left: 230px;
-            width: 1453px;
-            height: 132px;
-            border-style: solid;
-            border-width: 0px 0px 0px 8px;
-            border-color: #333333 #333333 #333333 var(--team-color);
-            clip-path: polygon(0% 0, 100% 0%, 100% 100%, 0% 100%);
-            /* Dark Glass Gradient */
-            background: linear-gradient(90deg, rgba(15, 20, 30, 0.95) 0%, rgba(30, 35, 45, 0.9) 100%);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            animation: topmove 1.34s backwards;
-            animation-delay: 0.5s;
-        }
+      .player-container {
+        width: 290px;
+        /* Fits 5 cards perfectly within ~1450px */
+        display: flex;
+        flex-direction: column;
+        animation: herowipe 1.5s backwards;
+        position: relative;
+      }
 
-        .logo {
-            width: 140px;
-            height: 120px;
-            position: absolute;
-            top: 6px;
-            left: 30px;
-            background-position: center;
-            background-size: contain;
-            background-repeat: no-repeat;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
-        }
+      .hero-image {
+        width: 100%;
+        height: 550px;
+        clip-path: polygon(0% 0, 100% 0%, 100% 100%, 0% 100%);
+        background: rgba(0, 0, 0, 0.4);
+        /* Placeholder darkening */
+        position: relative;
+        overflow: hidden;
+      }
 
-        .teamname {
-            margin: 0;
-            position: absolute;
-            top: 25px;
-            left: 200px;
-            font-family: 'Rajdhani';
-            text-transform: uppercase;
-            font-size: 5em;
-            font-weight: 700;
-            line-height: 1;
-            color: #fff;
-            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
-        }
+      .hero-image img {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150%;
+        height: auto;
+        min-height: 100%;
+        object-fit: cover;
+        object-position: center 15%;
+        transition: transform 0.5s ease;
+      }
 
-        /* Players Grid */
-        .players-grid {
-            position: absolute;
-            top: 200px;
-            left: 230px;
-            /* Align strictly with top bar */
-            display: flex;
-            gap: 10px;
-        }
+      /* Info Box */
+      .player-info {
+        height: 90px;
+        background: linear-gradient(
+          135deg,
+          rgba(20, 25, 35, 0.95),
+          rgba(10, 15, 20, 0.98)
+        );
+        border-style: solid;
+        border-width: 0px 0px 0px 6px;
+        border-color: #333 #333 #333 var(--team-color);
+        position: relative;
+        margin-top: -5px;
+        /* Overlap to prevent hairline gaps */
+        z-index: 2;
+      }
 
-        .player-container {
-            width: 290px;
-            /* Fits 5 cards perfectly within ~1450px */
-            display: flex;
-            flex-direction: column;
-            animation: herowipe 1.5s backwards;
-            position: relative;
-        }
+      /* Role Icon Box */
+      .player-role {
+        position: absolute;
+        top: -60px;
+        right: 0px;
+        width: 60px;
+        height: 60px;
+        border-style: solid;
+        border-width: 0px 0px 0px 6px;
+        /* Left accent border */
+        border-color: var(--team-color);
+        background-color: #111;
+        animation: roleslide 0.5s backwards;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-        .hero-image {
-            width: 100%;
-            height: 550px;
-            clip-path: polygon(0% 0, 100% 0%, 100% 100%, 0% 100%);
-            background: rgba(0, 0, 0, 0.4);
-            /* Placeholder darkening */
-            position: relative;
-            overflow: hidden;
-        }
+      .role-icon {
+        width: 70%;
+        height: 70%;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        /* Filter removed for original color */
+        /* filter: invert(1) brightness(2); */
+      }
 
-        .hero-image img {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150%;
-            height: auto;
-            min-height: 100%;
-            object-fit: cover;
-            object-position: center 15%;
-            transition: transform 0.5s ease;
-        }
+      /* Text Typography */
+      .battletag {
+        position: absolute;
+        left: 15px;
+        top: 15px;
+        font-family: "Rajdhani";
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 2.2em;
+        line-height: 1;
+        color: #fff;
 
-        /* Info Box */
-        .player-info {
-            height: 90px;
-            background: linear-gradient(135deg, rgba(20, 25, 35, 0.95), rgba(10, 15, 20, 0.98));
-            border-style: solid;
-            border-width: 0px 0px 0px 6px;
-            border-color: #333 #333 #333 var(--team-color);
-            position: relative;
-            margin-top: -5px;
-            /* Overlap to prevent hairline gaps */
-            z-index: 2;
-        }
+        /* Prevention of overlap */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 240px;
+      }
 
-        /* Role Icon Box */
-        .player-role {
-            position: absolute;
-            top: -60px;
-            right: 0px;
-            width: 60px;
-            height: 60px;
-            border-style: solid;
-            border-width: 0px 0px 0px 6px;
-            /* Left accent border */
-            border-color: var(--team-color);
-            background-color: #111;
-            animation: roleslide 0.5s backwards;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+      .fullname {
+        position: absolute;
+        left: 15px;
+        bottom: 12px;
+        /* Stacked below */
+        font-family: "Rajdhani";
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 1.4em;
+        color: var(--team-color);
+        /* Hero name in team color */
+        letter-spacing: 1px;
+      }
 
-        .role-icon {
-            width: 70%;
-            height: 70%;
-            background-position: center;
-            background-size: contain;
-            background-repeat: no-repeat;
-            /* Filter removed for original color */
-            /* filter: invert(1) brightness(2); */
-        }
-
-        /* Text Typography */
-        .battletag {
-            position: absolute;
-            left: 15px;
-            top: 15px;
-            font-family: 'Rajdhani';
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 2.2em;
-            line-height: 1;
-            color: #fff;
-
-            /* Prevention of overlap */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 240px;
-        }
-
-        .fullname {
-            position: absolute;
-            left: 15px;
-            bottom: 12px;
-            /* Stacked below */
-            font-family: 'Rajdhani';
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 1.4em;
-            color: var(--team-color);
-            /* Hero name in team color */
-            letter-spacing: 1px;
-        }
-
-        /* Placeholder Pattern */
-        .no-hero {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.1);
-            font-size: 2em;
-            font-weight: bold;
-            letter-spacing: 2px;
-            background: repeating-linear-gradient(45deg,
-                    rgba(255, 255, 255, 0.03),
-                    rgba(255, 255, 255, 0.03) 10px,
-                    rgba(255, 255, 255, 0.05) 10px,
-                    rgba(255, 255, 255, 0.05) 20px);
-        }
+      /* Placeholder Pattern */
+      .no-hero {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.1);
+        font-size: 2em;
+        font-weight: bold;
+        letter-spacing: 2px;
+        background: repeating-linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(255, 255, 255, 0.03) 10px,
+          rgba(255, 255, 255, 0.05) 10px,
+          rgba(255, 255, 255, 0.05) 20px
+        );
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="top">
-        <div class="logo" id="team-logo"></div>
-        <div class="teamname" id="team-name">TEAM A</div>
+      <div class="logo" id="team-logo"></div>
+      <div class="teamname" id="team-name">TEAM A</div>
     </div>
 
     <div class="players-grid" id="players-container"></div>
 
     <script>
-        const WS_URL = `ws://${window.location.host}`;
-        const TEAM_SIDE = 'A';
-        let ws = null;
-        let currentState = null;
+      const WS_URL = `ws://${window.location.host}`;
+      const TEAM_SIDE = "A";
+      let ws = null;
+      let currentState = null;
 
-        // --- HERO MAPPING ---
-        // --- HERO MAPPING ---
-        const HERO_IMAGE_MAP = {};
+      // --- HERO MAPPING ---
+      // --- HERO MAPPING ---
+      const HERO_IMAGE_MAP = {};
 
-        // --- HERO POSITION MAPPING ---
-        // Defines object-position for heroes based on their splash art composition
-        const HERO_POSITION_MAP = {
-            // Right-positioned heroes (face/model on right side of splash art)
-            'aleister': '75% 15%',
-            "d'arcy": '75% 15%',
-            'darcy': '75% 15%',
-            'florentino': '55% 15%',
-            'lu bu': '70% 15%',
-            'lu_bu': '70% 15%',
-            'lubu': '70% 15%',
-            'zephys': '65% 15%',
-            'kriknak': '25% 15%',  // Model on LEFT side
-            'butterfly': '70% 15%',
-            'quillen': '65% 15%',
-            'nakroth': '70% 15%',
-            'murad': '65% 15%',
-            'raz': '70% 15%',
-            'hayate': '65% 15%',
-            'laville': '65% 15%',
-            'fennik': '65% 15%',
-            'keera': '55% 15%',
-            'paine': '70% 15%',
-            'ryoma': '65% 15%',
-            'omen': '65% 15%',
-            'eland\'or': '65% 15%',
-            'elandor': '65% 15%',
-            'airi': '65% 15%',
-            'dextra': '85% 15%',
-            'liliana': '70% 15%',
-            'zanis': '85% 15%',
-            'kaine': '75% 15%',
-            'alice': '70% 15%',
-            'allain': '75% 15%',
-            'astrid': '70% 15%',
-            'capheny': '70% 15%',
-            'charlotte': '65% 15%',
-            'dirak': '75% 15%',
-            'errol': '70% 15%',
-            'ishar': '70% 15%',
-            'lorion': '75% 15%',
-            'riktor': '70% 15%',
-            'sinestrea': '55% 15%',
-            'sephera': '70% 15%',
-            'tachi': '75% 15%',
-            'tel\'annas': '65% 15%',
-            'telannas': '65% 15%',
-            'yena': '70% 15%',
-            'veres': '70% 15%',
-            'volkath': '75% 15%',
-            'superman': '70% 15%',
-            'the flash': '65% 15%',
-            'the_flash': '65% 15%',
-            'wonder woman': '65% 15%',
-            'wonder_woman': '65% 15%',
-            'ignis': '75% 15%',
-            'wukong': '75% 15%',
-            'arduin': '85% 15%',
-            'kahlii': '70% 15%',
-            'lauriel': '80% 15%',
+      // --- HERO POSITION MAPPING ---
+      // Defines object-position for heroes based on their splash art composition
+      const HERO_POSITION_MAP = {
+        // Right-positioned heroes (face/model on right side of splash art)
+        aleister: "75% 15%",
+        "d'arcy": "75% 15%",
+        darcy: "75% 15%",
+        florentino: "55% 15%",
+        "lu bu": "70% 15%",
+        lu_bu: "70% 15%",
+        lubu: "70% 15%",
+        zephys: "65% 15%",
+        kriknak: "25% 15%", // Model on LEFT side
+        butterfly: "70% 15%",
+        quillen: "65% 15%",
+        nakroth: "70% 15%",
+        murad: "65% 15%",
+        raz: "70% 15%",
+        hayate: "65% 15%",
+        laville: "65% 15%",
+        fennik: "65% 15%",
+        keera: "55% 15%",
+        paine: "70% 15%",
+        ryoma: "65% 15%",
+        omen: "65% 15%",
+        "eland'or": "65% 15%",
+        elandor: "65% 15%",
+        airi: "65% 15%",
+        dextra: "85% 15%",
+        liliana: "70% 15%",
+        zanis: "85% 15%",
+        kaine: "75% 15%",
+        alice: "70% 15%",
+        allain: "75% 15%",
+        astrid: "70% 15%",
+        capheny: "70% 15%",
+        charlotte: "65% 15%",
+        dirak: "75% 15%",
+        errol: "70% 15%",
+        ishar: "70% 15%",
+        lorion: "75% 15%",
+        riktor: "70% 15%",
+        sinestrea: "55% 15%",
+        sephera: "70% 15%",
+        tachi: "75% 15%",
+        "tel'annas": "65% 15%",
+        telannas: "65% 15%",
+        yena: "70% 15%",
+        veres: "70% 15%",
+        volkath: "75% 15%",
+        superman: "70% 15%",
+        "the flash": "65% 15%",
+        the_flash: "65% 15%",
+        "wonder woman": "65% 15%",
+        wonder_woman: "65% 15%",
+        ignis: "75% 15%",
+        wukong: "75% 15%",
+        arduin: "85% 15%",
+        kahlii: "70% 15%",
+        lauriel: "80% 15%",
 
-            // Left-positioned heroes (face/model on left side of splash art)
-            'violet': '30% 15%',
-            'yorn': '30% 15%',
-            'thane': '35% 15%',
-            'veera': '35% 15%',
-            'elsu': '30% 15%',
-            'lindis': '15% 15%',
-            'zuka': '35% 15%',
-            'annette': '35% 15%',
-            'arum': '30% 15%',
-            'krixi': '55% 15%',
-            'mina': '30% 15%',
-            'natalya': '35% 15%',
-            'wiro': '30% 15%',
-            'qi': '35% 15%',
-            'preyta': '35% 15%',
-            'aya': '25% 15%',
-            'ilumia': '30% 15%',
+        // Left-positioned heroes (face/model on left side of splash art)
+        violet: "30% 15%",
+        yorn: "30% 15%",
+        thane: "35% 15%",
+        veera: "35% 15%",
+        elsu: "30% 15%",
+        lindis: "15% 15%",
+        zuka: "35% 15%",
+        annette: "35% 15%",
+        arum: "30% 15%",
+        krixi: "55% 15%",
+        mina: "30% 15%",
+        natalya: "35% 15%",
+        wiro: "30% 15%",
+        qi: "35% 15%",
+        preyta: "35% 15%",
+        aya: "25% 15%",
+        ilumia: "30% 15%",
 
-            // Default center is 'center 15%' (handled by getHeroPosition)
+        // Default center is 'center 15%' (handled by getHeroPosition)
+      };
+
+      function getHeroPosition(heroName) {
+        if (!heroName) return "center 15%";
+        const key = heroName.toLowerCase().trim();
+        return HERO_POSITION_MAP[key] || "center 15%";
+      }
+
+      function getHeroImage(heroName) {
+        if (!heroName) return null;
+
+        // Format: "Lu Bu" -> "Lu_Bu"
+        // "D'Arcy" -> "D'Arcy" (Keep quotes if file has them)
+        // But strict matching from valid list: "D'Arcy.png", "Lu_Bu.png"
+
+        let formatted = heroName.trim();
+        // Capitalize first letter (just in case)
+        formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        // Replace spaces with underscores
+        formatted = formatted.replace(/\s+/g, "_");
+
+        return `/src/rov/${formatted}.png`;
+      }
+
+      function getLaneImage(laneName) {
+        if (!laneName) return null;
+        return `/lane/${laneName.toLowerCase()}.jpg`;
+      }
+
+      function connectWebSocket() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => console.log("✅ Connected");
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === "STATE_UPDATE" && msg.data) {
+              currentState = msg.data;
+              render();
+            }
+          } catch (e) {}
         };
+        ws.onclose = () => setTimeout(connectWebSocket, 3000);
+      }
 
-        function getHeroPosition(heroName) {
-            if (!heroName) return 'center 15%';
-            const key = heroName.toLowerCase().trim();
-            return HERO_POSITION_MAP[key] || 'center 15%';
+      function render() {
+        if (!currentState) return;
+        const team = currentState.teams[TEAM_SIDE];
+        const teamColor = team.color || "#3b82f6";
+
+        // Theme
+        document.documentElement.style.setProperty("--team-color", teamColor);
+
+        // Header
+        document.getElementById("team-name").textContent = team.name;
+        const logoEl = document.getElementById("team-logo");
+        if (team.logo) {
+          const logoUrl = team.logoVersion
+            ? `${team.logo}?v=${team.logoVersion}`
+            : team.logo;
+          if (!logoEl.style.backgroundImage.includes(logoUrl)) {
+            logoEl.style.backgroundImage = `url('${logoUrl}')`;
+          }
+        } else {
+          logoEl.style.backgroundImage = "";
         }
 
-        function getHeroImage(heroName) {
-            if (!heroName) return null;
+        // Players
+        const container = document.getElementById("players-container");
 
-            // Format: "Lu Bu" -> "Lu_Bu"
-            // "D'Arcy" -> "D'Arcy" (Keep quotes if file has them)
-            // But strict matching from valid list: "D'Arcy.png", "Lu_Bu.png"
-
-            let formatted = heroName.trim();
-            // Capitalize first letter (just in case)
-            formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
-            // Replace spaces with underscores
-            formatted = formatted.replace(/\s+/g, '_');
-
-            return `/src/rov/${formatted}.png`;
+        if (container.children.length === 0) {
+          // Initialize
+          team.players.forEach((player, index) => {
+            const card = createPlayerElement(player, index);
+            container.appendChild(card);
+          });
+        } else {
+          // Update
+          const cards = container.children;
+          team.players.forEach((player, index) => {
+            if (cards[index]) updatePlayerElement(cards[index], player, index);
+          });
         }
+      }
 
-        function getLaneImage(laneName) {
-            if (!laneName) return null;
-            return `/lane/${laneName.toLowerCase()}.jpg`;
-        }
+      function createPlayerElement(player, index) {
+        const container = document.createElement("div");
+        container.className = "player-container";
+        container.dataset.lastHero = player.hero || "";
+        container.dataset.lastLane = player.lane || "";
 
-        function connectWebSocket() {
-            ws = new WebSocket(WS_URL);
-            ws.onopen = () => console.log('✅ Connected');
-            ws.onmessage = (event) => {
-                try {
-                    const msg = JSON.parse(event.data);
-                    if (msg.type === 'STATE_UPDATE' && msg.data) {
-                        currentState = msg.data;
-                        render();
-                    }
-                } catch (e) { }
-            };
-            ws.onclose = () => setTimeout(connectWebSocket, 3000);
-        }
+        const baseDelay = 1.0;
+        const stepDelay = 0.15;
+        const heroDelay = baseDelay + index * stepDelay;
+        const infoDelay = heroDelay + 0.4;
+        const roleDelay = 2.0 + index * 0.1;
 
-        function render() {
-            if (!currentState) return;
-            const team = currentState.teams[TEAM_SIDE];
-            const teamColor = team.color || '#3b82f6';
+        const heroImgSrc = getHeroImage(player.hero);
+        const laneIconSrc = getLaneImage(player.lane);
 
-            // Theme
-            document.documentElement.style.setProperty('--team-color', teamColor);
+        container.style.animationDelay = `${heroDelay}s`;
 
-            // Header
-            document.getElementById('team-name').textContent = team.name;
-            const logoEl = document.getElementById('team-logo');
-            if (team.logo) {
-                const logoUrl = team.logoVersion ? `${team.logo}?v=${team.logoVersion}` : team.logo;
-                if (!logoEl.style.backgroundImage.includes(logoUrl)) {
-                    logoEl.style.backgroundImage = `url('${logoUrl}')`;
-                }
-            } else {
-                logoEl.style.backgroundImage = '';
-            }
-
-            // Players
-            const container = document.getElementById('players-container');
-
-            if (container.children.length === 0) {
-                // Initialize
-                team.players.forEach((player, index) => {
-                    const card = createPlayerElement(player, index);
-                    container.appendChild(card);
-                });
-            } else {
-                // Update
-                const cards = container.children;
-                team.players.forEach((player, index) => {
-                    if (cards[index]) updatePlayerElement(cards[index], player, index);
-                });
-            }
-        }
-
-        function createPlayerElement(player, index) {
-            const container = document.createElement('div');
-            container.className = 'player-container';
-            container.dataset.lastHero = player.hero || '';
-            container.dataset.lastLane = player.lane || '';
-
-            const baseDelay = 1.0;
-            const stepDelay = 0.15;
-            const heroDelay = baseDelay + (index * stepDelay);
-            const infoDelay = heroDelay + 0.4;
-            const roleDelay = 2.0 + (index * 0.1);
-
-            const heroImgSrc = getHeroImage(player.hero);
-            const laneIconSrc = getLaneImage(player.lane);
-
-            container.style.animationDelay = `${heroDelay}s`;
-
-            container.innerHTML = `
+        container.innerHTML = `
                 <div class="hero-image" style="animation: heroRise 0.8s ease-out backwards; animation-delay: ${heroDelay}s">
                     <img class="main-hero-img" 
-                         src="${heroImgSrc || '/assets/hero_placeholder.png'}" 
+                         src="${heroImgSrc || "/assets/hero_placeholder.png"}" 
                          onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); } else { this.src='/assets/hero_placeholder.png'; this.style.opacity='0.8'; }"
-                         alt="${player.hero || 'No Hero'}"
+                         alt="${player.hero || "No Hero"}"
                          style="opacity: ${heroImgSrc ? 1 : 0.8}; object-position: ${getHeroPosition(player.hero)}">
                 </div>
                 
                 <div class="player-info" style="animation: herowipe 0.5s backwards; animation-delay: ${infoDelay}s">
-                    <div class="player-role" style="animation-delay: ${roleDelay}s; display: ${player.lane ? 'flex' : 'none'}">
-                        <div class="role-icon" style="background-image: url('${laneIconSrc || ''}')"></div>
+                    <div class="player-role" style="animation-delay: ${roleDelay}s; display: ${player.lane ? "flex" : "none"}">
+                        <div class="role-icon" style="background-image: url('${laneIconSrc || ""}')"></div>
                     </div>
                     
                     <span class="battletag">
                         ${player.name || `Player ${index + 1}`}
                     </span>
                     <span class="fullname">
-                        ${player.hero || 'Select Hero'}
+                        ${player.hero || "Select Hero"}
                     </span>
                 </div>
             `;
-            return container;
+        return container;
+      }
+
+      function updatePlayerElement(card, player, index) {
+        // Text
+        const nameEl = card.querySelector(".battletag");
+        const heroTextEl = card.querySelector(".fullname");
+        if (nameEl.textContent !== (player.name || `Player ${index + 1}`))
+          nameEl.textContent = player.name || `Player ${index + 1}`;
+        if (heroTextEl.textContent !== (player.hero || "Select Hero"))
+          heroTextEl.textContent = player.hero || "Select Hero";
+
+        // Image
+        if (card.dataset.lastHero !== player.hero) {
+          card.dataset.lastHero = player.hero || "";
+          const imgEl = card.querySelector(".main-hero-img");
+          const imgBox = card.querySelector(".hero-image");
+          const newSrc = getHeroImage(player.hero);
+
+          // Re-trigger animation
+          imgBox.style.animation = "none";
+          void imgBox.offsetWidth;
+          imgBox.style.animation = "heroRise 0.8s ease-out";
+
+          if (newSrc) {
+            imgEl.src = newSrc;
+            imgEl.style.opacity = "1";
+            imgEl.style.objectPosition = getHeroPosition(player.hero);
+          } else {
+            imgEl.src = "/assets/hero_placeholder.png";
+            imgEl.style.opacity = "0.8";
+            imgEl.style.objectPosition = "center 15%";
+          }
         }
 
-        function updatePlayerElement(card, player, index) {
-            // Text
-            const nameEl = card.querySelector('.battletag');
-            const heroTextEl = card.querySelector('.fullname');
-            if (nameEl.textContent !== (player.name || `Player ${index + 1}`)) nameEl.textContent = player.name || `Player ${index + 1}`;
-            if (heroTextEl.textContent !== (player.hero || 'Select Hero')) heroTextEl.textContent = player.hero || 'Select Hero';
+        // Lane
+        if (card.dataset.lastLane !== player.lane) {
+          card.dataset.lastLane = player.lane || "";
+          const roleEl = card.querySelector(".player-role");
+          const roleIcon = card.querySelector(".role-icon");
+          const newLane = getLaneImage(player.lane);
 
-            // Image
-            if (card.dataset.lastHero !== player.hero) {
-                card.dataset.lastHero = player.hero || '';
-                const imgEl = card.querySelector('.main-hero-img');
-                const imgBox = card.querySelector('.hero-image');
-                const newSrc = getHeroImage(player.hero);
-
-                // Re-trigger animation
-                imgBox.style.animation = 'none';
-                void imgBox.offsetWidth;
-                imgBox.style.animation = 'heroRise 0.8s ease-out';
-
-                if (newSrc) {
-                    imgEl.src = newSrc;
-                    imgEl.style.opacity = '1';
-                    imgEl.style.objectPosition = getHeroPosition(player.hero);
-                } else {
-                    imgEl.src = '/assets/hero_placeholder.png';
-                    imgEl.style.opacity = '0.8';
-                    imgEl.style.objectPosition = 'center 15%';
-                }
-            }
-
-            // Lane
-            if (card.dataset.lastLane !== player.lane) {
-                card.dataset.lastLane = player.lane || '';
-                const roleEl = card.querySelector('.player-role');
-                const roleIcon = card.querySelector('.role-icon');
-                const newLane = getLaneImage(player.lane);
-
-                if (newLane) {
-                    roleEl.style.display = 'flex';
-                    roleIcon.style.backgroundImage = `url('${newLane}')`;
-                    roleEl.style.animation = 'none';
-                    void roleEl.offsetWidth;
-                    roleEl.style.animation = 'roleslide 0.5s ease-out';
-                } else {
-                    roleEl.style.display = 'none';
-                }
-            }
+          if (newLane) {
+            roleEl.style.display = "flex";
+            roleIcon.style.backgroundImage = `url('${newLane}')`;
+            roleEl.style.animation = "none";
+            void roleEl.offsetWidth;
+            roleEl.style.animation = "roleslide 0.5s ease-out";
+          } else {
+            roleEl.style.display = "none";
+          }
         }
+      }
 
-        async function init() {
-            try {
-                const res = await fetch(`http://${window.location.host}/api/state`);
-                if (res.ok) {
-                    currentState = await res.json();
-                    render();
-                }
-            } catch (e) { }
-            connectWebSocket();
-        }
+      async function init() {
+        try {
+          const res = await fetch(`http://${window.location.host}/api/state`);
+          if (res.ok) {
+            currentState = await res.json();
+            render();
+          }
+        } catch (e) {}
+        connectWebSocket();
+      }
 
-        document.addEventListener('DOMContentLoaded', init);
+      document.addEventListener("DOMContentLoaded", init);
     </script>
-</body>
-
+  </body>
 </html>
