@@ -1,0 +1,78 @@
+{
+  "matchId": "match_init",
+  "bestOf": 3,
+  "currentGame": 1,
+  "swapped": false,
+  "teams": {
+    "A": {
+      "name": "HOME TEAM",
+      "shortName": "HOME",
+      "color": "#3b82f6",
+      "logo": "",
+      "logoVersion": 1767894355936,
+      "score": 0,
+      "players": [
+        {
+          "slot": 1,
+          "name": "Home Player 1",
+          "hero": ""
+        },
+        {
+          "slot": 2,
+          "name": "Home Player 2",
+          "hero": ""
+        },
+        {
+          "slot": 3,
+          "name": "Home Player 3",
+          "hero": ""
+        },
+        {
+          "slot": 4,
+          "name": "Home Player 4",
+          "hero": ""
+        },
+        {
+          "slot": 5,
+          "name": "Home Player 5",
+          "hero": ""
+        }
+      ]
+    },
+    "B": {
+      "name": "AWAY TEAM",
+      "shortName": "AWAY",
+      "color": "#ef4444",
+      "logo": "",
+      "logoVersion": 1767894355936,
+      "score": 0,
+      "players": [
+        {
+          "slot": 1,
+          "name": "Away Player 1",
+          "hero": ""
+        },
+        {
+          "slot": 2,
+          "name": "Away Player 2",
+          "hero": ""
+        },
+        {
+          "slot": 3,
+          "name": "Away Player 3",
+          "hero": ""
+        },
+        {
+          "slot": 4,
+          "name": "Away Player 4",
+          "hero": ""
+        },
+        {
+          "slot": 5,
+          "name": "Away Player 5",
+          "hero": ""
+        }
+      ]
+    }
+  }
+}

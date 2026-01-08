@@ -592,6 +592,11 @@
             flex-direction: column;
             overflow: hidden;
         }
+
+        /* Ensure bracket page is explicitly hidden when not active */
+        #page-bracket:not(.active) {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -608,18 +613,25 @@
             <!-- Navigation Menu -->
             <nav id="settings-menu" class="nav-menu">
                 <div class="nav-menu__header">Menu</div>
-                <button id="nav-scoreboard" class="nav-menu__item active">
+                <button id="nav-scoreboard" class="nav-menu__item active" onclick="switchPage('scoreboard')">
                     <i class="ph-duotone ph-game-controller"></i>
                     <div class="nav-menu__item-text">
                         <div class="nav-menu__item-title">Scoreboard</div>
                         <div class="nav-menu__item-desc">Teams, scores, players</div>
                     </div>
                 </button>
-                <button id="nav-broadcast" class="nav-menu__item">
+                <button id="nav-broadcast" class="nav-menu__item" onclick="switchPage('broadcast')">
                     <i class="ph-duotone ph-broadcast"></i>
                     <div class="nav-menu__item-text">
                         <div class="nav-menu__item-title">Broadcast</div>
                         <div class="nav-menu__item-desc">Transitions, overlays</div>
+                    </div>
+                </button>
+                <button id="nav-bracket" class="nav-menu__item" onclick="switchPage('bracket')">
+                    <i class="ph-duotone ph-trophy"></i>
+                    <div class="nav-menu__item-text">
+                        <div class="nav-menu__item-title">Bracket</div>
+                        <div class="nav-menu__item-desc">Tournament brackets</div>
                     </div>
                 </button>
             </nav>
@@ -646,6 +658,35 @@
     <!-- Page: Scoreboard -->
     <div id="page-scoreboard" class="page active">
         <main class="main-content">
+            <!-- Bracket Match Quick Load -->
+            <section class="bracket-match-selector" style="
+                grid-column: 1 / -1;
+                background: linear-gradient(135deg, var(--color-primary-alpha) 0%, transparent 100%);
+                border: 1px solid var(--color-primary);
+                border-radius: var(--radius-lg);
+                padding: var(--space-4);
+                margin-bottom: var(--space-4);
+                display: flex;
+                align-items: center;
+                gap: var(--space-4);
+                flex-wrap: wrap;
+            ">
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <i class="ph-duotone ph-trophy" style="font-size: 24px; color: var(--color-primary);"></i>
+                    <span style="font-weight: var(--font-weight-semibold);">Load from Bracket:</span>
+                </div>
+                <select id="bracket-match-selector" class="input" style="flex: 1; min-width: 200px; max-width: 400px;">
+                    <option value="">Select a match...</option>
+                </select>
+                <button onclick="loadMatchFromBracket()" class="btn btn-primary">
+                    <i class="ph-bold ph-download-simple"></i>
+                    Load Match
+                </button>
+                <button onclick="refreshBracketMatches()" class="btn btn-secondary" title="Refresh matches">
+                    <i class="ph-bold ph-arrows-clockwise"></i>
+                </button>
+            </section>
+
             <!-- Team A Panel -->
             <section class="team-panel team-panel--a" id="teamA-section">
                 <div class="team-panel__header" id="teamA-header">
@@ -870,6 +911,129 @@
         </main>
     </div>
 
+    <!-- Page: Bracket -->
+    <div id="page-bracket" class="page">
+        <main style="padding: var(--space-6); overflow-y: auto; height: calc(100vh - 64px);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
+                <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);">
+                    <i class="ph-duotone ph-trophy" style="margin-right: var(--space-2);"></i>
+                    Tournament Bracket
+                </h2>
+                <div style="display: flex; gap: var(--space-2);">
+                    <button onclick="copyBracketOverlayUrl()" class="btn btn-secondary">
+                        <i class="ph-bold ph-copy"></i>
+                        Copy Overlay URL
+                    </button>
+                    <button onclick="resetBracket()" class="btn btn-secondary" style="color: var(--color-error);">
+                        <i class="ph-bold ph-trash"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Create Bracket Section -->
+            <div id="bracket-create-section" class="card"
+                style="padding: var(--space-5); margin-bottom: var(--space-6);">
+                <h3
+                    style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4);">
+                    Create New Bracket
+                </h3>
+                <div
+                    style="display: grid; grid-template-columns: 1fr 200px 150px; gap: var(--space-4); align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="label">Tournament Name</label>
+                        <input type="text" id="bracket-name" class="input" placeholder="e.g. ROV Pro League 2025">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="label">Type</label>
+                        <div style="display: flex; gap: var(--space-1);">
+                            <button id="bracket-type-single" class="btn btn-primary" style="flex: 1;"
+                                onclick="setBracketType('single')">
+                                Single Elim
+                            </button>
+                            <button id="bracket-type-double" class="btn btn-secondary" style="flex: 1;"
+                                onclick="setBracketType('double')">
+                                Double Elim
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="createBracket()" class="btn btn-primary" style="height: 44px;">
+                        <i class="ph-bold ph-plus"></i>
+                        Create
+                    </button>
+                </div>
+
+                <!-- Team Selection from Templates -->
+                <div style="margin-top: var(--space-4);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+                        <label class="label" style="margin-bottom: 0;">Select Teams from Templates</label>
+                        <span id="bracket-selected-count"
+                            style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">0
+                            selected</span>
+                    </div>
+
+                    <!-- Template List with Checkboxes -->
+                    <div id="bracket-template-list" style="
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                        gap: var(--space-2);
+                        max-height: 300px;
+                        overflow-y: auto;
+                        padding: var(--space-3);
+                        background: var(--color-bg-primary);
+                        border: 1px solid var(--color-border-light);
+                        border-radius: var(--radius-md);
+                    ">
+                        <div
+                            style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); grid-column: 1 / -1; text-align: center; padding: var(--space-4);">
+                            <i class="ph-duotone ph-folder-open"
+                                style="font-size: 24px; display: block; margin-bottom: var(--space-2);"></i>
+                            No templates found. Create templates first in the Template Manager.
+                        </div>
+                    </div>
+
+                    <p
+                        style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-top: var(--space-2);">
+                        Select 2-16 teams from templates. If teams don't fill a power of 2, some will get BYE
+                        automatically.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bracket Display -->
+            <div id="bracket-display" class="card" style="padding: var(--space-5); display: none;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-3);">
+                    <div style="display: flex; align-items: center; gap: var(--space-3);">
+                        <h3 id="bracket-title"
+                            style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin: 0;">
+                            Tournament Name
+                        </h3>
+                        <span id="bracket-info"
+                            style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                            8 Teams • Single Elimination
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: var(--space-2);">
+                        <button id="bracket-shuffle-btn" onclick="shuffleBracketTeams()" class="btn btn-secondary"
+                            title="Re-shuffle team matchups (only before scoring starts)">
+                            <i class="ph-bold ph-shuffle"></i>
+                            Shuffle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bracket Container -->
+                <div id="bracket-container"
+                    style="display: flex; gap: var(--space-6); overflow-x: auto; padding: var(--space-4) 0;">
+                    <!-- Rounds will be dynamically generated here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
     <!-- Load main.ts -->
     <script src="/main.js"></script>
     <script>
@@ -1011,9 +1175,134 @@
             }
         }
 
+        // ===========================================
+        // BRACKET MATCH LOADING FOR SCOREBOARD
+        // ===========================================
+
+        let currentBracketData = null;
+
+        async function refreshBracketMatches() {
+            const selector = document.getElementById('bracket-match-selector');
+            if (!selector) return;
+
+            try {
+                const response = await fetch('/api/bracket');
+                const bracket = await response.json();
+                currentBracketData = bracket;
+
+                // Clear existing options
+                selector.innerHTML = '<option value="">Select a match...</option>';
+
+                if (!bracket || !bracket.matches || bracket.matches.length === 0) {
+                    selector.innerHTML = '<option value="">No bracket available</option>';
+                    return;
+                }
+
+                // Group matches by round
+                const matchesByRound = {};
+                bracket.matches.forEach((match, idx) => {
+                    // Filter out completed matches (where winner is decided)
+                    if (match.winner) return;
+
+                    // Filter out matches where teams are not ready (TBA)
+                    if (!match.teamA || !match.teamB) return;
+
+                    const round = match.round || 1;
+                    if (!matchesByRound[round]) matchesByRound[round] = [];
+                    matchesByRound[round].push({ ...match, originalIndex: idx });
+                });
+
+                // Add options grouped by round
+                let matchNumber = 1;
+                Object.keys(matchesByRound).sort((a, b) => a - b).forEach(round => {
+                    const roundName = getRoundName(parseInt(round), bracket.matches.length);
+                    matchesByRound[round].forEach(match => {
+                        const teamA = match.teamA?.name || 'TBA';
+                        const teamB = match.teamB?.name || 'TBA';
+                        const option = document.createElement('option');
+                        option.value = match.id;
+                        option.textContent = `Match ${matchNumber}: ${teamA} vs ${teamB} (${roundName})`;
+                        selector.appendChild(option);
+                        matchNumber++;
+                    });
+                });
+
+                showNotification('Refreshed', `${bracket.matches.length} matches loaded`, 'success');
+            } catch (err) {
+                console.error('Failed to load bracket matches:', err);
+                selector.innerHTML = '<option value="">Error loading matches</option>';
+            }
+        }
+
+        function getRoundName(round, totalMatches) {
+            // Simple round naming based on typical bracket structure
+            if (totalMatches <= 1) return 'Final';
+            if (totalMatches <= 3 && round === 1) return 'Semifinal';
+            if (totalMatches <= 3 && round === 2) return 'Final';
+            if (round === 1) return 'Round 1';
+            if (round === 2) return 'Quarterfinal';
+            if (round === 3) return 'Semifinal';
+            if (round === 4) return 'Final';
+            return `Round ${round}`;
+        }
+
+        async function loadMatchFromBracket() {
+            const selector = document.getElementById('bracket-match-selector');
+            const matchId = selector?.value;
+
+            if (!matchId) {
+                showNotification('Select Match', 'Please select a match to load', 'warning');
+                return;
+            }
+
+            if (!currentBracketData || !currentBracketData.matches) {
+                await refreshBracketMatches();
+            }
+
+            const match = currentBracketData?.matches?.find(m => m.id === matchId);
+            if (!match) {
+                showNotification('Error', 'Match not found', 'error');
+                return;
+            }
+
+            // Load Team A
+            if (match.teamA) {
+                document.getElementById('teamA-name').value = match.teamA.name || '';
+                document.getElementById('teamA-color').value = match.teamA.color || '#007AFF';
+                if (match.teamA.logo) {
+                    document.getElementById('teamA-logo-preview').src = match.teamA.logo;
+                }
+            }
+
+            // Load Team B
+            if (match.teamB) {
+                document.getElementById('teamB-name').value = match.teamB.name || '';
+                document.getElementById('teamB-color').value = match.teamB.color || '#FF453A';
+                if (match.teamB.logo) {
+                    document.getElementById('teamB-logo-preview').src = match.teamB.logo;
+                }
+            }
+
+            // Also update scores if available
+            document.getElementById('teamA-score').value = match.scoreA || 0;
+            document.getElementById('teamB-score').value = match.scoreB || 0;
+
+            showNotification('Match Loaded', `${match.teamA?.name || 'TBA'} vs ${match.teamB?.name || 'TBA'}`, 'success');
+
+            // Trigger state update to sync with overlay
+            if (typeof updateState === 'function') {
+                updateState();
+            }
+        }
+
+        // Load bracket matches on page load
+        setTimeout(refreshBracketMatches, 500);
+
         // Expose globally for main.ts to use
         window.showNotification = showNotification;
         window.hideNotification = hideNotification;
+        window.refreshBracketMatches = refreshBracketMatches;
+        window.loadMatchFromBracket = loadMatchFromBracket;
 
         // ===========================================
         // LOGO UPLOAD HANDLER
@@ -1060,6 +1349,563 @@
 
         // Expose globally
         window.handleLogoSelect = handleLogoSelect;
+
+        // ===========================================
+        // BRACKET MANAGEMENT
+        // ===========================================
+
+        let currentBracketType = 'single';
+        let currentBracket = null;
+
+        function setBracketType(type) {
+            currentBracketType = type;
+            document.getElementById('bracket-type-single').className =
+                type === 'single' ? 'btn btn-primary' : 'btn btn-secondary';
+            document.getElementById('bracket-type-double').className =
+                type === 'double' ? 'btn btn-primary' : 'btn btn-secondary';
+        }
+
+        async function createBracket() {
+            const name = document.getElementById('bracket-name').value.trim();
+
+            if (!name) {
+                showNotification('Error', 'Please enter a tournament name', 'error');
+                return;
+            }
+
+            // Collect selected templates
+            let selectedTemplates = [];
+
+            // Respect the manual selection sequence
+            if (selectionSequence.length > 0) {
+                // Use the selection order
+                selectedTemplates = selectionSequence.map(name => {
+                    const template = bracketTemplates.find(t => t.name === name);
+                    if (template) {
+                        return {
+                            name: template.name,
+                            logo: template.logo || '',
+                            color: template.color || '#3b82f6'
+                        };
+                    }
+                    return null;
+                }).filter(t => t !== null);
+            } else {
+                // Fallback to DOM order (should rarely happen if selectionSequence logic is working)
+                const checkboxes = document.querySelectorAll('#bracket-template-list input[type="checkbox"]:checked');
+                checkboxes.forEach(cb => {
+                    const templateData = JSON.parse(cb.dataset.template);
+                    selectedTemplates.push({
+                        name: templateData.name,
+                        logo: templateData.logo || '',
+                        color: templateData.color || '#3b82f6'
+                    });
+                });
+            }
+            console.log('🔢 Teams ordered by selection sequence');
+
+            // Only templates allowed
+            const allTeams = selectedTemplates.map(t => t.name);
+
+            if (allTeams.length < 2) {
+                showNotification('Error', 'Please select at least 2 teams from templates', 'error');
+                return;
+            }
+
+            if (allTeams.length > 16) {
+                showNotification('Error', 'Maximum 16 teams allowed', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/bracket/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        type: currentBracketType,
+                        teams: allTeams,
+                        teamData: selectedTemplates
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentBracket = result.bracket;
+                    showNotification('Success', `Bracket created with ${allTeams.length} teams`, 'success');
+                    renderBracket(result.bracket);
+                    refreshBracketMatches(); // Update scoreboard dropdown
+                } else {
+                    showNotification('Error', 'Failed to create bracket', 'error');
+                }
+            } catch (err) {
+                console.error('Create bracket error:', err);
+                showNotification('Error', 'Failed to create bracket', 'error');
+            }
+        }
+
+        // Load templates for bracket selection
+        let bracketTemplates = [];
+
+        async function loadBracketTemplates() {
+            try {
+                const response = await fetch('/api/templates');
+                bracketTemplates = await response.json();
+                renderBracketTemplateList();
+            } catch (err) {
+                console.error('Failed to load templates:', err);
+            }
+        }
+
+        // WebSocket listener for real-time template updates
+        function setupBracketWebSocket() {
+            const ws = new WebSocket(`ws://${window.location.host}`);
+
+            ws.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+
+                    if (message.type === 'TEMPLATES_UPDATE') {
+                        console.log('📦 Templates updated via WebSocket');
+                        bracketTemplates = message.data;
+                        renderBracketTemplateList();
+                        showNotification('Templates Updated', `${bracketTemplates.length} templates available`, 'info');
+                    } else if (message.type === 'BRACKET_UPDATE') {
+                        console.log('🏆 Bracket updated via WebSocket');
+                        currentBracket = message.data;
+                        renderBracket(currentBracket);
+                        refreshBracketMatches();
+                        // Optional: showNotification('Bracket Updated', 'Syncing changes...', 'info');
+                    }
+                } catch (err) {
+                    console.error('WebSocket message error:', err);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('🔌 Bracket WS disconnected, reconnecting...');
+                setTimeout(setupBracketWebSocket, 2000);
+            };
+        }
+
+        // Start WebSocket connection for real-time updates
+        setupBracketWebSocket();
+
+        // Track selection order
+        let selectionSequence = [];
+
+        function renderBracketTemplateList() {
+            const container = document.getElementById('bracket-template-list');
+            if (!container) return;
+
+            if (bracketTemplates.length === 0) {
+                container.innerHTML = `
+                    <div style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); grid-column: 1 / -1; text-align: center; padding: var(--space-4);">
+                        <i class="ph-duotone ph-folder-open" style="font-size: 24px; display: block; margin-bottom: var(--space-2);"></i>
+                        No templates found. Create templates first in the Template Manager.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = bracketTemplates.map(template => `
+                <label style="
+                    display: flex;
+                    align-items: center;
+                    gap: var(--space-2);
+                    padding: var(--space-2) var(--space-3);
+                    background: var(--color-bg-tertiary);
+                    border: 1px solid transparent;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    position: relative;
+                " class="bracket-team-card" data-name="${template.name}">
+                    <input type="checkbox" 
+                        data-template='${JSON.stringify(template).replace(/'/g, "&#039;")}'
+                        onchange="handleTeamSelection(this, '${template.name}')"
+                        style="width: 18px; height: 18px; accent-color: var(--color-primary);">
+                    
+                    ${template.logo ? `<img src="${template.logo}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;">` :
+                    `<div style="width: 24px; height: 24px; border-radius: 4px; background: ${template.color || '#3b82f6'}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white;">${template.name.substring(0, 2).toUpperCase()}</div>`}
+                    <span style="flex: 1; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${template.name}</span>
+                    
+                    <!-- Sequence Badge Inline -->
+                    <span class="sequence-badge" style="
+                        display: none;
+                        background: var(--color-primary);
+                        color: white;
+                        font-size: 10px;
+                        font-weight: bold;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        margin-left: var(--space-2);
+                    "></span>
+                </label>
+            `).join('');
+
+            // Re-apply states based on current selection sequence
+            refreshSelectionBadges();
+        }
+
+        function handleTeamSelection(checkbox, teamName) {
+            if (checkbox.checked) {
+                if (!selectionSequence.includes(teamName)) {
+                    selectionSequence.push(teamName);
+                }
+            } else {
+                selectionSequence = selectionSequence.filter(name => name !== teamName);
+            }
+            refreshSelectionBadges();
+            updateSelectedCount();
+        }
+
+        function refreshSelectionBadges() {
+            document.querySelectorAll('.bracket-team-card').forEach(card => {
+                const name = card.dataset.name;
+                const index = selectionSequence.indexOf(name);
+                const badge = card.querySelector('.sequence-badge');
+                const checkbox = card.querySelector('input');
+
+                if (index !== -1) {
+                    // Selected
+                    card.style.borderColor = 'var(--color-primary)';
+                    card.style.background = 'var(--color-bg-secondary)';
+                    badge.style.display = 'flex';
+                    badge.textContent = index + 1;
+                    if (checkbox) checkbox.checked = true;
+                } else {
+                    // Not selected
+                    card.style.borderColor = 'transparent';
+                    card.style.background = 'var(--color-bg-tertiary)';
+                    badge.style.display = 'none';
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
+        }
+
+        function updateSelectedCount() {
+            const count = document.querySelectorAll('#bracket-template-list input[type="checkbox"]:checked').length;
+            const countEl = document.getElementById('bracket-selected-count');
+            if (countEl) {
+                countEl.textContent = `${count} selected`;
+                countEl.style.color = count >= 2 ? 'var(--color-success)' : 'var(--color-text-secondary)';
+            }
+        }
+
+        // Shuffle selected teams using Fisher-Yates algorithm
+        function shuffleSelectedTeams() {
+            const container = document.getElementById('bracket-template-list');
+            const labels = Array.from(container.querySelectorAll('label'));
+
+            // Check if we have selected teams
+            const selectedCount = labels.filter(l => l.querySelector('input:checked')).length;
+            if (selectedCount < 2) {
+                showNotification('Shuffle', 'Please select at least 2 teams to shuffle', 'warning');
+                return;
+            }
+
+            // Fisher-Yates shuffle
+            for (let i = labels.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                container.insertBefore(labels[j], labels[i]);
+            }
+
+            showNotification('Shuffled!', 'Team order has been randomized', 'success');
+        }
+
+        // Load templates when page loads
+        loadBracketTemplates();
+
+        // Shuffle bracket teams (only works before scoring starts)
+        async function shuffleBracketTeams() {
+            try {
+                const response = await fetch('/api/bracket/shuffle', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentBracket = result.bracket;
+                    renderBracket(result.bracket);
+                    refreshBracketMatches(); // Update scoreboard dropdown
+                    showNotification('Shuffled!', 'Team matchups have been randomized', 'success');
+                } else if (result.locked) {
+                    showNotification('Locked', 'Cannot shuffle after scoring has started', 'warning');
+                    updateShuffleButtonState(true);
+                } else {
+                    showNotification('Error', result.message || 'Shuffle failed', 'error');
+                }
+            } catch (err) {
+                console.error('Shuffle bracket error:', err);
+                showNotification('Error', 'Failed to shuffle bracket', 'error');
+            }
+        }
+
+        // Update shuffle button state based on scoring
+        function updateShuffleButtonState(locked) {
+            const btn = document.getElementById('bracket-shuffle-btn');
+            if (!btn) return;
+
+            if (locked) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.title = 'Shuffle locked - scoring has started';
+                btn.innerHTML = '<i class="ph-bold ph-lock"></i> Locked';
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.title = 'Re-shuffle team matchups';
+                btn.innerHTML = '<i class="ph-bold ph-shuffle"></i> Shuffle';
+            }
+        }
+
+        async function resetBracket() {
+            // Direct reset without confirm (works better in Electron)
+            console.log('🗑️ Resetting bracket...');
+
+            try {
+                const response = await fetch('/api/bracket', { method: 'DELETE' });
+                console.log('Reset response:', response.status);
+
+                currentBracket = null;
+                document.getElementById('bracket-create-section').style.display = 'block';
+                document.getElementById('bracket-display').style.display = 'none';
+
+                // Clear tournament name
+                const nameInput = document.getElementById('bracket-name');
+                if (nameInput) nameInput.value = '';
+
+                // Clear all checkboxes
+                document.querySelectorAll('#bracket-template-list input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+
+                // Clear selection sequence
+                selectionSequence = [];
+                refreshSelectionBadges();
+                updateSelectedCount();
+                refreshBracketMatches(); // Clear scoreboard dropdown
+
+                showNotification('Reset', 'Bracket has been reset', 'info');
+            } catch (err) {
+                console.error('Reset bracket error:', err);
+                showNotification('Error', 'Failed to reset bracket', 'error');
+            }
+        }
+
+        function renderBracket(bracket) {
+            if (!bracket) {
+                document.getElementById('bracket-create-section').style.display = 'block';
+                document.getElementById('bracket-display').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('bracket-create-section').style.display = 'none';
+            document.getElementById('bracket-display').style.display = 'block';
+            document.getElementById('bracket-title').textContent = bracket.name;
+            document.getElementById('bracket-info').textContent =
+                `${bracket.teams.length} Teams • ${bracket.type === 'single' ? 'Single' : 'Double'} Elimination`;
+
+            const container = document.getElementById('bracket-container');
+            container.innerHTML = '';
+
+            // Group matches by round
+            const rounds = {};
+            bracket.matches.forEach(match => {
+                if (!rounds[match.round]) rounds[match.round] = [];
+                rounds[match.round].push(match);
+            });
+
+            // Render each round
+            Object.keys(rounds).sort((a, b) => a - b).forEach(roundNum => {
+                const roundEl = document.createElement('div');
+                roundEl.className = 'bracket-round';
+                roundEl.style.cssText = 'display: flex; flex-direction: column; gap: var(--space-4); min-width: 280px;';
+
+                const roundHeader = document.createElement('div');
+                roundHeader.style.cssText = 'font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2);';
+                roundHeader.textContent = rounds[roundNum][0].roundName.split(' ').slice(0, -1).join(' ') || `Round ${roundNum}`;
+                roundEl.appendChild(roundHeader);
+
+                rounds[roundNum].forEach(match => {
+                    const matchEl = createMatchElement(match);
+                    roundEl.appendChild(matchEl);
+                });
+
+                container.appendChild(roundEl);
+            });
+        }
+
+        function createMatchElement(match) {
+            const matchEl = document.createElement('div');
+            matchEl.className = 'bracket-match';
+            matchEl.style.cssText = `
+                background: var(--color-bg-secondary);
+                border: 1px solid var(--color-border-light);
+                border-radius: var(--radius-md);
+                padding: var(--space-3);
+                margin-bottom: var(--space-2);
+            `;
+
+            // Round title
+            const titleRow = document.createElement('div');
+            titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);';
+            titleRow.innerHTML = `
+                <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">${match.roundName}</span>
+                ${match.isBye ? '<span style="font-size: var(--font-size-xs); color: var(--color-warning); font-weight: var(--font-weight-semibold);">BYE</span>' : ''}
+            `;
+            matchEl.appendChild(titleRow);
+
+            // Team A
+            const teamAEl = createTeamRow(match, 'A', match.teamA);
+            matchEl.appendChild(teamAEl);
+
+            // Team B
+            const teamBEl = createTeamRow(match, 'B', match.teamB);
+            matchEl.appendChild(teamBEl);
+
+            return matchEl;
+        }
+
+        function createTeamRow(match, side, team) {
+            const isWinner = match.winner === side;
+            const teamEl = document.createElement('div');
+            teamEl.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: var(--space-2);
+                padding: var(--space-2);
+                border-radius: var(--radius-sm);
+                background: ${isWinner ? 'var(--color-success-bg, rgba(34, 197, 94, 0.1))' : 'transparent'};
+                border: 1px solid ${isWinner ? 'var(--color-success, #22c55e)' : 'var(--color-border-light)'};
+                margin-bottom: var(--space-1);
+            `;
+
+            // Winner checkbox
+            const checkbox = document.createElement('button');
+            checkbox.style.cssText = `
+                width: 24px;
+                height: 24px;
+                border-radius: var(--radius-sm);
+                border: 2px solid ${isWinner ? 'var(--color-success, #22c55e)' : 'var(--color-border)'};
+                background: ${isWinner ? 'var(--color-success, #22c55e)' : 'transparent'};
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 14px;
+                transition: all 0.2s;
+            `;
+            checkbox.innerHTML = isWinner ? '<i class="ph-bold ph-check"></i>' : '';
+            checkbox.disabled = !team || match.isBye;
+            checkbox.onclick = () => setMatchWinner(match.id, side);
+            teamEl.appendChild(checkbox);
+
+            // Team name
+            const nameEl = document.createElement('span');
+            nameEl.style.cssText = `
+                flex: 1;
+                font-weight: ${isWinner ? 'var(--font-weight-semibold)' : 'var(--font-weight-normal)'};
+                color: ${team ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)'};
+            `;
+            nameEl.textContent = team ? team.name : 'TBA';
+            teamEl.appendChild(nameEl);
+
+            // Score input
+            const scoreInput = document.createElement('input');
+            scoreInput.type = 'number';
+            scoreInput.min = '0';
+            scoreInput.value = side === 'A' ? match.scoreA : match.scoreB;
+            scoreInput.style.cssText = `
+                width: 50px;
+                padding: var(--space-1) var(--space-2);
+                text-align: center;
+                border: 1px solid var(--color-border-light);
+                border-radius: var(--radius-sm);
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+            `;
+            scoreInput.disabled = !team;
+            scoreInput.onchange = (e) => updateMatchScore(match.id, side, parseInt(e.target.value) || 0);
+            teamEl.appendChild(scoreInput);
+
+            return teamEl;
+        }
+
+        async function setMatchWinner(matchId, winner) {
+            try {
+                const response = await fetch('/api/bracket/match/winner', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matchId, winner })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentBracket = result.bracket;
+                    renderBracket(result.bracket);
+                    showNotification('Winner Set', 'Match updated successfully', 'success');
+                }
+            } catch (err) {
+                console.error('Set winner error:', err);
+            }
+        }
+
+        async function updateMatchScore(matchId, side, score) {
+            try {
+                const body = { matchId };
+                if (side === 'A') body.scoreA = score;
+                else body.scoreB = score;
+
+                const response = await fetch('/api/bracket/match/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentBracket = result.bracket;
+                }
+            } catch (err) {
+                console.error('Update score error:', err);
+            }
+        }
+
+        async function loadBracket() {
+            try {
+                const response = await fetch('/api/bracket');
+                const bracket = await response.json();
+                if (bracket) {
+                    currentBracket = bracket;
+                    renderBracket(bracket);
+                    refreshBracketMatches(); // Update scoreboard dropdown
+                }
+            } catch (err) {
+                console.error('Load bracket error:', err);
+            }
+        }
+
+        function copyBracketOverlayUrl() {
+            const url = `${window.location.origin}/bracket.html`;
+            navigator.clipboard.writeText(url);
+            showNotification('Copied!', 'Bracket overlay URL copied to clipboard', 'success');
+        }
+
+        // Load bracket on page load
+        loadBracket();
+
+        // Expose globally
+        window.createBracket = createBracket;
+        window.resetBracket = resetBracket;
+        window.setBracketType = setBracketType;
+        window.setMatchWinner = setMatchWinner;
+        window.updateMatchScore = updateMatchScore;
+        window.copyBracketOverlayUrl = copyBracketOverlayUrl;
+        window.shuffleBracketTeams = shuffleBracketTeams;
+        window.updateShuffleButtonState = updateShuffleButtonState;
     </script>
 
     <!-- Crop Modal -->

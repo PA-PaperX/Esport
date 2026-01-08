@@ -1,5 +1,6 @@
 import { stateManager } from "./src/state";
 import { lowerThirdManager } from "./src/lower-third-state";
+import { bracketManager } from "./src/bracket-state";
 
 const PORT = 3000;
 
@@ -34,7 +35,7 @@ const server = Bun.serve({
     // --- CORS Headers (เผื่อรันแยก port) ---
     const headers = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
 
@@ -244,6 +245,205 @@ const server = Bun.serve({
       }
     }
 
+    // ==========================================
+    // Bracket API Endpoints
+    // ==========================================
+
+    // GET /api/bracket - Get current bracket state
+    if (url.pathname === "/api/bracket" && req.method === "GET") {
+      return Response.json(bracketManager.getState(), { headers });
+    }
+
+    // POST /api/bracket/create - Create new bracket
+    if (url.pathname === "/api/bracket/create" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { name, type, teams, teamData } = body;
+
+        if (!name || !teams || !Array.isArray(teams) || teams.length < 2) {
+          return new Response("Name and at least 2 teams required", { status: 400 });
+        }
+
+        const bracket = bracketManager.createBracket(name, type || 'single', teams, teamData);
+
+        // Broadcast to overlay
+        server.publish("overlay", JSON.stringify({
+          type: "BRACKET_UPDATE",
+          data: bracket
+        }));
+
+        console.log(`🏆 Bracket created: ${name} with ${teams.length} teams`);
+        return Response.json({ success: true, bracket }, { headers });
+      } catch (err) {
+        console.error("Create bracket error:", err);
+        return new Response("Create bracket failed", { status: 500 });
+      }
+    }
+
+    // POST /api/bracket/match/update - Update match scores/winner
+    if (url.pathname === "/api/bracket/match/update" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { matchId, scoreA, scoreB, winner } = body;
+
+        if (!matchId) {
+          return new Response("matchId required", { status: 400 });
+        }
+
+        const match = bracketManager.updateMatch(matchId, { scoreA, scoreB, winner });
+        if (!match) {
+          return new Response("Match not found", { status: 404 });
+        }
+
+        // Get full bracket state and broadcast
+        const bracket = bracketManager.getState();
+        server.publish("overlay", JSON.stringify({
+          type: "BRACKET_UPDATE",
+          data: bracket
+        }));
+
+        console.log(`📊 Match updated: ${matchId}`);
+        return Response.json({ success: true, match, bracket }, { headers });
+      } catch (err) {
+        console.error("Update match error:", err);
+        return new Response("Update match failed", { status: 500 });
+      }
+    }
+
+    // POST /api/bracket/match/winner - Set match winner (simple click)
+    if (url.pathname === "/api/bracket/match/winner" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { matchId, winner } = body;
+
+        if (!matchId || !winner || (winner !== 'A' && winner !== 'B')) {
+          return new Response("matchId and winner (A/B) required", { status: 400 });
+        }
+
+        const match = bracketManager.setMatchWinner(matchId, winner);
+        if (!match) {
+          return new Response("Match not found", { status: 404 });
+        }
+
+        // Broadcast
+        const bracket = bracketManager.getState();
+        server.publish("overlay", JSON.stringify({
+          type: "BRACKET_UPDATE",
+          data: bracket
+        }));
+
+        console.log(`🏆 Winner set: ${matchId} -> ${winner}`);
+        return Response.json({ success: true, match, bracket }, { headers });
+      } catch (err) {
+        console.error("Set winner error:", err);
+        return new Response("Set winner failed", { status: 500 });
+      }
+    }
+
+    // POST /api/bracket/match/title - Update round title
+    if (url.pathname === "/api/bracket/match/title" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { matchId, roundName } = body;
+
+        if (!matchId || !roundName) {
+          return new Response("matchId and roundName required", { status: 400 });
+        }
+
+        const match = bracketManager.updateRoundTitle(matchId, roundName);
+        if (!match) {
+          return new Response("Match not found", { status: 404 });
+        }
+
+        // Broadcast
+        const bracket = bracketManager.getState();
+        server.publish("overlay", JSON.stringify({
+          type: "BRACKET_UPDATE",
+          data: bracket
+        }));
+
+        return Response.json({ success: true, match }, { headers });
+      } catch (err) {
+        return new Response("Update title failed", { status: 500 });
+      }
+    }
+
+    // DELETE /api/bracket - Reset bracket
+    if (url.pathname === "/api/bracket" && req.method === "DELETE") {
+      try {
+        bracketManager.resetBracket();
+
+        // Broadcast reset
+        server.publish("overlay", JSON.stringify({
+          type: "BRACKET_UPDATE",
+          data: null
+        }));
+
+        console.log("🗑️ Bracket reset");
+        return Response.json({ success: true }, { headers });
+      } catch (err) {
+        return new Response("Reset bracket failed", { status: 500 });
+      }
+    }
+
+    // POST /api/bracket/shuffle - Shuffle teams in bracket (only if no scoring started)
+    if (url.pathname === "/api/bracket/shuffle" && req.method === "POST") {
+      try {
+        const bracket = bracketManager.getState();
+
+        if (!bracket || !bracket.matches || bracket.matches.length === 0) {
+          return new Response("No bracket to shuffle", { status: 400 });
+        }
+
+        // Check if any scoring has started (any score > 0)
+        const scoringStarted = bracket.matches.some((m: any) =>
+          (m.scoreA && m.scoreA > 0) || (m.scoreB && m.scoreB > 0) || m.winner
+        );
+
+        if (scoringStarted) {
+          return Response.json({
+            success: false,
+            locked: true,
+            message: "Cannot shuffle after scoring has started"
+          }, { status: 400, headers });
+        }
+
+        // Get all teams from round 1 matches
+        const round1Matches = bracket.matches.filter((m: any) => m.round === 1);
+        const teams: any[] = [];
+        round1Matches.forEach((m: any) => {
+          if (m.teamA && m.teamA.name !== 'BYE') teams.push(m.teamA);
+          if (m.teamB && m.teamB.name !== 'BYE') teams.push(m.teamB);
+        });
+
+        // Fisher-Yates shuffle
+        for (let i = teams.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [teams[i], teams[j]] = [teams[j], teams[i]];
+        }
+
+        // Recreate bracket with shuffled teams
+        const newBracket = bracketManager.createBracket(
+          bracket.name,
+          bracket.type,
+          teams.map(t => t.name),
+          teams
+        );
+
+        // Broadcast update
+        server.publish("overlay", JSON.stringify({
+          type: "BRACKET_UPDATE",
+          data: newBracket
+        }));
+
+        console.log("🔀 Bracket teams shuffled");
+        return Response.json({ success: true, bracket: newBracket }, { headers });
+      } catch (err) {
+        console.error("Shuffle bracket error detail:", err);
+        return new Response("Shuffle bracket failed", { status: 500 });
+      }
+    }
+
     // POST /api/logo/upload - อัพโหลดโลโก้ทีม
     if (url.pathname === "/api/logo/upload" && req.method === "POST") {
       try {
@@ -332,6 +532,13 @@ const server = Bun.serve({
         templates.push(newTemplate);
         await Bun.write("data/templates.json", JSON.stringify(templates, null, 2));
 
+        // Broadcast template update to all clients
+        server.publish("overlay", JSON.stringify({
+          type: "TEMPLATES_UPDATE",
+          data: templates
+        }));
+
+        console.log(`📁 Template created: ${name}`);
         return Response.json({ success: true, template: newTemplate }, { headers });
       } catch (err) {
         console.error("Save template error:", err);
@@ -349,6 +556,13 @@ const server = Bun.serve({
         templates = templates.filter((t: any) => t.id !== id);
         await Bun.write("data/templates.json", JSON.stringify(templates, null, 2));
 
+        // Broadcast template update to all clients
+        server.publish("overlay", JSON.stringify({
+          type: "TEMPLATES_UPDATE",
+          data: templates
+        }));
+
+        console.log(`🗑️ Template deleted: ${id}`);
         return Response.json({ success: true }, { headers });
       } catch (err) {
         return new Response("Delete template failed", { status: 500 });
@@ -381,6 +595,13 @@ const server = Bun.serve({
 
         await Bun.write("data/templates.json", JSON.stringify(templates, null, 2));
 
+        // Broadcast template update to all clients
+        server.publish("overlay", JSON.stringify({
+          type: "TEMPLATES_UPDATE",
+          data: templates
+        }));
+
+        console.log(`📝 Template updated: ${templates[index].name}`);
         return Response.json({ success: true, template: templates[index] }, { headers });
       } catch (err) {
         console.error("Update template error:", err);
