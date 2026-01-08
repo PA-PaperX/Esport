@@ -1260,40 +1260,142 @@
             }
 
             const match = currentBracketData?.matches?.find(m => m.id === matchId);
+            console.log('🔍 Loaded match:', match);
             if (!match) {
                 showNotification('Error', 'Match not found', 'error');
                 return;
             }
 
-            // Load Team A
+            // 1. Link this match for score sync
+            try {
+                await fetch('/api/match/link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matchId: matchId })
+                });
+                console.log('🔗 Match linked for score sync:', matchId);
+                updateLinkedMatchIndicator(matchId, match);
+            } catch (err) {
+                console.error('Failed to link match:', err);
+            }
+
+            // CHECK SWAP STATE
+            const teamATitle = document.querySelector('#teamA-section .team-panel__title');
+            const isSwapped = teamATitle && teamATitle.textContent.includes('Team B');
+            console.log('🔄 Load Match - Swapped:', isSwapped);
+
+            const inputA = isSwapped ? 'B' : 'A';
+            const inputB = isSwapped ? 'A' : 'B';
+
+            // 2. Load Team A
             if (match.teamA) {
-                document.getElementById('teamA-name').value = match.teamA.name || '';
-                document.getElementById('teamA-color').value = match.teamA.color || '#007AFF';
+                document.getElementById(`team${inputA}-name`).value = match.teamA.name || '';
+                document.getElementById(`team${inputA}-color`).value = match.teamA.color || '#007AFF';
+                const hexEl = document.getElementById(`team${inputA}-color-hex`);
+                if (hexEl) hexEl.textContent = match.teamA.color || '#007AFF';
+
                 if (match.teamA.logo) {
-                    document.getElementById('teamA-logo-preview').src = match.teamA.logo;
+                    const preview = document.getElementById(`team${inputA}-logo-preview`);
+                    const dropzone = document.getElementById(`team${inputA}-dropzone`);
+                    if (preview) {
+                        preview.innerHTML = `<div class="relative w-full h-full group">
+                            <img src="${match.teamA.logo}" alt="${match.teamA.name} Logo" class="w-full h-full object-contain" 
+                                 style="border-radius: var(--radius-md);">
+                        </div>`;
+                        if (dropzone) dropzone.classList.add('has-logo');
+                    }
                 }
             }
 
-            // Load Team B
+            // 3. Load Team B
             if (match.teamB) {
-                document.getElementById('teamB-name').value = match.teamB.name || '';
-                document.getElementById('teamB-color').value = match.teamB.color || '#FF453A';
+                document.getElementById(`team${inputB}-name`).value = match.teamB.name || '';
+                document.getElementById(`team${inputB}-color`).value = match.teamB.color || '#FF453A';
+                const hexEl = document.getElementById(`team${inputB}-color-hex`);
+                if (hexEl) hexEl.textContent = match.teamB.color || '#FF453A';
+
                 if (match.teamB.logo) {
-                    document.getElementById('teamB-logo-preview').src = match.teamB.logo;
+                    const preview = document.getElementById(`team${inputB}-logo-preview`);
+                    const dropzone = document.getElementById(`team${inputB}-dropzone`);
+                    if (preview) {
+                        preview.innerHTML = `<div class="relative w-full h-full group">
+                            <img src="${match.teamB.logo}" alt="${match.teamB.name} Logo" class="w-full h-full object-contain" 
+                                 style="border-radius: var(--radius-md);">
+                        </div>`;
+                        if (dropzone) dropzone.classList.add('has-logo');
+                    }
                 }
             }
 
-            // Also update scores if available
-            document.getElementById('teamA-score').value = match.scoreA || 0;
-            document.getElementById('teamB-score').value = match.scoreB || 0;
+            // 4. Update scores from bracket
+            document.getElementById(`team${inputA}-score`).value = match.scoreA || 0;
+            document.getElementById(`team${inputB}-score`).value = match.scoreB || 0;
 
-            showNotification('Match Loaded', `${match.teamA?.name || 'TBA'} vs ${match.teamB?.name || 'TBA'}`, 'success');
+            // 5. Save both teams to sync with backend
+            if (typeof saveTeam === 'function') {
+                await saveTeam('A');
+                await saveTeam('B');
+            }
 
-            // Trigger state update to sync with overlay
-            if (typeof updateState === 'function') {
-                updateState();
+            showNotification('Match Loaded & Linked', `${match.teamA?.name || 'TBA'} vs ${match.teamB?.name || 'TBA'}`, 'success');
+        }
+
+        // Show linked match indicator
+        function updateLinkedMatchIndicator(matchId, match) {
+            let indicator = document.getElementById('linked-match-indicator');
+            if (!indicator) {
+                // Create indicator element
+                const selectorSection = document.querySelector('.bracket-match-selector');
+                if (selectorSection) {
+                    indicator = document.createElement('div');
+                    indicator.id = 'linked-match-indicator';
+                    indicator.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: var(--space-2);
+                        padding: var(--space-2) var(--space-3);
+                        background: rgba(0, 255, 102, 0.1);
+                        border: 1px solid rgba(0, 255, 102, 0.3);
+                        border-radius: var(--radius-md);
+                        font-size: var(--font-size-sm);
+                        color: #00FF66;
+                    `;
+                    selectorSection.appendChild(indicator);
+                }
+            }
+            if (indicator) {
+                indicator.innerHTML = `
+                    <i class="ph-bold ph-link" style="font-size: 16px;"></i>
+                    <span>Linked: ${match?.roundName || matchId}</span>
+                    <button onclick="unlinkMatch()" style="
+                        background: none;
+                        border: none;
+                        color: rgba(255,255,255,0.6);
+                        cursor: pointer;
+                        padding: 2px 6px;
+                        font-size: 12px;
+                    " title="Unlink match">✕</button>
+                `;
             }
         }
+
+        // Unlink match
+        async function unlinkMatch() {
+            try {
+                await fetch('/api/match/link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matchId: null })
+                });
+                const indicator = document.getElementById('linked-match-indicator');
+                if (indicator) indicator.remove();
+                showNotification('Unlinked', 'Score sync disabled', 'info');
+            } catch (err) {
+                console.error('Failed to unlink match:', err);
+            }
+        }
+
+        window.unlinkMatch = unlinkMatch;
 
         // Load bracket matches on page load
         setTimeout(refreshBracketMatches, 500);

@@ -8,10 +8,14 @@
   "scripts": {
     "dev": "bun run index.ts",
     "electron": "electron .",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
     "build:win": "electron-builder --win",
     "build:linux": "electron-builder --linux"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.9.6",
     "@types/bun": "^1.3.5",
     "electron": "^39.2.7",
     "electron-builder": "^26.0.12",
