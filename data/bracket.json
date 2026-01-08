@@ -1,0 +1,108 @@
+{
+  "id": "bracket_1767895100940",
+  "name": "Test Tournament 2025",
+  "type": "single",
+  "teams": [
+    {
+      "id": "team_1",
+      "name": "ez",
+      "logo": "",
+      "seed": 1
+    },
+    {
+      "id": "team_2",
+      "name": "gg",
+      "logo": "",
+      "seed": 2
+    },
+    {
+      "id": "team_3",
+      "name": "kuy",
+      "logo": "",
+      "seed": 3
+    },
+    {
+      "id": "team_4",
+      "name": "hahaha",
+      "logo": "",
+      "seed": 4
+    }
+  ],
+  "matches": [
+    {
+      "id": "match_r1_1",
+      "round": 1,
+      "roundName": "Semifinal 1",
+      "position": 1,
+      "teamA": {
+        "id": "team_1",
+        "name": "ez",
+        "logo": "",
+        "seed": 1
+      },
+      "teamB": {
+        "id": "team_2",
+        "name": "gg",
+        "logo": "",
+        "seed": 2
+      },
+      "scoreA": 0,
+      "scoreB": 0,
+      "winner": "A",
+      "isBye": false,
+      "nextMatchId": "match_r2_1",
+      "nextSlot": "A"
+    },
+    {
+      "id": "match_r1_2",
+      "round": 1,
+      "roundName": "Semifinal 2",
+      "position": 2,
+      "teamA": {
+        "id": "team_3",
+        "name": "kuy",
+        "logo": "",
+        "seed": 3
+      },
+      "teamB": {
+        "id": "team_4",
+        "name": "hahaha",
+        "logo": "",
+        "seed": 4
+      },
+      "scoreA": 0,
+      "scoreB": 0,
+      "winner": "B",
+      "isBye": false,
+      "nextMatchId": "match_r2_1",
+      "nextSlot": "B"
+    },
+    {
+      "id": "match_r2_1",
+      "round": 2,
+      "roundName": "Grand Final",
+      "position": 1,
+      "teamA": {
+        "id": "team_1",
+        "name": "ez",
+        "logo": "",
+        "seed": 1
+      },
+      "teamB": {
+        "id": "team_4",
+        "name": "hahaha",
+        "logo": "",
+        "seed": 4
+      },
+      "scoreA": 0,
+      "scoreB": 0,
+      "winner": null,
+      "isBye": false,
+      "nextMatchId": null,
+      "nextSlot": null
+    }
+  ],
+  "rounds": 2,
+  "createdAt": "2026-01-08T17:58:20.940Z",
+  "updatedAt": "2026-01-08T17:58:37.839Z"
+}

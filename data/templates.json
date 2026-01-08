@@ -1,1 +1,147 @@
-[]
+[
+  {
+    "id": "tpl_1767891239590",
+    "name": "ez",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "1"
+      },
+      {
+        "slot": 2,
+        "name": "2"
+      },
+      {
+        "slot": 3,
+        "name": "3"
+      },
+      {
+        "slot": 4,
+        "name": "4"
+      },
+      {
+        "slot": 5,
+        "name": "5"
+      }
+    ],
+    "createdAt": "2026-01-08T16:53:59.590Z"
+  },
+  {
+    "id": "tpl_1767891279413",
+    "name": "gg",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "12"
+      },
+      {
+        "slot": 2,
+        "name": "23"
+      },
+      {
+        "slot": 3,
+        "name": "4"
+      },
+      {
+        "slot": 4,
+        "name": "5"
+      },
+      {
+        "slot": 5,
+        "name": "6"
+      }
+    ],
+    "createdAt": "2026-01-08T16:54:39.413Z"
+  },
+  {
+    "id": "tpl_1767891465239",
+    "name": "kuy",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "1"
+      },
+      {
+        "slot": 2,
+        "name": "2"
+      },
+      {
+        "slot": 3,
+        "name": "3"
+      },
+      {
+        "slot": 4,
+        "name": "4"
+      },
+      {
+        "slot": 5,
+        "name": "5"
+      }
+    ],
+    "createdAt": "2026-01-08T16:57:45.239Z"
+  },
+  {
+    "id": "tpl_1767892330982",
+    "name": "hahaha",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "1"
+      },
+      {
+        "slot": 2,
+        "name": "2"
+      },
+      {
+        "slot": 3,
+        "name": "3"
+      },
+      {
+        "slot": 4,
+        "name": "4"
+      },
+      {
+        "slot": 5,
+        "name": "5"
+      }
+    ],
+    "createdAt": "2026-01-08T17:12:10.982Z"
+  },
+  {
+    "id": "tpl_1767892382109",
+    "name": "uiygui",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "guh"
+      },
+      {
+        "slot": 2,
+        "name": "k"
+      },
+      {
+        "slot": 3,
+        "name": "k"
+      },
+      {
+        "slot": 4,
+        "name": "o"
+      },
+      {
+        "slot": 5,
+        "name": "p"
+      }
+    ],
+    "createdAt": "2026-01-08T17:13:02.109Z"
+  }
+]
