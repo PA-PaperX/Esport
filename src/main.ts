@@ -2317,8 +2317,8 @@ function openTemplateManager(): void {
         border-bottom: 1px solid #374151;
     `;
     header.innerHTML = `
-        <h2 style="color: white; font-size: 22px; font-weight: bold;">📋 Template Manager</h2>
-        <button id="close-template-manager" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+        <h2 style="color: white; font-size: 22px; font-weight: bold;">Template Manager</h2>
+        <button id="close-template-manager" class="border">✕ Close</button>
     `;
 
     // Content container
