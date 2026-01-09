@@ -1,15 +1,16 @@
 {
   "matchId": "match_init",
+  "linkedMatchId": "match_r1_1",
   "bestOf": 3,
   "currentGame": 1,
-  "swapped": false,
+  "swapped": true,
   "teams": {
     "A": {
       "name": "HOME TEAM",
       "shortName": "HOME",
-      "color": "#3b82f6",
+      "color": "#ff0000",
       "logo": "",
-      "logoVersion": 1767900917017,
+      "logoVersion": 1767913793301,
       "score": 0,
       "players": [
         {
@@ -40,11 +41,11 @@
       ]
     },
     "B": {
-      "name": "AWAY TEAM",
+      "name": "ez",
       "shortName": "AWAY",
-      "color": "#ef4444",
+      "color": "#007aff",
       "logo": "",
-      "logoVersion": 1767900917017,
+      "logoVersion": 1767913793301,
       "score": 0,
       "players": [
         {

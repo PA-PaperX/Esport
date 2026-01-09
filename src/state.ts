@@ -25,7 +25,8 @@ export interface Team {
 
 export interface MatchState {
   matchId: string;
-  bestOf: number; // แข่งกี่เกม (Bo1, Bo3, Bo5)
+  linkedMatchId: string | null;  // Bracket match ID for score sync
+  bestOf: number;    // แข่งกี่เกม (Bo1, Bo3, Bo5)
   currentGame: number;
   swapped: boolean; // สลับฝั่ง: false = Team A ซ้าย, true = Team A ขวา
   teams: {
@@ -65,6 +66,7 @@ const DEFAULT_PLAYERS = (prefix: string) =>
 
 export const INITIAL_STATE: MatchState = {
   matchId: "match_init",
+  linkedMatchId: null,
   bestOf: 3,
   currentGame: 1,
   swapped: false,
@@ -143,6 +145,17 @@ export class StateManager {
     this.state.swapped = !this.state.swapped;
     this.saveToDisk();
     return this.state.swapped;
+  }
+
+  // Link/Unlink bracket match for score sync
+  public setLinkedMatch(matchId: string | null): void {
+    this.state.linkedMatchId = matchId;
+    this.saveToDisk();
+    console.log(`🔗 Linked match: ${matchId || 'none'}`);
+  }
+
+  public getLinkedMatch(): string | null {
+    return this.state.linkedMatchId;
   }
 
   // ฟังก์ชันบันทึกข้อมูล (จำลอง)

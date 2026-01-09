@@ -67,7 +67,25 @@ const server = Bun.serve({
         // 1. Update Logic
         stateManager.updateTeam(side, data);
 
-        // 2. Broadcast to Overlay (Real-time!)
+        // 2. Sync scores to linked bracket match (if exists)
+        const linkedMatchId = stateManager.getLinkedMatch();
+        if (linkedMatchId && (data.score !== undefined)) {
+          const state = stateManager.getState();
+          bracketManager.updateMatch(linkedMatchId, {
+            scoreA: state.teams.A.score,
+            scoreB: state.teams.B.score
+          });
+
+          // Broadcast bracket update
+          const bracket = bracketManager.getState();
+          server.publish("overlay", JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: bracket
+          }));
+          console.log(`📊 Score synced to bracket match: ${linkedMatchId}`);
+        }
+
+        // 3. Broadcast to Overlay (Real-time!)
         const newState = stateManager.getState();
         server.publish(
           "overlay",
@@ -105,6 +123,30 @@ const server = Bun.serve({
         return Response.json({ success: true }, { headers });
       } catch (err) {
         return new Response("Update Player failed", { status: 500 });
+      }
+    }
+
+    // POST /api/match/link - Link/Unlink bracket match for score sync
+    if (url.pathname === "/api/match/link" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { matchId } = body; // matchId can be string or null to unlink
+
+        stateManager.setLinkedMatch(matchId || null);
+
+        // Broadcast updated state
+        const newState = stateManager.getState();
+        server.publish("overlay", JSON.stringify({
+          type: "STATE_UPDATE",
+          data: newState
+        }));
+
+        return Response.json({
+          success: true,
+          linkedMatchId: matchId || null
+        }, { headers });
+      } catch (err) {
+        return new Response("Link match failed", { status: 500 });
       }
     }
 

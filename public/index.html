@@ -1441,116 +1441,432 @@
                         </div>
                     </div>
                 `;
-          document.body.appendChild(island);
+                document.body.appendChild(island);
+            }
+
+            // Clear any existing timeout
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+            }
+
+            // Update content
+            const iconEl = island.querySelector('.dynamic-island__icon');
+            const titleEl = island.querySelector('.dynamic-island__title');
+            const subtitleEl = island.querySelector('.dynamic-island__subtitle');
+
+            // Set icon based on type
+            const icons = {
+                success: '<i class="ph-bold ph-check"></i>',
+                error: '<i class="ph-bold ph-x"></i>',
+                warning: '<i class="ph-bold ph-warning"></i>',
+                info: '<i class="ph-bold ph-info"></i>'
+            };
+
+            iconEl.innerHTML = icons[type] || icons.info;
+            iconEl.className = `dynamic-island__icon dynamic-island__icon--${type}`;
+            titleEl.textContent = title;
+            subtitleEl.textContent = subtitle;
+            subtitleEl.style.display = subtitle ? 'block' : 'none';
+
+            // Show with animation
+            island.classList.remove('animate-out', 'show', 'compact');
+            island.classList.add(subtitle ? 'expanded' : 'compact');
+
+            // Force reflow
+            void island.offsetWidth;
+
+            island.classList.add('animate-in', 'show');
+
+            // Auto hide
+            notificationTimeout = setTimeout(() => {
+                hideNotification();
+            }, duration);
         }
 
-        // Clear any existing timeout
-        if (notificationTimeout) {
-          clearTimeout(notificationTimeout);
+        function hideNotification() {
+            const island = document.getElementById('dynamic-island');
+            if (island) {
+                island.classList.remove('animate-in');
+                island.classList.add('animate-out');
+                setTimeout(() => {
+                    island.classList.remove('show', 'animate-out');
+                }, 300);
+            }
         }
 
-        // Update content
-        const iconEl = island.querySelector(".dynamic-island__icon");
-        const titleEl = island.querySelector(".dynamic-island__title");
-        const subtitleEl = island.querySelector(".dynamic-island__subtitle");
+        // ===========================================
+        // BRACKET MATCH LOADING FOR SCOREBOARD
+        // ===========================================
 
-        // Set icon based on type
-        const icons = {
-          success: '<i class="ph-bold ph-check"></i>',
-          error: '<i class="ph-bold ph-x"></i>',
-          warning: '<i class="ph-bold ph-warning"></i>',
-          info: '<i class="ph-bold ph-info"></i>',
-        };
+        let currentBracketData = null;
 
-        iconEl.innerHTML = icons[type] || icons.info;
-        iconEl.className = `dynamic-island__icon dynamic-island__icon--${type}`;
-        titleEl.textContent = title;
-        subtitleEl.textContent = subtitle;
-        subtitleEl.style.display = subtitle ? "block" : "none";
+        async function refreshBracketMatches() {
+            const selector = document.getElementById('bracket-match-selector');
+            if (!selector) return;
 
-        // Show with animation
-        island.classList.remove("animate-out", "show", "compact");
-        island.classList.add(subtitle ? "expanded" : "compact");
+            try {
+                const response = await fetch('/api/bracket');
+                const bracket = await response.json();
+                currentBracketData = bracket;
 
-        // Force reflow
-        void island.offsetWidth;
+                // Clear existing options
+                selector.innerHTML = '<option value="">Select a match...</option>';
 
-        island.classList.add("animate-in", "show");
+                if (!bracket || !bracket.matches || bracket.matches.length === 0) {
+                    selector.innerHTML = '<option value="">No bracket available</option>';
+                    return;
+                }
 
-        // Auto hide
-        notificationTimeout = setTimeout(() => {
-          hideNotification();
-        }, duration);
-      }
+                // Group matches by round
+                const matchesByRound = {};
+                bracket.matches.forEach((match, idx) => {
+                    // Filter out completed matches (where winner is decided)
+                    if (match.winner) return;
 
-      function hideNotification() {
-        const island = document.getElementById("dynamic-island");
-        if (island) {
-          island.classList.remove("animate-in");
-          island.classList.add("animate-out");
-          setTimeout(() => {
-            island.classList.remove("show", "animate-out");
-          }, 300);
+                    // Filter out matches where teams are not ready (TBA)
+                    if (!match.teamA || !match.teamB) return;
+
+                    const round = match.round || 1;
+                    if (!matchesByRound[round]) matchesByRound[round] = [];
+                    matchesByRound[round].push({ ...match, originalIndex: idx });
+                });
+
+                // Add options grouped by round
+                let matchNumber = 1;
+                Object.keys(matchesByRound).sort((a, b) => a - b).forEach(round => {
+                    const roundName = getRoundName(parseInt(round), bracket.matches.length);
+                    matchesByRound[round].forEach(match => {
+                        const teamA = match.teamA?.name || 'TBA';
+                        const teamB = match.teamB?.name || 'TBA';
+                        const option = document.createElement('option');
+                        option.value = match.id;
+                        option.textContent = `Match ${matchNumber}: ${teamA} vs ${teamB} (${roundName})`;
+                        selector.appendChild(option);
+                        matchNumber++;
+                    });
+                });
+
+                showNotification('Refreshed', `${bracket.matches.length} matches loaded`, 'success');
+            } catch (err) {
+                console.error('Failed to load bracket matches:', err);
+                selector.innerHTML = '<option value="">Error loading matches</option>';
+            }
         }
-      }
 
-      // ===========================================
-      // BRACKET MATCH LOADING FOR SCOREBOARD
-      // ===========================================
+        function getRoundName(round, totalMatches) {
+            // Simple round naming based on typical bracket structure
+            if (totalMatches <= 1) return 'Final';
+            if (totalMatches <= 3 && round === 1) return 'Semifinal';
+            if (totalMatches <= 3 && round === 2) return 'Final';
+            if (round === 1) return 'Round 1';
+            if (round === 2) return 'Quarterfinal';
+            if (round === 3) return 'Semifinal';
+            if (round === 4) return 'Final';
+            return `Round ${round}`;
+        }
 
-      let currentBracketData = null;
+        async function loadMatchFromBracket() {
+            const selector = document.getElementById('bracket-match-selector');
+            const matchId = selector?.value;
 
-      async function refreshBracketMatches() {
-        const selector = document.getElementById("bracket-match-selector");
-        if (!selector) return;
+            if (!matchId) {
+                showNotification('Select Match', 'Please select a match to load', 'warning');
+                return;
+            }
 
-        try {
-          const response = await fetch("/api/bracket");
-          const bracket = await response.json();
-          currentBracketData = bracket;
+            if (!currentBracketData || !currentBracketData.matches) {
+                await refreshBracketMatches();
+            }
 
-          // Clear existing options
-          selector.innerHTML = '<option value="">Select a match...</option>';
+            const match = currentBracketData?.matches?.find(m => m.id === matchId);
+            console.log('🔍 Loaded match:', match);
+            if (!match) {
+                showNotification('Error', 'Match not found', 'error');
+                return;
+            }
 
-          if (!bracket || !bracket.matches || bracket.matches.length === 0) {
-            selector.innerHTML =
-              '<option value="">No bracket available</option>';
-            return;
-          }
+            // 1. Link this match for score sync
+            try {
+                await fetch('/api/match/link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matchId: matchId })
+                });
+                console.log('🔗 Match linked for score sync:', matchId);
+                updateLinkedMatchIndicator(matchId, match);
+            } catch (err) {
+                console.error('Failed to link match:', err);
+            }
 
-          // Group matches by round
-          const matchesByRound = {};
-          bracket.matches.forEach((match, idx) => {
-            // Filter out completed matches (where winner is decided)
-            if (match.winner) return;
+            // CHECK SWAP STATE
+            const teamATitle = document.querySelector('#teamA-section .team-panel__title');
+            const isSwapped = teamATitle && teamATitle.textContent.includes('Team B');
+            console.log('🔄 Load Match - Swapped:', isSwapped);
 
-            // Filter out matches where teams are not ready (TBA)
-            if (!match.teamA || !match.teamB) return;
+            const inputA = isSwapped ? 'B' : 'A';
+            const inputB = isSwapped ? 'A' : 'B';
 
-            const round = match.round || 1;
-            if (!matchesByRound[round]) matchesByRound[round] = [];
-            matchesByRound[round].push({ ...match, originalIndex: idx });
-          });
+            // 2. Load Team A
+            if (match.teamA) {
+                document.getElementById(`team${inputA}-name`).value = match.teamA.name || '';
+                document.getElementById(`team${inputA}-color`).value = match.teamA.color || '#007AFF';
+                const hexEl = document.getElementById(`team${inputA}-color-hex`);
+                if (hexEl) hexEl.textContent = match.teamA.color || '#007AFF';
 
-          // Add options grouped by round
-          let matchNumber = 1;
-          Object.keys(matchesByRound)
-            .sort((a, b) => a - b)
-            .forEach((round) => {
-              const roundName = getRoundName(
-                parseInt(round),
-                bracket.matches.length,
-              );
-              matchesByRound[round].forEach((match) => {
-                const teamA = match.teamA?.name || "TBA";
-                const teamB = match.teamB?.name || "TBA";
-                const option = document.createElement("option");
-                option.value = match.id;
-                option.textContent = `Match ${matchNumber}: ${teamA} vs ${teamB} (${roundName})`;
-                selector.appendChild(option);
-                matchNumber++;
-              });
-            });
+                if (match.teamA.logo) {
+                    const preview = document.getElementById(`team${inputA}-logo-preview`);
+                    const dropzone = document.getElementById(`team${inputA}-dropzone`);
+                    if (preview) {
+                        preview.innerHTML = `<div class="relative w-full h-full group">
+                            <img src="${match.teamA.logo}" alt="${match.teamA.name} Logo" class="w-full h-full object-contain" 
+                                 style="border-radius: var(--radius-md);">
+                        </div>`;
+                        if (dropzone) dropzone.classList.add('has-logo');
+                    }
+                }
+            }
+
+            // 3. Load Team B
+            if (match.teamB) {
+                document.getElementById(`team${inputB}-name`).value = match.teamB.name || '';
+                document.getElementById(`team${inputB}-color`).value = match.teamB.color || '#FF453A';
+                const hexEl = document.getElementById(`team${inputB}-color-hex`);
+                if (hexEl) hexEl.textContent = match.teamB.color || '#FF453A';
+
+                if (match.teamB.logo) {
+                    const preview = document.getElementById(`team${inputB}-logo-preview`);
+                    const dropzone = document.getElementById(`team${inputB}-dropzone`);
+                    if (preview) {
+                        preview.innerHTML = `<div class="relative w-full h-full group">
+                            <img src="${match.teamB.logo}" alt="${match.teamB.name} Logo" class="w-full h-full object-contain" 
+                                 style="border-radius: var(--radius-md);">
+                        </div>`;
+                        if (dropzone) dropzone.classList.add('has-logo');
+                    }
+                }
+            }
+
+            // 4. Update scores from bracket
+            document.getElementById(`team${inputA}-score`).value = match.scoreA || 0;
+            document.getElementById(`team${inputB}-score`).value = match.scoreB || 0;
+
+            // 5. Save both teams to sync with backend
+            if (typeof saveTeam === 'function') {
+                await saveTeam('A');
+                await saveTeam('B');
+            }
+
+            showNotification('Match Loaded & Linked', `${match.teamA?.name || 'TBA'} vs ${match.teamB?.name || 'TBA'}`, 'success');
+        }
+
+        // Show linked match indicator
+        function updateLinkedMatchIndicator(matchId, match) {
+            let indicator = document.getElementById('linked-match-indicator');
+            if (!indicator) {
+                // Create indicator element
+                const selectorSection = document.querySelector('.bracket-match-selector');
+                if (selectorSection) {
+                    indicator = document.createElement('div');
+                    indicator.id = 'linked-match-indicator';
+                    indicator.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: var(--space-2);
+                        padding: var(--space-2) var(--space-3);
+                        background: rgba(0, 255, 102, 0.1);
+                        border: 1px solid rgba(0, 255, 102, 0.3);
+                        border-radius: var(--radius-md);
+                        font-size: var(--font-size-sm);
+                        color: #00FF66;
+                    `;
+                    selectorSection.appendChild(indicator);
+                }
+            }
+            if (indicator) {
+                indicator.innerHTML = `
+                    <i class="ph-bold ph-link" style="font-size: 16px;"></i>
+                    <span>Linked: ${match?.roundName || matchId}</span>
+                    <button onclick="unlinkMatch()" style="
+                        background: none;
+                        border: none;
+                        color: rgba(255,255,255,0.6);
+                        cursor: pointer;
+                        padding: 2px 6px;
+                        font-size: 12px;
+                    " title="Unlink match">✕</button>
+                `;
+            }
+        }
+
+        // Unlink match
+        async function unlinkMatch() {
+            try {
+                await fetch('/api/match/link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matchId: null })
+                });
+                const indicator = document.getElementById('linked-match-indicator');
+                if (indicator) indicator.remove();
+                showNotification('Unlinked', 'Score sync disabled', 'info');
+            } catch (err) {
+                console.error('Failed to unlink match:', err);
+            }
+        }
+
+        window.unlinkMatch = unlinkMatch;
+
+        // Load bracket matches on page load
+        setTimeout(refreshBracketMatches, 500);
+
+        // Expose globally for main.ts to use
+        window.showNotification = showNotification;
+        window.hideNotification = hideNotification;
+        window.refreshBracketMatches = refreshBracketMatches;
+        window.loadMatchFromBracket = loadMatchFromBracket;
+
+        // ===========================================
+        // LOGO UPLOAD HANDLER
+        // ===========================================
+
+        function handleLogoSelect(side, input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Validate file size (2MB max)
+            if (file.size > 2 * 1024 * 1024) {
+                showNotification('File too large', 'Maximum size is 2MB', 'error');
+                input.value = '';
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showNotification('Invalid file', 'Please select an image file', 'error');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const previewId = `team${side}-logo-preview`;
+                const dropzoneId = `team${side}-dropzone`;
+                const preview = document.getElementById(previewId);
+                const dropzone = document.getElementById(dropzoneId);
+
+                if (preview && dropzone) {
+                    // Add has-logo class to dropzone
+                    dropzone.classList.add('has-logo');
+
+                    // Replace preview content with image
+                    preview.innerHTML = `<img src="${e.target.result}" class="logo-dropzone__image" alt="Team ${side} Logo">`;
+
+                    // Show success notification
+                    showNotification('Logo uploaded', `Team ${side} logo updated`, 'success');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Expose globally
+        window.handleLogoSelect = handleLogoSelect;
+
+        // ===========================================
+        // BRACKET MANAGEMENT
+        // ===========================================
+
+        let currentBracketType = 'single';
+        let currentBracket = null;
+
+        function setBracketType(type) {
+            currentBracketType = type;
+            document.getElementById('bracket-type-single').className =
+                type === 'single' ? 'btn btn-primary' : 'btn btn-secondary';
+            document.getElementById('bracket-type-double').className =
+                type === 'double' ? 'btn btn-primary' : 'btn btn-secondary';
+        }
+
+        async function createBracket() {
+            const name = document.getElementById('bracket-name').value.trim();
+
+            if (!name) {
+                showNotification('Error', 'Please enter a tournament name', 'error');
+                return;
+            }
+
+            // Collect selected templates
+            let selectedTemplates = [];
+
+            // Respect the manual selection sequence
+            if (selectionSequence.length > 0) {
+                // Use the selection order
+                selectedTemplates = selectionSequence.map(name => {
+                    const template = bracketTemplates.find(t => t.name === name);
+                    if (template) {
+                        return {
+                            name: template.name,
+                            logo: template.logo || '',
+                            color: template.color || '#3b82f6'
+                        };
+                    }
+                    return null;
+                }).filter(t => t !== null);
+            } else {
+                // Fallback to DOM order (should rarely happen if selectionSequence logic is working)
+                const checkboxes = document.querySelectorAll('#bracket-template-list input[type="checkbox"]:checked');
+                checkboxes.forEach(cb => {
+                    const templateData = JSON.parse(cb.dataset.template);
+                    selectedTemplates.push({
+                        name: templateData.name,
+                        logo: templateData.logo || '',
+                        color: templateData.color || '#3b82f6'
+                    });
+                });
+            }
+            console.log('🔢 Teams ordered by selection sequence');
+
+            // Only templates allowed
+            const allTeams = selectedTemplates.map(t => t.name);
+
+            if (allTeams.length < 2) {
+                showNotification('Error', 'Please select at least 2 teams from templates', 'error');
+                return;
+            }
+
+            if (allTeams.length > 16) {
+                showNotification('Error', 'Maximum 16 teams allowed', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/bracket/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        type: currentBracketType,
+                        teams: allTeams,
+                        teamData: selectedTemplates
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    currentBracket = result.bracket;
+                    showNotification('Success', `Bracket created with ${allTeams.length} teams`, 'success');
+                    renderBracket(result.bracket);
+                    refreshBracketMatches(); // Update scoreboard dropdown
+                } else {
+                    showNotification('Error', 'Failed to create bracket', 'error');
+                }
+            } catch (err) {
+                console.error('Create bracket error:', err);
+                showNotification('Error', 'Failed to create bracket', 'error');
+            }
+        }
+
+        // Load templates for bracket selection
+        let bracketTemplates = [];
 
           showNotification(
             "Refreshed",
