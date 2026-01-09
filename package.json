@@ -11,6 +11,9 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "write": "bunx prettier . --write",
+    "dev:css": "bun x @tailwindcss/cli -i ./src/main.css -o ./public/styles/tokens.css --watch",
+    "build:css": "bun x @tailwindcss/cli -i ./src/main.css -o ./public/styles/tokens.css",
     "build:win": "electron-builder --win",
     "build:linux": "electron-builder --linux"
   },
@@ -19,6 +22,7 @@
     "@types/bun": "^1.3.5",
     "electron": "^39.2.7",
     "electron-builder": "^26.0.12",
+    "prettier": "3.7.4",
     "typescript": "^5.5.0"
   },
   "build": {
@@ -48,5 +52,9 @@
       "target": "AppImage",
       "icon": "public/icon.png"
     }
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
   }
 }

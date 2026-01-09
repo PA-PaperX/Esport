@@ -1,272 +1,282 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=1920, height=1080">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
     <title>Lower Third - Esport Control</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: transparent;
-            overflow: hidden;
-            width: 1920px;
-            height: 1080px;
-        }
+      body {
+        font-family: "Rajdhani", sans-serif;
+        background: transparent;
+        overflow: hidden;
+        width: 1920px;
+        height: 1080px;
+      }
 
-        /* ========================================
+      /* ========================================
            LOWER THIRD BAR
            ======================================== */
 
-        .lower-third {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50px;
-            background: linear-gradient(90deg, #1a472a 0%, #0d2818 50%, #1a472a 100%);
-            border-top: 3px solid #00ff88;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: translateY(100%);
-            transition: transform 0.5s ease-out;
-            z-index: 1000;
-        }
+      .lower-third {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(
+          90deg,
+          #1a472a 0%,
+          #0d2818 50%,
+          #1a472a 100%
+        );
+        border-top: 3px solid #00ff88;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateY(100%);
+        transition: transform 0.5s ease-out;
+        z-index: 1000;
+      }
 
-        .lower-third.visible {
-            transform: translateY(0);
-        }
+      .lower-third.visible {
+        transform: translateY(0);
+      }
 
-        /* Hazard stripes decoration */
-        .lower-third::before,
-        .lower-third::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            width: 80px;
-            height: 100%;
-            background: repeating-linear-gradient(-45deg,
-                    #000000,
-                    #000000 10px,
-                    #ffcc00 10px,
-                    #ffcc00 20px);
-            opacity: 0.8;
-        }
+      /* Hazard stripes decoration */
+      .lower-third::before,
+      .lower-third::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        width: 80px;
+        height: 100%;
+        background: repeating-linear-gradient(
+          -45deg,
+          #000000,
+          #000000 10px,
+          #ffcc00 10px,
+          #ffcc00 20px
+        );
+        opacity: 0.8;
+      }
 
-        .lower-third::before {
-            left: 0;
-        }
+      .lower-third::before {
+        left: 0;
+      }
 
-        .lower-third::after {
-            right: 0;
-        }
+      .lower-third::after {
+        right: 0;
+      }
 
-        /* Content container */
-        .lower-third-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 40px;
-            padding: 0 100px;
-            height: 100%;
-        }
+      /* Content container */
+      .lower-third-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        padding: 0 100px;
+        height: 100%;
+      }
 
-        /* Main title */
-        .main-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #ffffff;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-            white-space: nowrap;
-        }
+      /* Main title */
+      .main-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        white-space: nowrap;
+      }
 
-        /* Chevron decorations */
-        .chevron-left,
-        .chevron-right {
-            font-size: 28px;
-            color: #00ff88;
-            font-weight: 700;
-        }
+      /* Chevron decorations */
+      .chevron-left,
+      .chevron-right {
+        font-size: 28px;
+        color: #00ff88;
+        font-weight: 700;
+      }
 
-        /* Slots container */
-        .slots-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: absolute;
-            right: 100px;
-        }
+      /* Slots container */
+      .slots-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        position: absolute;
+        right: 100px;
+      }
 
-        .slot {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            transition: opacity 0.3s ease;
-        }
+      .slot {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 15px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 5px;
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        transition: opacity 0.3s ease;
+      }
 
-        .slot.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+      .slot.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
 
-        .slot-logo {
-            width: 24px;
-            height: 24px;
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
+      .slot-logo {
+        width: 24px;
+        height: 24px;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
 
-        .slot-text {
-            font-size: 14px;
-            color: #ffffff;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
+      .slot-text {
+        font-size: 14px;
+        color: #ffffff;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="lower-third" id="lower-third">
-        <div class="lower-third-content">
-            <span class="chevron-left">❮</span>
-            <span class="main-title" id="main-title">ROV PRO LEAGUE 2025 WINTER</span>
-            <span class="chevron-right">❯</span>
+      <div class="lower-third-content">
+        <span class="chevron-left">❮</span>
+        <span class="main-title" id="main-title"
+          >ROV PRO LEAGUE 2025 WINTER</span
+        >
+        <span class="chevron-right">❯</span>
+      </div>
+      <div class="slots-container" id="slots-container">
+        <div class="slot" id="slot-1">
+          <div class="slot-logo" id="slot-1-logo"></div>
+          <span class="slot-text" id="slot-1-text">Facebook</span>
         </div>
-        <div class="slots-container" id="slots-container">
-            <div class="slot" id="slot-1">
-                <div class="slot-logo" id="slot-1-logo"></div>
-                <span class="slot-text" id="slot-1-text">Facebook</span>
-            </div>
-            <div class="slot" id="slot-2">
-                <div class="slot-logo" id="slot-2-logo"></div>
-                <span class="slot-text" id="slot-2-text">YouTube</span>
-            </div>
-            <div class="slot" id="slot-3">
-                <div class="slot-logo" id="slot-3-logo"></div>
-                <span class="slot-text" id="slot-3-text">TikTok</span>
-            </div>
+        <div class="slot" id="slot-2">
+          <div class="slot-logo" id="slot-2-logo"></div>
+          <span class="slot-text" id="slot-2-text">YouTube</span>
         </div>
+        <div class="slot" id="slot-3">
+          <div class="slot-logo" id="slot-3-logo"></div>
+          <span class="slot-text" id="slot-3-text">TikTok</span>
+        </div>
+      </div>
     </div>
 
     <script>
-        // Elements
-        const lowerThird = document.getElementById('lower-third');
-        const mainTitle = document.getElementById('main-title');
+      // Elements
+      const lowerThird = document.getElementById("lower-third");
+      const mainTitle = document.getElementById("main-title");
 
-        // State
-        let ws = null;
-        let currentState = null;
+      // State
+      let ws = null;
+      let currentState = null;
 
-        // WebSocket connection
-        function connectWebSocket() {
-            ws = new WebSocket(`ws://${window.location.host}`);
+      // WebSocket connection
+      function connectWebSocket() {
+        ws = new WebSocket(`ws://${window.location.host}`);
 
-            ws.onopen = () => {
-                console.log('✅ Connected to server');
-            };
+        ws.onopen = () => {
+          console.log("✅ Connected to server");
+        };
 
-            ws.onmessage = (event) => {
-                try {
-                    const msg = JSON.parse(event.data);
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
 
-                    if (msg.type === 'LOWER_THIRD_UPDATE' && msg.data) {
-                        currentState = msg.data;
-                        renderLowerThird();
-                    }
-                } catch (e) {
-                    console.error('Message parse error:', e);
-                }
-            };
+            if (msg.type === "LOWER_THIRD_UPDATE" && msg.data) {
+              currentState = msg.data;
+              renderLowerThird();
+            }
+          } catch (e) {
+            console.error("Message parse error:", e);
+          }
+        };
 
-            ws.onclose = () => {
-                console.log('❌ Disconnected');
-                setTimeout(connectWebSocket, 3000);
-            };
+        ws.onclose = () => {
+          console.log("❌ Disconnected");
+          setTimeout(connectWebSocket, 3000);
+        };
 
-            ws.onerror = () => ws?.close();
+        ws.onerror = () => ws?.close();
+      }
+
+      // Render Lower Third
+      function renderLowerThird() {
+        if (!currentState) return;
+
+        // Show/hide bar
+        if (currentState.enabled) {
+          lowerThird.classList.add("visible");
+        } else {
+          lowerThird.classList.remove("visible");
         }
 
-        // Render Lower Third
-        function renderLowerThird() {
-            if (!currentState) return;
+        // Update title
+        mainTitle.textContent = currentState.title || "";
 
-            // Show/hide bar
-            if (currentState.enabled) {
-                lowerThird.classList.add('visible');
-            } else {
-                lowerThird.classList.remove('visible');
-            }
-
-            // Update title
-            mainTitle.textContent = currentState.title || '';
-
-            // Update colors
-            if (currentState.backgroundColor) {
-                lowerThird.style.background = currentState.backgroundColor;
-            }
-            if (currentState.textColor) {
-                mainTitle.style.color = currentState.textColor;
-            }
-
-            // Update slots
-            currentState.slots?.forEach(slot => {
-                const slotEl = document.getElementById(`slot-${slot.id}`);
-                const logoEl = document.getElementById(`slot-${slot.id}-logo`);
-                const textEl = document.getElementById(`slot-${slot.id}-text`);
-
-                if (!slotEl) return;
-
-                // Show/hide slot
-                if (slot.enabled) {
-                    slotEl.classList.remove('hidden');
-                } else {
-                    slotEl.classList.add('hidden');
-                }
-
-                // Logo or Text mode
-                if (slot.type === 'logo' && slot.logoPath) {
-                    logoEl.style.backgroundImage = `url('${slot.logoPath}?t=${Date.now()}')`;
-                    logoEl.style.display = 'block';
-                    textEl.textContent = slot.label || '';
-                } else {
-                    logoEl.style.display = 'none';
-                    textEl.textContent = slot.text || slot.label || '';
-                }
-            });
+        // Update colors
+        if (currentState.backgroundColor) {
+          lowerThird.style.background = currentState.backgroundColor;
+        }
+        if (currentState.textColor) {
+          mainTitle.style.color = currentState.textColor;
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Load initial state
-            try {
-                const response = await fetch('/api/lower-third');
-                if (response.ok) {
-                    currentState = await response.json();
-                    renderLowerThird();
-                }
-            } catch (e) {
-                console.log('Failed to load initial state');
-            }
+        // Update slots
+        currentState.slots?.forEach((slot) => {
+          const slotEl = document.getElementById(`slot-${slot.id}`);
+          const logoEl = document.getElementById(`slot-${slot.id}-logo`);
+          const textEl = document.getElementById(`slot-${slot.id}-text`);
 
-            // Connect WebSocket for updates
-            connectWebSocket();
+          if (!slotEl) return;
+
+          // Show/hide slot
+          if (slot.enabled) {
+            slotEl.classList.remove("hidden");
+          } else {
+            slotEl.classList.add("hidden");
+          }
+
+          // Logo or Text mode
+          if (slot.type === "logo" && slot.logoPath) {
+            logoEl.style.backgroundImage = `url('${slot.logoPath}?t=${Date.now()}')`;
+            logoEl.style.display = "block";
+            textEl.textContent = slot.label || "";
+          } else {
+            logoEl.style.display = "none";
+            textEl.textContent = slot.text || slot.label || "";
+          }
         });
-    </script>
-</body>
+      }
 
+      // Initialize
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Load initial state
+        try {
+          const response = await fetch("/api/lower-third");
+          if (response.ok) {
+            currentState = await response.json();
+            renderLowerThird();
+          }
+        } catch (e) {
+          console.log("Failed to load initial state");
+        }
+
+        // Connect WebSocket for updates
+        connectWebSocket();
+      });
+    </script>
+  </body>
 </html>
