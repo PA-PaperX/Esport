@@ -18,7 +18,7 @@ interface Team {
     shortName: string;
     color: string;
     logo: string;
-    logoFit?: 'contain' | 'cover';
+    logoFit?: "contain" | "cover";
     score: number;
     players: Player[];
 }
@@ -60,26 +60,26 @@ const getElement = <T extends HTMLElement>(id: string): T | null =>
 // Logo Cache Busting
 let logoVersions: { A: number; B: number } = {
     A: Date.now(),
-    B: Date.now()
+    B: Date.now(),
 };
 
 const elements = {
-    statusDot: () => getElement<HTMLDivElement>('status-dot'),
-    connectionStatus: () => getElement<HTMLDivElement>('connection-status'),
-    teamAName: () => getElement<HTMLInputElement>('teamA-name'),
-    teamAColor: () => getElement<HTMLInputElement>('teamA-color'),
-    teamAColorHex: () => getElement<HTMLSpanElement>('teamA-color-hex'),
-    teamAScore: () => getElement<HTMLInputElement>('teamA-score'),
-    teamAPlayers: () => getElement<HTMLDivElement>('teamA-players'),
-    teamALogoPreview: () => getElement<HTMLDivElement>('teamA-logo-preview'),
-    teamALogoInput: () => getElement<HTMLInputElement>('teamA-logo-input'),
-    teamBName: () => getElement<HTMLInputElement>('teamB-name'),
-    teamBColor: () => getElement<HTMLInputElement>('teamB-color'),
-    teamBColorHex: () => getElement<HTMLSpanElement>('teamB-color-hex'),
-    teamBScore: () => getElement<HTMLInputElement>('teamB-score'),
-    teamBPlayers: () => getElement<HTMLDivElement>('teamB-players'),
-    teamBLogoPreview: () => getElement<HTMLDivElement>('teamB-logo-preview'),
-    teamBLogoInput: () => getElement<HTMLInputElement>('teamB-logo-input'),
+    statusDot: () => getElement<HTMLDivElement>("status-dot"),
+    connectionStatus: () => getElement<HTMLDivElement>("connection-status"),
+    teamAName: () => getElement<HTMLInputElement>("teamA-name"),
+    teamAColor: () => getElement<HTMLInputElement>("teamA-color"),
+    teamAColorHex: () => getElement<HTMLSpanElement>("teamA-color-hex"),
+    teamAScore: () => getElement<HTMLInputElement>("teamA-score"),
+    teamAPlayers: () => getElement<HTMLDivElement>("teamA-players"),
+    teamALogoPreview: () => getElement<HTMLDivElement>("teamA-logo-preview"),
+    teamALogoInput: () => getElement<HTMLInputElement>("teamA-logo-input"),
+    teamBName: () => getElement<HTMLInputElement>("teamB-name"),
+    teamBColor: () => getElement<HTMLInputElement>("teamB-color"),
+    teamBColorHex: () => getElement<HTMLSpanElement>("teamB-color-hex"),
+    teamBScore: () => getElement<HTMLInputElement>("teamB-score"),
+    teamBPlayers: () => getElement<HTMLDivElement>("teamB-players"),
+    teamBLogoPreview: () => getElement<HTMLDivElement>("teamB-logo-preview"),
+    teamBLogoInput: () => getElement<HTMLInputElement>("teamB-logo-input"),
 };
 
 // ==========================================
@@ -92,25 +92,28 @@ function updateConnectionStatus(connected: boolean): void {
 
     if (dot) {
         // Use 'connected' class for neon glow effect
-        dot.classList.toggle('connected', connected);
+        dot.classList.toggle("connected", connected);
     }
 
     if (status) {
-        status.textContent = connected ? 'CONNECTED' : 'DISCONNECTED';
-        status.style.color = connected ? '#00FF66' : '';
+        status.textContent = connected ? "CONNECTED" : "DISCONNECTED";
+        status.style.color = connected ? "#00FF66" : "";
     }
 }
 
 function connectWebSocket(): void {
-    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    if (
+        ws &&
+        (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
+    ) {
         return;
     }
 
-    console.log('🔌 Connecting to WebSocket...');
+    console.log("🔌 Connecting to WebSocket...");
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
-        console.log('✅ WebSocket Connected');
+        console.log("✅ WebSocket Connected");
         updateConnectionStatus(true);
 
         if (reconnectInterval) {
@@ -123,23 +126,23 @@ function connectWebSocket(): void {
         try {
             const message: WSMessage = JSON.parse(event.data);
 
-            if (message.type === 'STATE_UPDATE' && message.data) {
+            if (message.type === "STATE_UPDATE" && message.data) {
                 currentState = message.data;
                 renderUI();
             }
         } catch (err) {
-            console.error('❌ Failed to parse WebSocket message:', err);
+            console.error("❌ Failed to parse WebSocket message:", err);
         }
     };
 
     ws.onclose = () => {
-        console.log('🔌 WebSocket Disconnected');
+        console.log("🔌 WebSocket Disconnected");
         updateConnectionStatus(false);
         scheduleReconnect();
     };
 
     ws.onerror = (error) => {
-        console.error('❌ WebSocket Error:', error);
+        console.error("❌ WebSocket Error:", error);
         ws?.close();
     };
 }
@@ -147,7 +150,7 @@ function connectWebSocket(): void {
 function scheduleReconnect(): void {
     if (!reconnectInterval) {
         reconnectInterval = window.setInterval(() => {
-            console.log('🔄 Attempting to reconnect...');
+            console.log("🔄 Attempting to reconnect...");
             connectWebSocket();
         }, RECONNECT_DELAY);
     }
@@ -165,15 +168,15 @@ async function fetchInitialState(): Promise<void> {
             renderUI();
         }
     } catch (err) {
-        console.error('❌ Failed to fetch initial state:', err);
+        console.error("❌ Failed to fetch initial state:", err);
     }
 }
 
 async function postAPI(endpoint: string, body: object): Promise<boolean> {
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
         return response.ok;
@@ -195,36 +198,44 @@ function renderUI(): void {
     // When swapped: Left panel shows Team B, Right panel shows Team A
     // But we keep the original team identity (colors, borders) from the panel
     if (swapped) {
-        renderTeamData('A', currentState.teams.B); // Left panel shows Team B data
-        renderTeamData('B', currentState.teams.A); // Right panel shows Team A data
+        renderTeamData("A", currentState.teams.B); // Left panel shows Team B data
+        renderTeamData("B", currentState.teams.A); // Right panel shows Team A data
     } else {
-        renderTeamData('A', currentState.teams.A); // Normal: Left = Team A
-        renderTeamData('B', currentState.teams.B); // Normal: Right = Team B
+        renderTeamData("A", currentState.teams.A); // Normal: Left = Team A
+        renderTeamData("B", currentState.teams.B); // Normal: Right = Team B
     }
 
     // Update swap status
-    const swapStatus = document.getElementById('swap-status');
+    const swapStatus = document.getElementById("swap-status");
     if (swapStatus) {
-        swapStatus.textContent = swapped ? '🔀 สลับฝั่ง' : 'ปกติ';
+        swapStatus.textContent = swapped ? "🔀 สลับฝั่ง" : "ปกติ";
     }
 
     // Update panel titles based on swap state
-    const teamATitle = document.querySelector('#teamA-section .team-panel__title');
-    const teamBTitle = document.querySelector('#teamB-section .team-panel__title');
+    const teamATitle = document.querySelector(
+        "#teamA-section .team-panel__title",
+    );
+    const teamBTitle = document.querySelector(
+        "#teamB-section .team-panel__title",
+    );
 
     if (teamATitle) {
-        teamATitle.textContent = swapped ? 'Team B' : 'Team A';
+        teamATitle.textContent = swapped ? "Team B" : "Team A";
     }
     if (teamBTitle) {
-        teamBTitle.textContent = swapped ? 'Team A' : 'Team B';
+        teamBTitle.textContent = swapped ? "Team A" : "Team B";
     }
 
     // Update button labels and colors based on swap state
-    const teamABtn = document.querySelector('#teamA-section button[onclick*="saveTeam"]') as HTMLButtonElement;
-    const teamBBtn = document.querySelector('#teamB-section button[onclick*="saveTeam"]') as HTMLButtonElement;
+    const teamABtn = document.querySelector(
+        '#teamA-section button[onclick*="saveTeam"]',
+    ) as HTMLButtonElement;
+    const teamBBtn = document.querySelector(
+        '#teamB-section button[onclick*="saveTeam"]',
+    ) as HTMLButtonElement;
 
     if (teamABtn) {
-        teamABtn.textContent = swapped ? 'UPDATE TEAM B' : 'UPDATE TEAM A';
+        teamABtn.textContent = swapped ? "UPDATE TEAM B" : "UPDATE TEAM A";
         // Set button color dynamically based on the team it represents
         // If swapped, Team A panel (Left) controls Team B. Team B color is currentState.teams.B.color
         // Wait, renderTeamData updates colorInput. The color passed to applyThemeColor is the source of truth for "current color".
@@ -232,7 +243,7 @@ function renderUI(): void {
         // Easiest is to set it in applyThemeColor? No, that applies to section/card.
         // Let's set it here based on state.
 
-        let btnColor = '#007AFF'; // Default Blue
+        let btnColor = "#007AFF"; // Default Blue
         if (swapped) {
             btnColor = currentState.teams.B.color;
         } else {
@@ -240,11 +251,16 @@ function renderUI(): void {
         }
 
         // Remove old classes that force color
-        teamABtn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'bg-red-600', 'hover:bg-red-500');
+        teamABtn.classList.remove(
+            "bg-blue-600",
+            "hover:bg-blue-500",
+            "bg-red-600",
+            "hover:bg-red-500",
+        );
         teamABtn.style.backgroundColor = btnColor;
 
-        // Add hover effect via JS or assume simple CSS transition. 
-        // Since we can't easily add hover pseudo-state via inline style, 
+        // Add hover effect via JS or assume simple CSS transition.
+        // Since we can't easily add hover pseudo-state via inline style,
         // we might leave it or use a utility class that darkens on hover if available, or just set background.
         // For now, setting background is better than wrong color.
 
@@ -256,16 +272,21 @@ function renderUI(): void {
     }
 
     if (teamBBtn) {
-        teamBBtn.textContent = swapped ? 'UPDATE TEAM A' : 'UPDATE TEAM B';
+        teamBBtn.textContent = swapped ? "UPDATE TEAM A" : "UPDATE TEAM B";
 
-        let btnColor = '#FF3B30'; // Default Red
+        let btnColor = "#FF3B30"; // Default Red
         if (swapped) {
             btnColor = currentState.teams.A.color; // Right panel controls Team A
         } else {
             btnColor = currentState.teams.B.color;
         }
 
-        teamBBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500', 'bg-red-600', 'hover:bg-red-500');
+        teamBBtn.classList.remove(
+            "bg-blue-600",
+            "hover:bg-blue-500",
+            "bg-red-600",
+            "hover:bg-red-500",
+        );
         teamBBtn.style.backgroundColor = btnColor;
 
         const rgb = hexToRgb(btnColor);
@@ -276,12 +297,16 @@ function renderUI(): void {
 }
 
 // Render team data into a specific panel (side = panel position, team = data to show)
-function renderTeamData(side: 'A' | 'B', team: Team): void {
-    const nameInput = side === 'A' ? elements.teamAName() : elements.teamBName();
-    const colorInput = side === 'A' ? elements.teamAColor() : elements.teamBColor();
-    const colorHex = side === 'A' ? elements.teamAColorHex() : elements.teamBColorHex();
-    const scoreInput = side === 'A' ? elements.teamAScore() : elements.teamBScore();
-    const playersContainer = side === 'A' ? elements.teamAPlayers() : elements.teamBPlayers();
+function renderTeamData(side: "A" | "B", team: Team): void {
+    const nameInput = side === "A" ? elements.teamAName() : elements.teamBName();
+    const colorInput =
+        side === "A" ? elements.teamAColor() : elements.teamBColor();
+    const colorHex =
+        side === "A" ? elements.teamAColorHex() : elements.teamBColorHex();
+    const scoreInput =
+        side === "A" ? elements.teamAScore() : elements.teamBScore();
+    const playersContainer =
+        side === "A" ? elements.teamAPlayers() : elements.teamBPlayers();
 
     if (nameInput) nameInput.value = team.name;
     if (colorInput) colorInput.value = team.color;
@@ -295,7 +320,8 @@ function renderTeamData(side: 'A' | 'B', team: Team): void {
 
     // Render logo preview
     // Render logo preview
-    const logoPreview = side === 'A' ? elements.teamALogoPreview() : elements.teamBLogoPreview();
+    const logoPreview =
+        side === "A" ? elements.teamALogoPreview() : elements.teamBLogoPreview();
     if (logoPreview) {
         if (team.logo) {
             // Determine logical team to use correct cachebuster
@@ -306,7 +332,9 @@ function renderTeamData(side: 'A' | 'B', team: Team): void {
             }
 
             // Append version
-            const logoUrl = team.logo.includes('?') ? `${team.logo}&v=${version}` : `${team.logo}?v=${version}`;
+            const logoUrl = team.logo.includes("?")
+                ? `${team.logo}&v=${version}`
+                : `${team.logo}?v=${version}`;
 
             // Display cropped logo - basically always contain because crop handles the aspect ratio
             logoPreview.innerHTML = `
@@ -327,12 +355,12 @@ function renderTeamData(side: 'A' | 'B', team: Team): void {
     applyThemeColor(side, team.color);
 
     // Update color hex on change
-    colorInput?.addEventListener('input', () => {
+    colorInput?.addEventListener("input", () => {
         if (colorHex) colorHex.textContent = colorInput.value;
     });
 }
 
-function applyThemeColor(side: 'A' | 'B', color: string): void {
+function applyThemeColor(side: "A" | "B", color: string): void {
     const section = document.getElementById(`team${side}-section`);
     const header = document.getElementById(`team${side}-header`);
     const accent = document.getElementById(`team${side}-accent`);
@@ -340,7 +368,9 @@ function applyThemeColor(side: 'A' | 'B', color: string): void {
 
     // Parse color to get RGB for shadow
     const rgb = hexToRgb(color);
-    const shadowColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)` : 'rgba(100, 100, 100, 0.15)';
+    const shadowColor = rgb
+        ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`
+        : "rgba(100, 100, 100, 0.15)";
 
     if (section) {
         // Section A has border-right (separator), Section B has border-left (separator)
@@ -368,31 +398,42 @@ function applyThemeColor(side: 'A' | 'B', color: string): void {
     const rosterList = document.getElementById(`team${side}-players`);
     if (rosterList) {
         // renderPlayers generates elements with class 'player-card'
-        const items = rosterList.querySelectorAll('.player-card') as NodeListOf<HTMLElement>;
-        items.forEach(item => {
+        const items = rosterList.querySelectorAll(
+            ".player-card",
+        ) as NodeListOf<HTMLElement>;
+        items.forEach((item) => {
             item.style.borderLeftColor = color;
         });
     }
 }
 
-function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
+    return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+        }
+        : null;
 }
 
-function renderPlayers(side: 'A' | 'B', players: Player[], container: HTMLDivElement): void {
-    const sideClass = side === 'A' ? 'player-card--a' : 'player-card--b';
+function renderPlayers(
+    side: "A" | "B",
+    players: Player[],
+    container: HTMLDivElement,
+): void {
+    const sideClass = side === "A" ? "player-card--a" : "player-card--b";
 
-    container.innerHTML = players.map((player) => {
-        // Hero image path (use ROV hero images with filename mapping)
-        const heroImgPath = player.hero ? getHeroImagePath(player.hero) : '';
-        const laneImgPath = player.lane ? `/lane/${encodeURIComponent(player.lane)}.jpg` : '';
+    container.innerHTML = players
+        .map((player) => {
+            // Hero image path (use ROV hero images with filename mapping)
+            const heroImgPath = player.hero ? getHeroImagePath(player.hero) : "";
+            const laneImgPath = player.lane
+                ? `/lane/${encodeURIComponent(player.lane)}.jpg`
+                : "";
 
-        return `
+            return `
     <div class="player-card ${sideClass}" 
          draggable="true" 
          data-side="${side}" 
@@ -408,12 +449,17 @@ function renderPlayers(side: 'A' | 'B', players: Player[], container: HTMLDivEle
       </div>
       
       <!-- Lane/Role -->
-      <div class="player-card__role ${player.hero ? '' : 'disabled'}" 
-           onclick="handleLaneClick('${side}', ${player.slot}, ${player.hero ? 'true' : 'false'})"
-           title="${player.lane || (player.hero ? 'Select Lane' : 'Select Hero first')}">
+      <div class="player-card__role ${player.hero ? "" : "disabled"}" 
+           onclick="handleLaneClick('${side}', ${player.slot}, ${player.hero ? "true" : "false"
+                })"
+           title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")
+                }">
         ${laneImgPath
-                ? `<img src="${laneImgPath}" alt="${escapeHtml(player.lane || '')}">`
-                : '<i class="ph-duotone ph-map-pin"></i>'}
+                    ? `<img src="${laneImgPath}" alt="${escapeHtml(
+                        player.lane || "",
+                    )}">`
+                    : '<i class="ph-duotone ph-map-pin"></i>'
+                }
       </div>
       
       <!-- Name Input -->
@@ -427,26 +473,31 @@ function renderPlayers(side: 'A' | 'B', players: Player[], container: HTMLDivEle
       </div>
       
       <!-- Hero Avatar -->
-      <div class="player-card__hero ${player.hero ? 'has-hero' : ''}" 
+      <div class="player-card__hero ${player.hero ? "has-hero" : ""}" 
            onclick="openHeroPicker('${side}', ${player.slot})"
-           title="${player.hero || 'Select Hero'}">
+           title="${player.hero || "Select Hero"}">
         ${heroImgPath
-                ? `<img src="${heroImgPath}" alt="${escapeHtml(player.hero || '')}">`
-                : '<i class="ph-duotone ph-game-controller"></i>'}
+                    ? `<img src="${heroImgPath}" alt="${escapeHtml(
+                        player.hero || "",
+                    )}">`
+                    : '<i class="ph-duotone ph-game-controller"></i>'
+                }
       </div>
       
       <!-- Captain Toggle -->
-      <button class="player-card__captain ${player.isCaptain ? 'active' : ''}" 
+      <button class="player-card__captain ${player.isCaptain ? "active" : ""}" 
               onclick="toggleCaptain('${side}', ${player.slot})"
-              title="${player.isCaptain ? 'Captain' : 'Set as Captain'}">
-        <i class="ph-${player.isCaptain ? 'fill' : 'duotone'} ph-crown"></i>
+              title="${player.isCaptain ? "Captain" : "Set as Captain"}">
+        <i class="ph-${player.isCaptain ? "fill" : "duotone"} ph-crown"></i>
       </button>
     </div>
-  `}).join('');
+  `;
+        })
+        .join("");
 }
 
 function escapeHtml(text: string): string {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
 }
@@ -455,17 +506,18 @@ function escapeHtml(text: string): string {
 // Action Handlers (Exposed to Window)
 // ==========================================
 
-async function saveTeam(side: 'A' | 'B'): Promise<void> {
-    const nameInput = side === 'A' ? elements.teamAName() : elements.teamBName();
-    const colorInput = side === 'A' ? elements.teamAColor() : elements.teamBColor();
+async function saveTeam(side: "A" | "B"): Promise<void> {
+    const nameInput = side === "A" ? elements.teamAName() : elements.teamBName();
+    const colorInput =
+        side === "A" ? elements.teamAColor() : elements.teamBColor();
 
     if (!nameInput || !colorInput) return;
 
     // When swapped, left panel (A) contains Team B data, right panel (B) contains Team A data
     const swapped = currentState?.swapped || false;
-    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+    const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
 
-    const success = await postAPI('/api/team/update', {
+    const success = await postAPI("/api/team/update", {
         side: actualSide,
         name: nameInput.value,
         color: colorInput.value,
@@ -480,44 +532,43 @@ async function saveTeam(side: 'A' | 'B'): Promise<void> {
     }
 }
 
-async function adjustScore(side: 'A' | 'B', delta: number): Promise<void> {
+async function adjustScore(side: "A" | "B", delta: number): Promise<void> {
     if (!currentState) return;
 
-    // When swapped, left panel (A) contains Team B data, right panel (B) contains Team A data
-    const swapped = currentState.swapped || false;
-    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
-
-    const team = currentState.teams[actualSide];
+    const team = currentState.teams[side];
     const newScore = Math.max(0, team.score + delta);
 
-    const success = await postAPI('/api/team/update', {
-        side: actualSide,
+    const success = await postAPI("/api/team/update", {
+        side,
         score: newScore,
     });
 
     if (success) {
-        console.log(`✅ Score ${actualSide} updated: ${newScore} (panel ${side})`);
+        console.log(`✅ Score ${side} updated: ${newScore}`);
     } else {
-        console.error(`❌ Failed to update score for Team ${actualSide}`);
+        console.error(`❌ Failed to update score for Team ${side}`);
     }
 }
 
 async function swapSides(): Promise<void> {
     try {
         const response = await fetch(`${API_BASE}/api/swap`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
         });
 
         if (response.ok) {
             const result = await response.json();
             updateSwapUI(result.swapped);
-            console.log(`✅ Sides swapped: ${result.swapped ? 'Team A → Right, Team B → Left' : 'Normal'}`);
+            console.log(
+                `✅ Sides swapped: ${result.swapped ? "Team A → Right, Team B → Left" : "Normal"
+                }`,
+            );
         } else {
-            console.error('❌ Swap failed');
+            console.error("❌ Swap failed");
         }
     } catch (err) {
-        console.error('❌ Swap error:', err);
+        console.error("❌ Swap error:", err);
     }
 }
 
@@ -525,17 +576,17 @@ async function swapSides(): Promise<void> {
 async function triggerTransition(): Promise<void> {
     try {
         const response = await fetch(`${API_BASE}/api/transition/trigger`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
         });
 
         if (response.ok) {
-            console.log('🎬 Transition triggered!');
+            console.log("🎬 Transition triggered!");
         } else {
-            console.error('❌ Transition trigger failed');
+            console.error("❌ Transition trigger failed");
         }
     } catch (err) {
-        console.error('❌ Transition error:', err);
+        console.error("❌ Transition error:", err);
     }
 }
 
@@ -551,120 +602,126 @@ function previewTransitionLogo(input: HTMLInputElement): void {
     if (!file) return;
 
     transitionLogoFile = file;
-    const img = document.getElementById('transition-logo-img') as HTMLImageElement;
-    const placeholder = document.getElementById('transition-logo-placeholder');
-    const status = document.getElementById('transition-logo-status');
+    const img = document.getElementById(
+        "transition-logo-img",
+    ) as HTMLImageElement;
+    const placeholder = document.getElementById("transition-logo-placeholder");
+    const status = document.getElementById("transition-logo-status");
 
     if (img && placeholder) {
         const reader = new FileReader();
         reader.onload = (e) => {
             img.src = e.target?.result as string;
-            img.classList.remove('hidden');
-            placeholder.classList.add('hidden');
+            img.classList.remove("hidden");
+            placeholder.classList.add("hidden");
         };
         reader.readAsDataURL(file);
     }
 
     if (status) {
         status.textContent = `📁 เลือก: ${file.name} → กด Upload`;
-        status.className = 'text-xs text-yellow-400 text-center';
+        status.className = "text-xs text-yellow-400 text-center";
     }
-    console.log('📁 Transition logo selected:', file.name);
+    console.log("📁 Transition logo selected:", file.name);
 }
 
 async function uploadTransitionLogo(): Promise<void> {
-    const status = document.getElementById('transition-logo-status');
+    const status = document.getElementById("transition-logo-status");
 
     if (!transitionLogoFile) {
-        console.log('⚠️ No logo file selected');
+        console.log("⚠️ No logo file selected");
         if (status) {
-            status.textContent = '⚠️ กรุณาเลือกรูปก่อน!';
-            status.className = 'text-xs text-red-400 text-center';
+            status.textContent = "⚠️ กรุณาเลือกรูปก่อน!";
+            status.className = "text-xs text-red-400 text-center";
         }
         return;
     }
 
     if (status) {
-        status.textContent = '⏳ กำลังอัปโหลด...';
-        status.className = 'text-xs text-blue-400 text-center';
+        status.textContent = "⏳ กำลังอัปโหลด...";
+        status.className = "text-xs text-blue-400 text-center";
     }
 
     const formData = new FormData();
-    formData.append('logo', transitionLogoFile);
+    formData.append("logo", transitionLogoFile);
 
     try {
         const response = await fetch(`${API_BASE}/api/transition/logo`, {
-            method: 'POST',
-            body: formData
+            method: "POST",
+            body: formData,
         });
 
         if (response.ok) {
             const result = await response.json();
-            console.log('✅ Transition logo uploaded:', result.path);
+            console.log("✅ Transition logo uploaded:", result.path);
             if (status) {
-                status.textContent = '✅ อัปโหลดสำเร็จ!';
-                status.className = 'text-xs text-green-400 text-center';
+                status.textContent = "✅ อัปโหลดสำเร็จ!";
+                status.className = "text-xs text-green-400 text-center";
             }
             transitionLogoFile = null;
         } else {
-            console.error('❌ Failed to upload transition logo');
+            console.error("❌ Failed to upload transition logo");
             if (status) {
-                status.textContent = '❌ อัปโหลดล้มเหลว';
-                status.className = 'text-xs text-red-400 text-center';
+                status.textContent = "❌ อัปโหลดล้มเหลว";
+                status.className = "text-xs text-red-400 text-center";
             }
         }
     } catch (err) {
-        console.error('❌ Transition logo upload error:', err);
+        console.error("❌ Transition logo upload error:", err);
         if (status) {
-            status.textContent = '❌ เกิดข้อผิดพลาด';
-            status.className = 'text-xs text-red-400 text-center';
+            status.textContent = "❌ เกิดข้อผิดพลาด";
+            status.className = "text-xs text-red-400 text-center";
         }
     }
 }
 
 // Combined function: select and upload in one step
-async function uploadTransitionLogoFromInput(input: HTMLInputElement): Promise<void> {
+async function uploadTransitionLogoFromInput(
+    input: HTMLInputElement,
+): Promise<void> {
     const file = input.files?.[0];
     if (!file) return;
 
-    const img = document.getElementById('transition-logo-img') as HTMLImageElement;
-    const placeholder = document.getElementById('transition-logo-placeholder');
-    const status = document.getElementById('transition-logo-status');
+    const img = document.getElementById(
+        "transition-logo-img",
+    ) as HTMLImageElement;
+    const placeholder = document.getElementById("transition-logo-placeholder");
+    const status = document.getElementById("transition-logo-status");
 
     // Show preview immediately
     if (img && placeholder) {
         const reader = new FileReader();
         reader.onload = (e) => {
             img.src = e.target?.result as string;
-            img.classList.remove('hidden');
-            placeholder.classList.add('hidden');
+            img.classList.remove("hidden");
+            placeholder.classList.add("hidden");
         };
         reader.readAsDataURL(file);
     }
 
     // Update status
-    if (status) status.textContent = '⏳ กำลังอัปโหลด...';
+    if (status) status.textContent = "⏳ กำลังอัปโหลด...";
 
     const formData = new FormData();
-    formData.append('logo', file);
+    formData.append("logo", file);
 
     try {
         const response = await fetch(`${API_BASE}/api/transition/logo`, {
-            method: 'POST',
-            body: formData
+            method: "POST",
+            body: formData,
         });
 
         if (response.ok) {
             const result = await response.json();
-            console.log('✅ Transition logo uploaded:', result.path);
-            if (status) status.textContent = '✅ อัปโหลดสำเร็จ!';
+            console.log("✅ Transition logo uploaded:", result.path);
+            if (status) status.textContent = "✅ อัปโหลดสำเร็จ!";
         } else {
-            console.error('❌ Failed to upload transition logo');
-            if (status) status.textContent = '❌ อัปโหลดล้มเหลว';
+            console.error("❌ Failed to upload transition logo");
+            if (status) status.textContent = "❌ อัปโหลดล้มเหลว";
         }
     } catch (err) {
-        console.error('❌ Transition logo upload error:', err);
-        if (status) status.textContent = '❌ เกิดข้อผิดพลาด';
+        console.error("❌ Transition logo upload error:", err);
+        if (status) status.textContent = "❌ เกิดข้อผิดพลาด";
     }
 }
 
@@ -675,17 +732,21 @@ async function loadTransitionLogo(): Promise<void> {
         if (response.ok) {
             const result = await response.json();
             if (result.path) {
-                const img = document.getElementById('transition-logo-img') as HTMLImageElement;
-                const placeholder = document.getElementById('transition-logo-placeholder');
+                const img = document.getElementById(
+                    "transition-logo-img",
+                ) as HTMLImageElement;
+                const placeholder = document.getElementById(
+                    "transition-logo-placeholder",
+                );
                 if (img && placeholder) {
                     img.src = result.path;
-                    img.classList.remove('hidden');
-                    placeholder.classList.add('hidden');
+                    img.classList.remove("hidden");
+                    placeholder.classList.add("hidden");
                 }
             }
         }
     } catch (err) {
-        console.log('No transition logo found');
+        console.log("No transition logo found");
     }
 }
 
@@ -695,48 +756,64 @@ async function loadTransitionLogo(): Promise<void> {
 
 // Update Lower Third settings
 async function updateLowerThird(): Promise<void> {
-    const enabled = (document.getElementById('lower-third-enabled') as HTMLInputElement)?.checked;
-    const title = (document.getElementById('lower-third-title') as HTMLInputElement)?.value || '';
+    const enabled = (
+        document.getElementById("lower-third-enabled") as HTMLInputElement
+    )?.checked;
+    const title =
+        (document.getElementById("lower-third-title") as HTMLInputElement)?.value ||
+        "";
 
-    const slots = [1, 2, 3].map(id => ({
+    const slots = [1, 2, 3].map((id) => ({
         id,
-        enabled: (document.getElementById(`slot-${id}-enabled`) as HTMLInputElement)?.checked ?? true,
-        type: 'text' as const,
-        logoPath: '',
-        text: (document.getElementById(`slot-${id}-text`) as HTMLInputElement)?.value || '',
-        label: (document.getElementById(`slot-${id}-text`) as HTMLInputElement)?.value || ''
+        enabled:
+            (document.getElementById(`slot-${id}-enabled`) as HTMLInputElement)
+                ?.checked ?? true,
+        type: "text" as const,
+        logoPath: "",
+        text:
+            (document.getElementById(`slot-${id}-text`) as HTMLInputElement)?.value ||
+            "",
+        label:
+            (document.getElementById(`slot-${id}-text`) as HTMLInputElement)?.value ||
+            "",
     }));
 
     try {
         const response = await fetch(`${API_BASE}/api/lower-third`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled, title, slots })
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enabled, title, slots }),
         });
 
         if (response.ok) {
-            console.log('✅ Lower Third updated');
+            console.log("✅ Lower Third updated");
         } else {
-            console.error('❌ Failed to update Lower Third');
+            console.error("❌ Failed to update Lower Third");
         }
     } catch (err) {
-        console.error('❌ Lower Third update error:', err);
+        console.error("❌ Lower Third update error:", err);
     }
 }
 
 // Upload logo for specific slot
-async function uploadSlotLogo(slotId: number, input: HTMLInputElement): Promise<void> {
+async function uploadSlotLogo(
+    slotId: number,
+    input: HTMLInputElement,
+): Promise<void> {
     const file = input.files?.[0];
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('logo', file);
+    formData.append("logo", file);
 
     try {
-        const response = await fetch(`${API_BASE}/api/lower-third/slot/${slotId}/logo`, {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch(
+            `${API_BASE}/api/lower-third/slot/${slotId}/logo`,
+            {
+                method: "POST",
+                body: formData,
+            },
+        );
 
         if (response.ok) {
             console.log(`✅ Slot ${slotId} logo uploaded`);
@@ -744,7 +821,7 @@ async function uploadSlotLogo(slotId: number, input: HTMLInputElement): Promise<
             console.error(`❌ Failed to upload slot ${slotId} logo`);
         }
     } catch (err) {
-        console.error('❌ Slot logo upload error:', err);
+        console.error("❌ Slot logo upload error:", err);
     }
 }
 
@@ -756,22 +833,32 @@ async function loadLowerThird(): Promise<void> {
             const state = await response.json();
 
             // Update UI from state
-            const enabledEl = document.getElementById('lower-third-enabled') as HTMLInputElement;
-            const titleEl = document.getElementById('lower-third-title') as HTMLInputElement;
+            const enabledEl = document.getElementById(
+                "lower-third-enabled",
+            ) as HTMLInputElement;
+            const titleEl = document.getElementById(
+                "lower-third-title",
+            ) as HTMLInputElement;
 
             if (enabledEl) enabledEl.checked = state.enabled;
-            if (titleEl) titleEl.value = state.title || '';
+            if (titleEl) titleEl.value = state.title || "";
 
-            state.slots?.forEach((slot: { id: number; enabled: boolean; text: string }) => {
-                const slotEnabled = document.getElementById(`slot-${slot.id}-enabled`) as HTMLInputElement;
-                const slotText = document.getElementById(`slot-${slot.id}-text`) as HTMLInputElement;
+            state.slots?.forEach(
+                (slot: { id: number; enabled: boolean; text: string }) => {
+                    const slotEnabled = document.getElementById(
+                        `slot-${slot.id}-enabled`,
+                    ) as HTMLInputElement;
+                    const slotText = document.getElementById(
+                        `slot-${slot.id}-text`,
+                    ) as HTMLInputElement;
 
-                if (slotEnabled) slotEnabled.checked = slot.enabled;
-                if (slotText) slotText.value = slot.text || '';
-            });
+                    if (slotEnabled) slotEnabled.checked = slot.enabled;
+                    if (slotText) slotText.value = slot.text || "";
+                },
+            );
         }
     } catch (err) {
-        console.log('Failed to load Lower Third state');
+        console.log("Failed to load Lower Third state");
     }
 }
 
@@ -780,51 +867,60 @@ async function loadLowerThird(): Promise<void> {
 // ==========================================
 
 function toggleSettingsMenu(): void {
-    const menu = document.getElementById('settings-menu');
+    const menu = document.getElementById("settings-menu");
     if (menu) {
         // Always remove 'hidden' first otherwise it will override 'active' due to !important
-        menu.classList.remove('hidden');
-        menu.classList.toggle('active');
+        menu.classList.remove("hidden");
+        menu.classList.toggle("active");
     }
 }
 
 // Switch between pages (Scoreboard / Broadcast)
-let currentPage: string = 'scoreboard';
+let currentPage: string = "scoreboard";
 
 function switchPage(page: string): void {
     currentPage = page;
 
-    // Hide all pages by removing 'active'
-    const pageScoreboard = document.getElementById('page-scoreboard');
-    const pageBroadcast = document.getElementById('page-broadcast');
+    // Hide ALL pages by removing 'active' class
+    const allPages = ["scoreboard", "broadcast", "bracket"];
+    allPages.forEach((p) => {
+        const pageEl = document.getElementById(`page-${p}`);
+        const navEl = document.getElementById(`nav-${p}`);
+        if (pageEl) {
+            pageEl.classList.remove("active");
+            pageEl.style.display = "none"; // Force hide
+        }
+        if (navEl) navEl.classList.remove("active");
+    });
 
-    if (pageScoreboard) pageScoreboard.classList.remove('active');
-    if (pageBroadcast) pageBroadcast.classList.remove('active');
-
-    // Show selected page by adding 'active'
+    // Show selected page
     const targetPage = document.getElementById(`page-${page}`);
-    if (targetPage) targetPage.classList.add('active');
+    const targetNav = document.getElementById(`nav-${page}`);
 
-    // Update nav items active state
-    const navScoreboard = document.getElementById('nav-scoreboard');
-    const navBroadcast = document.getElementById('nav-broadcast');
-
-    navScoreboard?.classList.toggle('active', page === 'scoreboard');
-    navBroadcast?.classList.toggle('active', page === 'broadcast');
+    if (targetPage) {
+        targetPage.classList.add("active");
+        targetPage.style.display = ""; // Clear inline style to let CSS take over
+    }
+    if (targetNav) targetNav.classList.add("active");
 
     // Close the menu after switching
-    const menu = document.getElementById('settings-menu');
-    if (menu) menu.classList.remove('active');
+    const menu = document.getElementById("settings-menu");
+    if (menu) menu.classList.remove("active");
 
     console.log(`📄 Switched to page: ${page}`);
 }
 
 // Close menu when clicking outside
-document.addEventListener('click', (e) => {
-    const menu = document.getElementById('settings-menu');
-    const hamburger = document.getElementById('hamburger-btn');
-    if (menu && hamburger && !menu.contains(e.target as Node) && !hamburger.contains(e.target as Node)) {
-        menu.classList.add('hidden');
+document.addEventListener("click", (e) => {
+    const menu = document.getElementById("settings-menu");
+    const hamburger = document.getElementById("hamburger-btn");
+    if (
+        menu &&
+        hamburger &&
+        !menu.contains(e.target as Node) &&
+        !hamburger.contains(e.target as Node)
+    ) {
+        menu.classList.add("hidden");
     }
 });
 
@@ -835,7 +931,7 @@ function handleMainLogoSelect(input: HTMLInputElement): void {
     if (!file) return;
 
     mainLogoFile = file;
-    const preview = document.getElementById('main-logo-preview');
+    const preview = document.getElementById("main-logo-preview");
     if (preview) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -846,47 +942,50 @@ function handleMainLogoSelect(input: HTMLInputElement): void {
 }
 
 async function saveGeneralSettings(): Promise<void> {
-    const eventName = (document.getElementById('event-name') as HTMLInputElement)?.value || '';
-    const transitionColor = (document.getElementById('transition-color') as HTMLInputElement)?.value || '#202224';
+    const eventName =
+        (document.getElementById("event-name") as HTMLInputElement)?.value || "";
+    const transitionColor =
+        (document.getElementById("transition-color") as HTMLInputElement)?.value ||
+        "#202224";
 
-    console.log('💾 Saving general settings:', { eventName, transitionColor });
+    console.log("💾 Saving general settings:", { eventName, transitionColor });
 
     // Save to localStorage for now
-    localStorage.setItem('esport-event-name', eventName);
-    localStorage.setItem('esport-transition-color', transitionColor);
+    localStorage.setItem("esport-event-name", eventName);
+    localStorage.setItem("esport-transition-color", transitionColor);
 
     // If logo file selected, upload it
     if (mainLogoFile) {
         const formData = new FormData();
-        formData.append('logo', mainLogoFile);
-        formData.append('type', 'main');
+        formData.append("logo", mainLogoFile);
+        formData.append("type", "main");
 
         try {
             const response = await fetch(`${API_BASE}/api/settings/logo`, {
-                method: 'POST',
-                body: formData
+                method: "POST",
+                body: formData,
             });
             if (response.ok) {
-                console.log('✅ Main logo uploaded');
+                console.log("✅ Main logo uploaded");
             }
         } catch (err) {
-            console.error('❌ Logo upload error:', err);
+            console.error("❌ Logo upload error:", err);
         }
     }
 
     // Close menu
     toggleSettingsMenu();
-    console.log('✅ Settings saved!');
+    console.log("✅ Settings saved!");
 }
 
 // Current open panel type
-let currentSettingsPanel: string = '';
+let currentSettingsPanel: string = "";
 
 // Open full settings panel
 function openSettingsPanel(panelType: string): void {
-    const modal = document.getElementById('settings-modal');
-    const title = document.getElementById('settings-modal-title');
-    const content = document.getElementById('settings-modal-content');
+    const modal = document.getElementById("settings-modal");
+    const title = document.getElementById("settings-modal-title");
+    const content = document.getElementById("settings-modal-content");
 
     if (!modal || !title || !content) return;
 
@@ -895,30 +994,30 @@ function openSettingsPanel(panelType: string): void {
 
     // Set title and content based on panel type
     switch (panelType) {
-        case 'general':
-            title.innerHTML = '⚙️ General Settings';
+        case "general":
+            title.innerHTML = "⚙️ General Settings";
             content.innerHTML = getGeneralSettingsContent();
             break;
-        case 'overlays':
-            title.innerHTML = '🖥️ Overlay URLs';
+        case "overlays":
+            title.innerHTML = "🖥️ Overlay URLs";
             content.innerHTML = getOverlayURLsContent();
             break;
-        case 'sponsors':
-            title.innerHTML = '🏷️ Sponsors';
+        case "sponsors":
+            title.innerHTML = "🏷️ Sponsors";
             content.innerHTML = '<p class="text-gray-500">Coming Soon...</p>';
             break;
         default:
             return;
     }
 
-    modal.classList.remove('hidden');
+    modal.classList.remove("hidden");
     loadPanelData(panelType);
 }
 
 function closeSettingsPanel(): void {
-    const modal = document.getElementById('settings-modal');
-    if (modal) modal.classList.add('hidden');
-    currentSettingsPanel = '';
+    const modal = document.getElementById("settings-modal");
+    if (modal) modal.classList.add("hidden");
+    currentSettingsPanel = "";
 }
 
 function getGeneralSettingsContent(): string {
@@ -1016,29 +1115,34 @@ function getOverlayURLsContent(): string {
 }
 
 function loadPanelData(panelType: string): void {
-    if (panelType === 'general') {
-        const eventName = localStorage.getItem('esport-event-name') || '';
-        const transitionColor = localStorage.getItem('esport-transition-color') || '#202224';
-        const altColor = localStorage.getItem('esport-alt-color') || '#ffffff';
+    if (panelType === "general") {
+        const eventName = localStorage.getItem("esport-event-name") || "";
+        const transitionColor =
+            localStorage.getItem("esport-transition-color") || "#202224";
+        const altColor = localStorage.getItem("esport-alt-color") || "#ffffff";
 
         setTimeout(() => {
-            const eventInput = document.getElementById('event-name') as HTMLInputElement;
-            const colorInput = document.getElementById('transition-color') as HTMLInputElement;
-            const colorHex = document.getElementById('transition-color-hex');
-            const altInput = document.getElementById('alt-color') as HTMLInputElement;
-            const altHex = document.getElementById('alt-color-hex');
+            const eventInput = document.getElementById(
+                "event-name",
+            ) as HTMLInputElement;
+            const colorInput = document.getElementById(
+                "transition-color",
+            ) as HTMLInputElement;
+            const colorHex = document.getElementById("transition-color-hex");
+            const altInput = document.getElementById("alt-color") as HTMLInputElement;
+            const altHex = document.getElementById("alt-color-hex");
 
             if (eventInput) eventInput.value = eventName;
             if (colorInput) {
                 colorInput.value = transitionColor;
-                colorInput.addEventListener('input', () => {
+                colorInput.addEventListener("input", () => {
                     if (colorHex) colorHex.textContent = colorInput.value;
                 });
             }
             if (colorHex) colorHex.textContent = transitionColor;
             if (altInput) {
                 altInput.value = altColor;
-                altInput.addEventListener('input', () => {
+                altInput.addEventListener("input", () => {
                     if (altHex) altHex.textContent = altInput.value;
                 });
             }
@@ -1048,7 +1152,7 @@ function loadPanelData(panelType: string): void {
 }
 
 function saveCurrentSettings(): void {
-    if (currentSettingsPanel === 'general') {
+    if (currentSettingsPanel === "general") {
         saveGeneralSettings();
     }
     closeSettingsPanel();
@@ -1056,7 +1160,7 @@ function saveCurrentSettings(): void {
 
 function copyToClipboard(text: string): void {
     navigator.clipboard.writeText(text).then(() => {
-        console.log('📋 Copied to clipboard:', text);
+        console.log("📋 Copied to clipboard:", text);
     });
 }
 
@@ -1066,10 +1170,10 @@ function loadGeneralSettings(): void {
 }
 
 function updateSwapUI(swapped: boolean): void {
-    const swapStatus = document.getElementById('swap-status');
+    const swapStatus = document.getElementById("swap-status");
 
     if (swapStatus) {
-        swapStatus.textContent = swapped ? '🔀 สลับฝั่ง' : 'ปกติ';
+        swapStatus.textContent = swapped ? "🔀 สลับฝั่ง" : "ปกติ";
     }
 
     // Re-render UI with new swap state
@@ -1079,8 +1183,12 @@ function updateSwapUI(swapped: boolean): void {
     }
 }
 
-async function updatePlayer(side: 'A' | 'B', slot: number, name: string): Promise<void> {
-    const success = await postAPI('/api/player/update', {
+async function updatePlayer(
+    side: "A" | "B",
+    slot: number,
+    name: string,
+): Promise<void> {
+    const success = await postAPI("/api/player/update", {
         side,
         slot,
         name,
@@ -1093,33 +1201,42 @@ async function updatePlayer(side: 'A' | 'B', slot: number, name: string): Promis
     }
 }
 
-async function handleLogoSelect(side: 'A' | 'B', input: HTMLInputElement): Promise<void> {
+async function handleLogoSelect(
+    side: "A" | "B",
+    input: HTMLInputElement,
+): Promise<void> {
     const file = input.files?.[0];
     if (!file) return;
 
     // Validate file size (max 2MB)
     const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
-        alert('File too large! Maximum size is 2MB.');
-        input.value = '';
+        alert("File too large! Maximum size is 2MB.");
+        input.value = "";
         return;
     }
 
     // Validate file type
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'image/gif'];
+    const allowedTypes = [
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/svg+xml",
+        "image/gif",
+    ];
     if (!allowedTypes.includes(file.type)) {
-        alert('Invalid file type! Allowed: PNG, JPG, WEBP, SVG, GIF');
-        input.value = '';
+        alert("Invalid file type! Allowed: PNG, JPG, WEBP, SVG, GIF");
+        input.value = "";
         return;
     }
 
     // When swapped, panel A contains Team B data, panel B contains Team A data
     const swapped = currentState?.swapped || false;
-    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+    const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
 
     // Open Crop Modal instead of direct upload
     openCropModal(file, actualSide);
-    input.value = '';
+    input.value = "";
 }
 
 // Crop State
@@ -1132,23 +1249,23 @@ let cropOffsetY = 0;
 let isDragging = false;
 let lastX = 0;
 let lastY = 0;
-let currentCropSide: 'A' | 'B' | null = null;
+let currentCropSide: "A" | "B" | null = null;
 
-function openCropModal(file: File, side: 'A' | 'B'): void {
-    const modal = document.getElementById('crop-modal');
-    cropCanvas = document.getElementById('crop-canvas') as HTMLCanvasElement;
-    const zoomInput = document.getElementById('crop-zoom') as HTMLInputElement;
+function openCropModal(file: File, side: "A" | "B"): void {
+    const modal = document.getElementById("crop-modal");
+    cropCanvas = document.getElementById("crop-canvas") as HTMLCanvasElement;
+    const zoomInput = document.getElementById("crop-zoom") as HTMLInputElement;
 
     if (!modal || !cropCanvas || !zoomInput) return;
 
     currentCropSide = side;
-    cropCtx = cropCanvas.getContext('2d');
+    cropCtx = cropCanvas.getContext("2d");
 
     // Reset state
     cropScale = 1;
     cropOffsetX = 0;
     cropOffsetY = 0;
-    zoomInput.value = '1';
+    zoomInput.value = "1";
 
     // Load Image
     const reader = new FileReader();
@@ -1178,15 +1295,15 @@ function openCropModal(file: File, side: 'A' | 'B'): void {
             cropOffsetY = (cropCanvas.height - cropImage.height * cropScale) / 2;
 
             drawCrop();
-            modal.classList.remove('hidden');
+            modal.classList.remove("hidden");
 
             // Add Listeners
-            cropCanvas.addEventListener('mousedown', startDrag);
-            cropCanvas.addEventListener('mousemove', drag);
-            cropCanvas.addEventListener('mouseup', endDrag);
-            cropCanvas.addEventListener('mouseleave', endDrag);
+            cropCanvas.addEventListener("mousedown", startDrag);
+            cropCanvas.addEventListener("mousemove", drag);
+            cropCanvas.addEventListener("mouseup", endDrag);
+            cropCanvas.addEventListener("mouseleave", endDrag);
             // Wheel zoom
-            cropCanvas.addEventListener('wheel', handleWheel);
+            cropCanvas.addEventListener("wheel", handleWheel);
         };
         cropImage.src = e.target?.result as string;
     };
@@ -1194,27 +1311,27 @@ function openCropModal(file: File, side: 'A' | 'B'): void {
 }
 
 function closeCropModal(): void {
-    const modal = document.getElementById('crop-modal');
-    if (modal) modal.classList.add('hidden');
+    const modal = document.getElementById("crop-modal");
+    if (modal) modal.classList.add("hidden");
     cropImage = null;
     currentCropSide = null;
 }
 
 function updateCropZoom(): void {
-    const zoomInput = document.getElementById('crop-zoom') as HTMLInputElement;
+    const zoomInput = document.getElementById("crop-zoom") as HTMLInputElement;
     if (!zoomInput || !cropImage || !cropCanvas) return;
 
     // Zoom relative to center would be nice, but simple scale is okay for now.
     // Better: maintain center point.
 
     const newScale = parseFloat(zoomInput.value);
-    // Adjust offsets to keep center? 
-    // Simplified: just update scale and let user pan. 
+    // Adjust offsets to keep center?
+    // Simplified: just update scale and let user pan.
     // But multiplying by base scale.
 
     // We need a base scale to reference.
     // Let's assume zoomInput is a multiplier on the *initial* fit scale?
-    // Or just a raw multiplier? 
+    // Or just a raw multiplier?
     // Let's use raw multiplier logic relative to image size.
     // Re-calculate based on slider.
 
@@ -1261,7 +1378,7 @@ function endDrag(): void {
 
 function handleWheel(e: WheelEvent): void {
     e.preventDefault();
-    const zoomInput = document.getElementById('crop-zoom') as HTMLInputElement;
+    const zoomInput = document.getElementById("crop-zoom") as HTMLInputElement;
     if (!zoomInput) return;
 
     let val = parseFloat(zoomInput.value);
@@ -1280,7 +1397,7 @@ function drawCrop(): void {
     cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
 
     // Draw background
-    cropCtx.fillStyle = '#111';
+    cropCtx.fillStyle = "#111";
     cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
 
     // Save context for clipping
@@ -1292,28 +1409,40 @@ function drawCrop(): void {
         cropOffsetX,
         cropOffsetY,
         cropImage.width * cropScale,
-        cropImage.height * cropScale
+        cropImage.height * cropScale,
     );
 
     // Draw Overlay: Semi-transparent dark outside the circle
     cropCtx.restore(); // Restore to draw overlay on top
 
-    cropCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    cropCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
     cropCtx.beginPath();
     // Exterior of circle
     cropCtx.rect(0, 0, cropCanvas.width, cropCanvas.height);
     // Cut out circle
-    cropCtx.arc(cropCanvas.width / 2, cropCanvas.height / 2, cropCanvas.width / 2, 0, Math.PI * 2, true);
+    cropCtx.arc(
+        cropCanvas.width / 2,
+        cropCanvas.height / 2,
+        cropCanvas.width / 2,
+        0,
+        Math.PI * 2,
+        true,
+    );
     cropCtx.fill();
 
     // Draw Circle Border
-    cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    cropCtx.strokeStyle = "rgba(255, 255, 255, 0.9)";
     cropCtx.lineWidth = 2;
     cropCtx.beginPath();
-    cropCtx.arc(cropCanvas.width / 2, cropCanvas.height / 2, cropCanvas.width / 2 - 2, 0, Math.PI * 2);
+    cropCtx.arc(
+        cropCanvas.width / 2,
+        cropCanvas.height / 2,
+        cropCanvas.width / 2 - 2,
+        0,
+        Math.PI * 2,
+    );
     cropCtx.stroke();
 }
-
 
 function confirmCrop(): void {
     if (!cropCanvas || !currentCropSide) return;
@@ -1324,17 +1453,17 @@ function confirmCrop(): void {
             await uploadLogo(currentCropSide, file);
             closeCropModal();
         }
-    }, 'image/png');
+    }, "image/png");
 }
 
-async function uploadLogo(side: 'A' | 'B', file: File): Promise<void> {
+async function uploadLogo(side: "A" | "B", file: File): Promise<void> {
     const formData = new FormData();
-    formData.append('logo', file);
-    formData.append('side', side);
+    formData.append("logo", file);
+    formData.append("side", side);
 
     try {
         const response = await fetch(`${API_BASE}/api/logo/upload`, {
-            method: 'POST',
+            method: "POST",
             body: formData,
         });
 
@@ -1348,8 +1477,11 @@ async function uploadLogo(side: 'A' | 'B', file: File): Promise<void> {
             // Update local state is optional if WS sends update, but good for immediate feedback.
             // However, WS update might not have the version param, so relying on logoVersions global is better.
             if (currentState) {
-                const logoPath = result.logoPath || result.path || (side === 'A' ? '/logos/team-a.png' : '/logos/team-b.png');
-                if (side === 'A') currentState.teams.A.logo = logoPath;
+                const logoPath =
+                    result.logoPath ||
+                    result.path ||
+                    (side === "A" ? "/logos/team-a.png" : "/logos/team-b.png");
+                if (side === "A") currentState.teams.A.logo = logoPath;
                 else currentState.teams.B.logo = logoPath;
                 renderUI();
             }
@@ -1359,59 +1491,66 @@ async function uploadLogo(side: 'A' | 'B', file: File): Promise<void> {
             alert(`Upload failed: ${error}`);
         }
     } catch (err) {
-        console.error('❌ Logo upload error:', err);
-        alert('Failed to upload logo. Please try again.');
+        console.error("❌ Logo upload error:", err);
+        alert("Failed to upload logo. Please try again.");
     }
 }
 
 // Color picker state
-let activePickerSide: 'A' | 'B' | null = null;
-let activePickerPanelSide: 'A' | 'B' | null = null;
+let activePickerSide: "A" | "B" | null = null;
+let activePickerPanelSide: "A" | "B" | null = null;
 let pickerOverlay: HTMLDivElement | null = null;
 
-async function pickScreenColor(side: 'A' | 'B'): Promise<void> {
+async function pickScreenColor(side: "A" | "B"): Promise<void> {
     // Try EyeDropper API (Chrome/Edge)
-    if ('EyeDropper' in window) {
+    if ("EyeDropper" in window) {
         try {
             // @ts-ignore - EyeDropper is not in TypeScript types yet
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
             // When swapped, panel A contains Team B data
             const swapped = currentState?.swapped || false;
-            const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+            const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
             applyColor(actualSide, result.sRGBHex, side);
         } catch (err) {
-            console.log('Color picking cancelled');
+            console.log("Color picking cancelled");
         }
     } else {
-        alert('ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)');
+        alert(
+            "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)",
+        );
     }
 }
 
-async function pickLogoColor(side: 'A' | 'B'): Promise<void> {
-    const logoPreview = side === 'A' ? elements.teamALogoPreview() : elements.teamBLogoPreview();
-    const logoImg = logoPreview?.querySelector('img') as HTMLImageElement | null;
+async function pickLogoColor(side: "A" | "B"): Promise<void> {
+    const logoPreview =
+        side === "A" ? elements.teamALogoPreview() : elements.teamBLogoPreview();
+    const logoImg = logoPreview?.querySelector("img") as HTMLImageElement | null;
 
-    if (!logoImg || logoImg.style.display === 'none') {
-        alert('กรุณาอัพโหลดโลโก้ก่อน เพื่อดูดสีจากโลโก้');
+    if (!logoImg || logoImg.style.display === "none") {
+        alert("กรุณาอัพโหลดโลโก้ก่อน เพื่อดูดสีจากโลโก้");
         return;
     }
 
     // When swapped, panel A contains Team B data
     const swapped = currentState?.swapped || false;
-    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+    const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
 
     // Open pixel picker modal with both actual and panel side
     openPixelPickerModal(actualSide, side, logoImg.src);
 }
 
-function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', imageSrc: string): void {
+function openPixelPickerModal(
+    actualSide: "A" | "B",
+    panelSide: "A" | "B",
+    imageSrc: string,
+): void {
     activePickerSide = actualSide;
     activePickerPanelSide = panelSide;
 
     // Create overlay
-    pickerOverlay = document.createElement('div');
-    pickerOverlay.id = 'pixel-picker-overlay';
+    pickerOverlay = document.createElement("div");
+    pickerOverlay.id = "pixel-picker-overlay";
     pickerOverlay.style.cssText = `
         position: fixed;
         top: 0;
@@ -1428,7 +1567,7 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
     `;
 
     // Create header
-    const header = document.createElement('div');
+    const header = document.createElement("div");
     header.style.cssText = `
         color: white;
         font-size: 18px;
@@ -1441,8 +1580,8 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
     `;
 
     // Create color preview
-    const colorPreview = document.createElement('div');
-    colorPreview.id = 'picker-color-preview';
+    const colorPreview = document.createElement("div");
+    colorPreview.id = "picker-color-preview";
     colorPreview.style.cssText = `
         display: flex;
         align-items: center;
@@ -1458,7 +1597,7 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
     `;
 
     // Create canvas container
-    const canvasContainer = document.createElement('div');
+    const canvasContainer = document.createElement("div");
     canvasContainer.style.cssText = `
         border: 3px solid #3b82f6;
         border-radius: 12px;
@@ -1467,8 +1606,8 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
     `;
 
     // Create canvas for pixel picking
-    const canvas = document.createElement('canvas');
-    canvas.id = 'picker-canvas';
+    const canvas = document.createElement("canvas");
+    canvas.id = "picker-canvas";
     canvas.style.cssText = `
         max-width: 400px;
         max-height: 400px;
@@ -1478,12 +1617,12 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
 
     // Load image to canvas
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    img.crossOrigin = "anonymous";
     img.onload = () => {
         const size = Math.min(400, Math.max(img.width, img.height, 200));
         canvas.width = size;
         canvas.height = size;
-        const ctx = canvas.getContext('2d')!;
+        const ctx = canvas.getContext("2d")!;
 
         // Draw image centered
         const scale = Math.min(size / img.width, size / img.height);
@@ -1492,15 +1631,15 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
         const x = (size - w) / 2;
         const y = (size - h) / 2;
 
-        ctx.fillStyle = '#374151';
+        ctx.fillStyle = "#374151";
         ctx.fillRect(0, 0, size, size);
         ctx.drawImage(img, x, y, w, h);
     };
     img.src = imageSrc;
 
     // Mouse move - show color preview
-    canvas.addEventListener('mousemove', (e) => {
-        const ctx = canvas.getContext('2d');
+    canvas.addEventListener("mousemove", (e) => {
+        const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
         const rect = canvas.getBoundingClientRect();
@@ -1512,15 +1651,15 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
         const pixel = ctx.getImageData(x, y, 1, 1).data;
         const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
 
-        const colorBox = document.getElementById('picker-color-box');
-        const colorHex = document.getElementById('picker-color-hex');
+        const colorBox = document.getElementById("picker-color-box");
+        const colorHex = document.getElementById("picker-color-hex");
         if (colorBox) colorBox.style.background = hex;
         if (colorHex) colorHex.textContent = hex;
     });
 
     // Click - select color
-    canvas.addEventListener('click', (e) => {
-        const ctx = canvas.getContext('2d');
+    canvas.addEventListener("click", (e) => {
+        const ctx = canvas.getContext("2d");
         if (!ctx || !activePickerSide || !activePickerPanelSide) return;
 
         const rect = canvas.getBoundingClientRect();
@@ -1537,7 +1676,7 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
     });
 
     // Click outside to close
-    pickerOverlay.addEventListener('click', (e) => {
+    pickerOverlay.addEventListener("click", (e) => {
         if (e.target === pickerOverlay) {
             closePixelPickerModal();
         }
@@ -1545,12 +1684,12 @@ function openPixelPickerModal(actualSide: 'A' | 'B', panelSide: 'A' | 'B', image
 
     // ESC to close
     const handleEsc = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             closePixelPickerModal();
-            document.removeEventListener('keydown', handleEsc);
+            document.removeEventListener("keydown", handleEsc);
         }
     };
-    document.addEventListener('keydown', handleEsc);
+    document.addEventListener("keydown", handleEsc);
 
     canvasContainer.appendChild(canvas);
     pickerOverlay.appendChild(header);
@@ -1569,41 +1708,49 @@ function closePixelPickerModal(): void {
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
-    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+    return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
-function applyColor(actualSide: 'A' | 'B', color: string, panelSide?: 'A' | 'B'): void {
+function applyColor(
+    actualSide: "A" | "B",
+    color: string,
+    panelSide?: "A" | "B",
+): void {
     // panelSide is the UI panel, actualSide is the real team (after swap adjustment)
     // If panelSide not provided, assume no swap adjustment needed for UI
     const uiSide = panelSide || actualSide;
-    const colorInput = uiSide === 'A' ? elements.teamAColor() : elements.teamBColor();
-    const colorHex = uiSide === 'A' ? elements.teamAColorHex() : elements.teamBColorHex();
+    const colorInput =
+        uiSide === "A" ? elements.teamAColor() : elements.teamBColor();
+    const colorHex =
+        uiSide === "A" ? elements.teamAColorHex() : elements.teamBColorHex();
 
     if (colorInput) {
         colorInput.value = color;
-        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        colorInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
     if (colorHex) {
         colorHex.textContent = color;
     }
 
-    console.log(`🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`);
+    console.log(
+        `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`,
+    );
 }
 
-function toggleLogoFit(side: 'A' | 'B'): void {
+function toggleLogoFit(side: "A" | "B"): void {
     if (!currentState) return;
 
     const swapped = currentState.swapped || false;
     let targetTeam: Team;
 
     // Determine which team is currently in the panel 'side'
-    if (side === 'A') {
+    if (side === "A") {
         targetTeam = swapped ? currentState.teams.B : currentState.teams.A;
     } else {
         targetTeam = swapped ? currentState.teams.A : currentState.teams.B;
     }
 
-    targetTeam.logoFit = targetTeam.logoFit === 'cover' ? 'contain' : 'cover';
+    targetTeam.logoFit = targetTeam.logoFit === "cover" ? "contain" : "cover";
     renderUI();
 }
 
@@ -1683,30 +1830,142 @@ setTimeout(loadLowerThird, 200);
 
 // ROV Heroes list - Updated to match actual image files
 const HEROES = [
-    "Airi", "Aleister", "Alice", "Allain", "Amily", "Annette", "Aoi", "Arduin", "Arum", "Astrid",
-    "Ata", "Aya", "Baldum", "Bijan", "Billow", "Biron", "Bolt Baron", "Bonnie",
-    "Bright", "Butterfly", "Capheny", "Celica", "Charlotte", "Chaugnar", "Cresht", "D'Arcy", "Dextra", "Diao Chan",
-    "Dirak", "Dolia", "Edras", "Eland'orr", "Elsu", "Enzo", "Erin", "Errol", "Fennik", "Florentino",
-    "Gildur", "Goverra", "Grakk", "Hayate", "Heino", "Helen", "Iggy", "Ignis", "Ilumia", "Ishar", "Jinna",
-    "Kahlii", "Kaine", "Keera", "Kil'Groth", "Kriknak", "Krixi", "Krizzix", "Lauriel", "Laville", "Liliana", "Lindis",
-    "Lorion", "Lu Bu", "Lumburr", "Maloch", "Marja", "Max", "Mganga", "Mina", "Ming", "Moren",
-    "Mortos", "Murad", "Nakroth", "Natalya", "Omega", "Omen", "Ormarr", "Paine", "Payna", "Preyta",
-    "Qi", "Quillen", "Raz", "Riktor", "Rouie", "Rourke", "Roxie", "Ryoma", "Sephera", "Sinestrea",
-    "Skud", "Slimz", "Stuart", "Superman", "Taara", "Tachi", "TeeMee", "Teeri", "Tel'Annas", "Thane", "The Flash",
-    "Thorne", "Toro", "Tulen", "Valhein", "Veera", "Veres", "Violet", "Volkath", "Wisp",
-    "Wiro", "Wonder Woman", "WuKong", "Xeniel", "Y'bneth", "Yan", "Yena", "Yorn", "Yue", "Zanis",
-    "Zata", "Zephys", "Zill", "Zip", "Zuka"
+    "Airi",
+    "Aleister",
+    "Alice",
+    "Allain",
+    "Amily",
+    "Annette",
+    "Aoi",
+    "Arduin",
+    "Arum",
+    "Astrid",
+    "Ata",
+    "Aya",
+    "Baldum",
+    "Bijan",
+    "Billow",
+    "Biron",
+    "Bolt Baron",
+    "Bonnie",
+    "Bright",
+    "Butterfly",
+    "Capheny",
+    "Celica",
+    "Charlotte",
+    "Chaugnar",
+    "Cresht",
+    "D'Arcy",
+    "Dextra",
+    "Diao Chan",
+    "Dirak",
+    "Dolia",
+    "Edras",
+    "Eland'orr",
+    "Elsu",
+    "Enzo",
+    "Erin",
+    "Errol",
+    "Fennik",
+    "Florentino",
+    "Gildur",
+    "Goverra",
+    "Grakk",
+    "Hayate",
+    "Heino",
+    "Helen",
+    "Iggy",
+    "Ignis",
+    "Ilumia",
+    "Ishar",
+    "Jinna",
+    "Kahlii",
+    "Kaine",
+    "Keera",
+    "Kil'Groth",
+    "Kriknak",
+    "Krixi",
+    "Krizzix",
+    "Lauriel",
+    "Laville",
+    "Liliana",
+    "Lindis",
+    "Lorion",
+    "Lu Bu",
+    "Lumburr",
+    "Maloch",
+    "Marja",
+    "Max",
+    "Mganga",
+    "Mina",
+    "Ming",
+    "Moren",
+    "Mortos",
+    "Murad",
+    "Nakroth",
+    "Natalya",
+    "Omega",
+    "Omen",
+    "Ormarr",
+    "Paine",
+    "Payna",
+    "Preyta",
+    "Qi",
+    "Quillen",
+    "Raz",
+    "Riktor",
+    "Rouie",
+    "Rourke",
+    "Roxie",
+    "Ryoma",
+    "Sephera",
+    "Sinestrea",
+    "Skud",
+    "Slimz",
+    "Stuart",
+    "Superman",
+    "Taara",
+    "Tachi",
+    "TeeMee",
+    "Teeri",
+    "Tel'Annas",
+    "Thane",
+    "The Flash",
+    "Thorne",
+    "Toro",
+    "Tulen",
+    "Valhein",
+    "Veera",
+    "Veres",
+    "Violet",
+    "Volkath",
+    "Wisp",
+    "Wiro",
+    "Wonder Woman",
+    "WuKong",
+    "Xeniel",
+    "Y'bneth",
+    "Yan",
+    "Yena",
+    "Yorn",
+    "Yue",
+    "Zanis",
+    "Zata",
+    "Zephys",
+    "Zill",
+    "Zip",
+    "Zuka",
 ];
 
 // Heroes with special filenames (map hero name to actual filename)
 const HERO_FILE_MAP: Record<string, { name: string; ext: string }> = {
     // Different filename (with dash or number)
-    "Aleister": { name: "Aleister-3", ext: "webp" },
-    "Mortos": { name: "Mortos-3", ext: "webp" },
-    "Roxie": { name: "Roxie-2", ext: "webp" },
+    Aleister: { name: "Aleister-3", ext: "webp" },
+    Mortos: { name: "Mortos-3", ext: "webp" },
+    Roxie: { name: "Roxie-2", ext: "webp" },
     // Different extension
-    "Edras": { name: "Edras", ext: "png" },
-    "Goverra": { name: "Goverra", ext: "jpg" },
+    Edras: { name: "Edras", ext: "png" },
+    Goverra: { name: "Goverra", ext: "jpg" },
     // Space to underscore
     "Bolt Baron": { name: "Bolt_Baron", ext: "webp" },
     "Diao Chan": { name: "Diao_Chan", ext: "webp" },
@@ -1730,22 +1989,22 @@ function getHeroImagePath(heroName: string): string {
     // Check specific manual overrides if needed (e.g. for files that don't match simple logic)
     // But D'Arcy.png exists.
     // Replace spaces with underscores
-    formatted = formatted.replace(/\s+/g, '_');
+    formatted = formatted.replace(/\s+/g, "_");
 
     return `/src/ROV/${formatted}.png`;
 }
 
 let heroPickerOverlay: HTMLDivElement | null = null;
-let heroPickerSide: 'A' | 'B' | null = null;
+let heroPickerSide: "A" | "B" | null = null;
 let heroPickerSlot: number | null = null;
 
-function openHeroPicker(side: 'A' | 'B', slot: number): void {
+function openHeroPicker(side: "A" | "B", slot: number): void {
     heroPickerSide = side;
     heroPickerSlot = slot;
 
     // Create overlay
-    heroPickerOverlay = document.createElement('div');
-    heroPickerOverlay.id = 'hero-picker-overlay';
+    heroPickerOverlay = document.createElement("div");
+    heroPickerOverlay.id = "hero-picker-overlay";
     heroPickerOverlay.style.cssText = `
         position: fixed;
         inset: 0;
@@ -1759,7 +2018,7 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Create modal container
-    const modal = document.createElement('div');
+    const modal = document.createElement("div");
     modal.style.cssText = `
         background: var(--color-bg-elevated, #1c1c1e);
         border-radius: 20px;
@@ -1774,7 +2033,7 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Header
-    const header = document.createElement('div');
+    const header = document.createElement("div");
     header.style.cssText = `
         padding: 20px 24px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -1799,9 +2058,9 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Search input
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.placeholder = 'Search hero...';
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search hero...";
     searchInput.style.cssText = `
         margin: 16px 24px;
         padding: 12px 16px;
@@ -1814,8 +2073,8 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Hero grid container
-    const gridContainer = document.createElement('div');
-    gridContainer.id = 'hero-grid';
+    const gridContainer = document.createElement("div");
+    gridContainer.id = "hero-grid";
     gridContainer.style.cssText = `
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -1826,14 +2085,16 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Render heroes with images
-    const renderHeroes = (filter: string = '') => {
+    const renderHeroes = (filter: string = "") => {
         const filteredHeroes = filter
-            ? HEROES.filter(h => h.toLowerCase().includes(filter.toLowerCase()))
+            ? HEROES.filter((h) => h.toLowerCase().includes(filter.toLowerCase()))
             : HEROES;
 
-        gridContainer.innerHTML = filteredHeroes.map(hero => `
+        gridContainer.innerHTML = filteredHeroes
+            .map(
+                (hero) => `
             <button 
-                data-hero-name="${hero.replace(/"/g, '&quot;')}"
+                data-hero-name="${hero.replace(/"/g, "&quot;")}"
                 onclick="selectHero(this.dataset.heroName)"
                 style="
                     display: flex;
@@ -1849,11 +2110,11 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
                 "
                 onmouseover="this.style.borderColor='var(--color-accent, #0a84ff)'; this.style.transform='scale(1.05)';"
                 onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)';"
-                title="${hero.replace(/"/g, '&quot;')}"
+                title="${hero.replace(/"/g, "&quot;")}"
             >
                 <img 
                     src="${getHeroImagePath(hero)}" 
-                    alt="${hero.replace(/"/g, '&quot;')}"
+                    alt="${hero.replace(/"/g, "&quot;")}"
                     style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #1a1a1a;"
                     onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); } else { this.style.display='none'; this.nextElementSibling.style.display='flex'; }"
                 >
@@ -1870,30 +2131,33 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
                     width: 100%;
                 ">${hero}</span>
             </button>
-        `).join('');
+        `,
+            )
+            .join("");
 
         if (filteredHeroes.length === 0) {
-            gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary, #636366);">No heroes found</div>';
+            gridContainer.innerHTML =
+                '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary, #636366);">No heroes found</div>';
         }
     };
 
     renderHeroes();
 
     // Search input event
-    searchInput.addEventListener('input', (e) => {
+    searchInput.addEventListener("input", (e) => {
         renderHeroes((e.target as HTMLInputElement).value);
     });
 
     // Close button event
     setTimeout(() => {
-        const closeBtn = document.getElementById('hero-picker-close');
+        const closeBtn = document.getElementById("hero-picker-close");
         if (closeBtn) {
             closeBtn.onclick = closeHeroPicker;
         }
     }, 0);
 
     // Click outside to close
-    heroPickerOverlay.addEventListener('click', (e) => {
+    heroPickerOverlay.addEventListener("click", (e) => {
         if (e.target === heroPickerOverlay) {
             closeHeroPicker();
         }
@@ -1901,12 +2165,12 @@ function openHeroPicker(side: 'A' | 'B', slot: number): void {
 
     // ESC to close
     const handleEsc = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             closeHeroPicker();
-            document.removeEventListener('keydown', handleEsc);
+            document.removeEventListener("keydown", handleEsc);
         }
     };
-    document.addEventListener('keydown', handleEsc);
+    document.addEventListener("keydown", handleEsc);
 
     // Assemble modal
     modal.appendChild(header);
@@ -1931,16 +2195,18 @@ function closeHeroPicker(): void {
 async function selectHero(heroName: string): Promise<void> {
     if (!heroPickerSide || !heroPickerSlot) return;
 
-    const success = await postAPI('/api/player/update', {
+    const success = await postAPI("/api/player/update", {
         side: heroPickerSide,
         slot: heroPickerSlot,
         hero: heroName,
     });
 
     if (success) {
-        console.log(`✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`);
+        console.log(
+            `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`,
+        );
     } else {
-        console.error('❌ Failed to update hero');
+        console.error("❌ Failed to update hero");
     }
 
     closeHeroPicker();
@@ -1956,24 +2222,24 @@ async function selectHero(heroName: string): Promise<void> {
 // ROV Lanes (5 positions)
 // ROV Lanes (5 positions)
 const LANES = [
-    { name: 'ds_lane', label: 'DS Lane', thaiName: 'ออฟเลน', icon: '⚔️' },
-    { name: 'jungle', label: 'Jungle', thaiName: 'ป่า', icon: '🌲' },
-    { name: 'mid', label: 'Mid', thaiName: 'เมจ', icon: '⭐' },
-    { name: 'adc', label: 'ADC', thaiName: 'แครี่', icon: '🎯' },
-    { name: 'support', label: 'Support', thaiName: 'โรมมิ่ง', icon: '🛡️' },
+    { name: "ds_lane", label: "DS Lane", thaiName: "ออฟเลน", icon: "⚔️" },
+    { name: "jungle", label: "Jungle", thaiName: "ป่า", icon: "🌲" },
+    { name: "mid", label: "Mid", thaiName: "เมจ", icon: "⭐" },
+    { name: "adc", label: "ADC", thaiName: "แครี่", icon: "🎯" },
+    { name: "support", label: "Support", thaiName: "โรมมิ่ง", icon: "🛡️" },
 ];
 
 let lanePickerOverlay: HTMLDivElement | null = null;
-let lanePickerSide: 'A' | 'B' | null = null;
+let lanePickerSide: "A" | "B" | null = null;
 let lanePickerSlot: number | null = null;
 
-function openLanePicker(side: 'A' | 'B', slot: number): void {
+function openLanePicker(side: "A" | "B", slot: number): void {
     lanePickerSide = side;
     lanePickerSlot = slot;
 
     // Create overlay
-    lanePickerOverlay = document.createElement('div');
-    lanePickerOverlay.id = 'lane-picker-overlay';
+    lanePickerOverlay = document.createElement("div");
+    lanePickerOverlay.id = "lane-picker-overlay";
     lanePickerOverlay.style.cssText = `
         position: fixed;
         inset: 0;
@@ -1987,7 +2253,7 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Create modal container
-    const modal = document.createElement('div');
+    const modal = document.createElement("div");
     modal.style.cssText = `
         background: var(--color-bg-elevated, #1c1c1e);
         border-radius: 20px;
@@ -2001,7 +2267,7 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Header
-    const header = document.createElement('div');
+    const header = document.createElement("div");
     header.style.cssText = `
         padding: 20px 24px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -2026,7 +2292,7 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Lane grid container
-    const gridContainer = document.createElement('div');
+    const gridContainer = document.createElement("div");
     gridContainer.style.cssText = `
         display: flex;
         flex-direction: column;
@@ -2035,7 +2301,8 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
     `;
 
     // Render lanes
-    gridContainer.innerHTML = LANES.map(lane => `
+    gridContainer.innerHTML = LANES.map(
+        (lane) => `
         <button 
             onclick="selectLane('${lane.name}')"
             style="
@@ -2056,24 +2323,28 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
             <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
                  style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #1a1a1a;" 
                  alt="${lane.name}"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon}%3C/text%3E%3C/svg%3E';">
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon
+            }%3C/text%3E%3C/svg%3E';">
             <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--color-text-primary, #f5f5f7); font-size: 0.95rem;">${lane.label}</div>
-                <div style="font-size: 0.8rem; color: var(--color-text-tertiary, #636366);">${lane.thaiName}</div>
+                <div style="font-weight: 600; color: var(--color-text-primary, #f5f5f7); font-size: 0.95rem;">${lane.label
+            }</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-tertiary, #636366);">${lane.thaiName
+            }</div>
             </div>
         </button>
-    `).join('');
+    `,
+    ).join("");
 
     // Close button event
     setTimeout(() => {
-        const closeBtn = document.getElementById('lane-picker-close');
+        const closeBtn = document.getElementById("lane-picker-close");
         if (closeBtn) {
             closeBtn.onclick = closeLanePicker;
         }
     }, 0);
 
     // Click outside to close
-    lanePickerOverlay.addEventListener('click', (e) => {
+    lanePickerOverlay.addEventListener("click", (e) => {
         if (e.target === lanePickerOverlay) {
             closeLanePicker();
         }
@@ -2081,12 +2352,12 @@ function openLanePicker(side: 'A' | 'B', slot: number): void {
 
     // ESC to close
     const handleEsc = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
             closeLanePicker();
-            document.removeEventListener('keydown', handleEsc);
+            document.removeEventListener("keydown", handleEsc);
         }
     };
-    document.addEventListener('keydown', handleEsc);
+    document.addEventListener("keydown", handleEsc);
 
     // Assemble modal
     modal.appendChild(header);
@@ -2107,16 +2378,19 @@ function closeLanePicker(): void {
 async function selectLane(laneName: string): Promise<void> {
     if (!lanePickerSide || !lanePickerSlot) return;
 
-    const success = await postAPI('/api/player/update', {
+    const success = await postAPI("/api/player/update", {
         side: lanePickerSide,
         slot: lanePickerSlot,
         lane: laneName,
     });
 
     if (success) {
-        console.log(`✅ Lane ${laneName || 'cleared'} for Team ${lanePickerSide} Player ${lanePickerSlot}`);
+        console.log(
+            `✅ Lane ${laneName || "cleared"
+            } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
+        );
     } else {
-        console.error('❌ Failed to update lane');
+        console.error("❌ Failed to update lane");
     }
 
     closeLanePicker();
@@ -2128,13 +2402,21 @@ async function selectLane(laneName: string): Promise<void> {
 (window as any).selectLane = selectLane;
 
 // Handle lane click with validation
-function handleLaneClick(side: 'A' | 'B', slot: number, hasHero: boolean): void {
+function handleLaneClick(
+    side: "A" | "B",
+    slot: number,
+    hasHero: boolean,
+): void {
     if (hasHero) {
         openLanePicker(side, slot);
     } else {
         // Show notification that hero must be selected first
         if ((window as any).showNotification) {
-            (window as any).showNotification('กรุณาเลือกตัวละครก่อน', 'เลือก Hero ก่อนถึงจะเลือกตำแหน่งเลนได้', 'warning');
+            (window as any).showNotification(
+                "กรุณาเลือกตัวละครก่อน",
+                "เลือก Hero ก่อนถึงจะเลือกตำแหน่งเลนได้",
+                "warning",
+            );
         }
     }
 }
@@ -2154,7 +2436,10 @@ interface TeamTemplate {
 }
 
 let templates: TeamTemplate[] = [];
-let loadedTemplateId: { A: string | null; B: string | null } = { A: null, B: null };
+let loadedTemplateId: { A: string | null; B: string | null } = {
+    A: null,
+    B: null,
+};
 
 async function fetchTemplates(): Promise<void> {
     try {
@@ -2164,17 +2449,21 @@ async function fetchTemplates(): Promise<void> {
             renderTemplateDropdowns();
         }
     } catch (err) {
-        console.error('❌ Failed to fetch templates:', err);
+        console.error("❌ Failed to fetch templates:", err);
     }
 }
 
 function renderTemplateDropdowns(): void {
-    const teamASelect = document.getElementById('teamA-template') as HTMLSelectElement;
-    const teamBSelect = document.getElementById('teamB-template') as HTMLSelectElement;
+    const teamASelect = document.getElementById(
+        "teamA-template",
+    ) as HTMLSelectElement;
+    const teamBSelect = document.getElementById(
+        "teamB-template",
+    ) as HTMLSelectElement;
 
-    const optionsHtml = templates.map(t =>
-        `<option value="${t.id}">${escapeHtml(t.name)}</option>`
-    ).join('');
+    const optionsHtml = templates
+        .map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`)
+        .join("");
 
     const defaultOption = '<option value="">Select Template...</option>';
 
@@ -2182,39 +2471,39 @@ function renderTemplateDropdowns(): void {
     if (teamBSelect) teamBSelect.innerHTML = defaultOption + optionsHtml;
 }
 
-async function loadTemplate(side: 'A' | 'B'): Promise<void> {
+async function loadTemplate(side: "A" | "B"): Promise<void> {
     const selectId = `team${side}-template`;
     const select = document.getElementById(selectId) as HTMLSelectElement;
     const templateId = select?.value;
 
     if (!templateId) {
-        alert('กรุณาเลือก Template ก่อน');
+        alert("กรุณาเลือก Template ก่อน");
         return;
     }
 
     try {
         const response = await fetch(`${API_BASE}/api/templates/apply`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ templateId, side })
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ templateId, side }),
         });
 
         if (response.ok) {
             loadedTemplateId[side] = templateId; // Track which template is loaded
             console.log(`✅ Template loaded to Team ${side} (ID: ${templateId})`);
         } else {
-            alert('Failed to load template');
+            alert("Failed to load template");
         }
     } catch (err) {
-        console.error('❌ Load template error:', err);
+        console.error("❌ Load template error:", err);
     }
 }
 
-async function saveAsTemplate(side: 'A' | 'B'): Promise<void> {
+async function saveAsTemplate(side: "A" | "B"): Promise<void> {
     if (!currentState) return;
 
     const team = currentState.teams[side];
-    const templateName = prompt('Enter template name:', team.name);
+    const templateName = prompt("Enter template name:", team.name);
 
     if (!templateName) return;
 
@@ -2222,14 +2511,14 @@ async function saveAsTemplate(side: 'A' | 'B'): Promise<void> {
         name: templateName,
         color: team.color,
         logo: team.logo,
-        players: team.players.map(p => ({ slot: p.slot, name: p.name }))
+        players: team.players.map((p) => ({ slot: p.slot, name: p.name })),
     };
 
     try {
         const response = await fetch(`${API_BASE}/api/templates`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(templateData)
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(templateData),
         });
 
         if (response.ok) {
@@ -2237,14 +2526,14 @@ async function saveAsTemplate(side: 'A' | 'B'): Promise<void> {
             alert(`Template "${templateName}" saved!`);
             fetchTemplates(); // Refresh dropdown
         } else {
-            alert('Failed to save template');
+            alert("Failed to save template");
         }
     } catch (err) {
-        console.error('❌ Save template error:', err);
+        console.error("❌ Save template error:", err);
     }
 }
 
-async function syncTemplateAfterUpdate(side: 'A' | 'B'): Promise<void> {
+async function syncTemplateAfterUpdate(side: "A" | "B"): Promise<void> {
     const templateId = loadedTemplateId[side];
     if (!templateId || !currentState) {
         return; // No template loaded for this side
@@ -2254,14 +2543,14 @@ async function syncTemplateAfterUpdate(side: 'A' | 'B'): Promise<void> {
 
     try {
         const response = await fetch(`${API_BASE}/api/templates/${templateId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 name: team.name,
                 color: team.color,
                 logo: team.logo,
-                players: team.players.map(p => ({ slot: p.slot, name: p.name }))
-            })
+                players: team.players.map((p) => ({ slot: p.slot, name: p.name })),
+            }),
         });
 
         if (response.ok) {
@@ -2269,7 +2558,7 @@ async function syncTemplateAfterUpdate(side: 'A' | 'B'): Promise<void> {
             await fetchTemplates(); // Refresh templates cache
         }
     } catch (err) {
-        console.error('❌ Template sync error:', err);
+        console.error("❌ Template sync error:", err);
     }
 }
 // ==========================================
@@ -2281,70 +2570,51 @@ let templateLogoFile: File | null = null;
 let editingTemplateId: string | null = null;
 
 function openTemplateManager(): void {
-    templateManagerOverlay = document.createElement('div');
-    templateManagerOverlay.id = 'template-manager-overlay';
-    templateManagerOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.95);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    `;
+    templateManagerOverlay = document.createElement("div");
+    templateManagerOverlay.id = "template-manager-overlay";
+    templateManagerOverlay.classList.add("modal-overlay");
 
-    const modal = document.createElement('div');
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
     modal.style.cssText = `
-        background: #1f2937;
-        border-radius: 16px;
-        padding: 24px;
         max-width: 800px;
         width: 95%;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 0 60px rgba(139, 92, 246, 0.3);
         overflow: hidden;
     `;
 
     // Header
-    const header = document.createElement('div');
-    header.style.cssText = `
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #374151;
-    `;
+    const header = document.createElement("div");
+    header.classList.add("modal-header");
     header.innerHTML = `
-        <h2 style="color: white; font-size: 22px; font-weight: bold;">📋 Template Manager</h2>
-        <button id="close-template-manager" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold;">✕ Close</button>
+        <h3>Template Manager</h3>
+        <button id="close-template-manager" class="close-btn">
+            <i class="ph-bold ph-x"></i>
+        </button>
     `;
 
     // Content container
-    const content = document.createElement('div');
+    const content = document.createElement("div");
     content.style.cssText = `
         display: flex;
         gap: 20px;
         flex: 1;
         overflow: hidden;
     `;
+    content.classList.add("modal-body");
 
     // Left: Create New Template Form
-    const createSection = document.createElement('div');
+    const createSection = document.createElement("div");
+    createSection.classList.add("list-selection");
     createSection.style.cssText = `
         flex: 1;
-        background: #111827;
-        border-radius: 12px;
         padding: 16px;
         overflow-y: auto;
     `;
     createSection.innerHTML = `
-        <h3 style="color: #a855f7; font-weight: bold; margin-bottom: 12px;">➕ Create New Template</h3>
+        <h3>Create New Template</h3>
         <div style="margin-bottom: 12px;">
             <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">TEAM NAME *</label>
             <input type="text" id="tpl-name" placeholder="e.g. T1, LOUD, Gen.G" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white;">
@@ -2389,33 +2659,42 @@ function openTemplateManager(): void {
     `;
 
     // Right: Template List
-    const listSection = document.createElement('div');
-    listSection.style.cssText = `
-        flex: 1;
-        background: #111827;
-        border-radius: 12px;
-        padding: 16px;
-        overflow-y: auto;
-    `;
+    const listSection = document.createElement("div");
+    listSection.classList.add("list-selection");
     listSection.innerHTML = `
-        <h3 style="color: #10b981; font-weight: bold; margin-bottom: 12px;">📂 Saved Templates (${templates.length})</h3>
+        <div class="flex items-center gap-2">
+        <i class="ph ph-airplay" style="font-size: 24px; color: var(--color-primary);"></i>
+        <h3> Saved Templates (${templates.length})</h3>
+        </div>
+
         <div id="template-list" style="display: flex; flex-direction: column; gap: 8px;">
-            ${templates.length === 0 ? '<p style="color: #6b7280; text-align: center; padding: 20px;">No templates yet</p>' :
-            templates.map(t => `
-                <div style="background: #1f2937; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;" onclick="loadTemplateToForm('${t.id}')">
-                        <div style="width: 16px; height: 16px; border-radius: 4px; background: ${t.color};"></div>
+            ${templates.length === 0
+            ? '<p style="color: #6b7280; text-align: center; padding: 20px;">No templates yet</p>'
+            : templates
+                .map(
+                    (t) => `
+                <div class="team-select">
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;" onclick="loadTemplateToForm('${t.id
+                        }')">
+                        <div style="width: 16px; height: 16px; border-radius: 4px; background: ${t.color
+                        };"></div>
                         <div>
-                            <div style="color: white; font-weight: bold;">${escapeHtml(t.name)}</div>
-                            <div style="color: #6b7280; font-size: 11px;">${t.players?.length || 0} players</div>
+                            <div>${escapeHtml(t.name)}</div>
+                            <div style="color: #6b7280; font-size: 11px;">${t.players?.length || 0
+                        } players</div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <button onclick="event.stopPropagation(); loadTemplateToForm('${t.id}')" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
-                        <button onclick="event.stopPropagation(); deleteTemplate('${t.id}')" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🗑️</button>
+                        <button onclick="event.stopPropagation(); loadTemplateToForm('${t.id
+                        }')"</button>
+                        <button class="del-btn" onclick="event.stopPropagation(); deleteTemplate('${t.id
+                        }')"><i class="ph ph-backspace"></i></button>
                     </div>
                 </div>
-            `).join('')}
+            `,
+                )
+                .join("")
+        }
         </div>
     `;
 
@@ -2428,15 +2707,20 @@ function openTemplateManager(): void {
     document.body.appendChild(templateManagerOverlay);
 
     // Event listeners
-    document.getElementById('close-template-manager')!.onclick = closeTemplateManager;
+    document.getElementById("close-template-manager")!.onclick =
+        closeTemplateManager;
     templateManagerOverlay.onclick = (e) => {
         if (e.target === templateManagerOverlay) closeTemplateManager();
     };
 
     // Color sync
-    const colorInput = document.getElementById('tpl-color') as HTMLInputElement;
-    const colorText = document.getElementById('tpl-color-text') as HTMLInputElement;
-    colorInput.oninput = () => { colorText.value = colorInput.value; };
+    const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
+    const colorText = document.getElementById(
+        "tpl-color-text",
+    ) as HTMLInputElement;
+    colorInput.oninput = () => {
+        colorText.value = colorInput.value;
+    };
     colorText.oninput = () => {
         if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) {
             colorInput.value = colorText.value;
@@ -2444,7 +2728,8 @@ function openTemplateManager(): void {
     };
 
     // Create button
-    document.getElementById('create-template-btn')!.onclick = createTemplateFromForm;
+    document.getElementById("create-template-btn")!.onclick =
+        createTemplateFromForm;
 }
 
 function closeTemplateManager(): void {
@@ -2455,15 +2740,22 @@ function closeTemplateManager(): void {
 }
 
 async function createTemplateFromForm(): Promise<void> {
-    const name = (document.getElementById('tpl-name') as HTMLInputElement).value.trim();
-    const color = (document.getElementById('tpl-color') as HTMLInputElement).value;
-    const players = [1, 2, 3, 4, 5].map(i => ({
-        slot: i,
-        name: (document.getElementById(`tpl-p${i}`) as HTMLInputElement).value.trim()
-    })).filter(p => p.name);
+    const name = (
+        document.getElementById("tpl-name") as HTMLInputElement
+    ).value.trim();
+    const color = (document.getElementById("tpl-color") as HTMLInputElement)
+        .value;
+    const players = [1, 2, 3, 4, 5]
+        .map((i) => ({
+            slot: i,
+            name: (
+                document.getElementById(`tpl-p${i}`) as HTMLInputElement
+            ).value.trim(),
+        }))
+        .filter((p) => p.name);
 
     if (!name) {
-        alert('กรุณาใส่ชื่อ Template');
+        alert("กรุณาใส่ชื่อ Template");
         return;
     }
 
@@ -2473,43 +2765,43 @@ async function createTemplateFromForm(): Promise<void> {
         if (editingTemplateId) {
             // Update existing template
             response = await fetch(`${API_BASE}/api/templates/${editingTemplateId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, color, logo: '', players })
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, color, logo: "", players }),
             });
         } else {
             // Create new template
             response = await fetch(`${API_BASE}/api/templates`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, color, logo: '', players })
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, color, logo: "", players }),
             });
         }
 
         if (response.ok) {
-            const message = editingTemplateId ? 'updated' : 'created';
+            const message = editingTemplateId ? "updated" : "created";
             alert(`✅ Template "${name}" ${message}!`);
             editingTemplateId = null; // Reset editing state
             await fetchTemplates();
             closeTemplateManager();
             openTemplateManager(); // Refresh list
         } else {
-            alert('Failed to save template');
+            alert("Failed to save template");
         }
     } catch (err) {
-        console.error('Save template error:', err);
+        console.error("Save template error:", err);
     }
 }
 
 function deleteTemplate(id: string): void {
-    console.log('Delete clicked for:', id);
+    console.log("Delete clicked for:", id);
 
-    const template = templates.find(t => t.id === id);
-    const templateName = template?.name || 'this template';
+    const template = templates.find((t) => t.id === id);
+    const templateName = template?.name || "this template";
 
     // Create custom confirmation modal
-    const confirmOverlay = document.createElement('div');
-    confirmOverlay.id = 'delete-confirm-overlay';
+    const confirmOverlay = document.createElement("div");
+    confirmOverlay.id = "delete-confirm-overlay";
     confirmOverlay.style.cssText = `
         position: fixed;
         top: 0;
@@ -2539,14 +2831,14 @@ function deleteTemplate(id: string): void {
     document.body.appendChild(confirmOverlay);
 
     // Handle confirmation
-    document.getElementById('confirm-delete-yes')!.onclick = async () => {
+    document.getElementById("confirm-delete-yes")!.onclick = async () => {
         confirmOverlay.remove();
 
         try {
             console.log(`Deleting template: ${id}`);
             const response = await fetch(`${API_BASE}/api/templates/${id}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
             });
 
             if (response.ok) {
@@ -2554,14 +2846,14 @@ function deleteTemplate(id: string): void {
                 closeTemplateManager();
                 openTemplateManager();
             } else {
-                alert('❌ ไม่สามารถลบได้');
+                alert("❌ ไม่สามารถลบได้");
             }
         } catch (err) {
-            console.error('Delete template error:', err);
+            console.error("Delete template error:", err);
         }
     };
 
-    document.getElementById('confirm-delete-no')!.onclick = () => {
+    document.getElementById("confirm-delete-no")!.onclick = () => {
         confirmOverlay.remove();
     };
 
@@ -2573,15 +2865,17 @@ function deleteTemplate(id: string): void {
 }
 
 function loadTemplateToForm(id: string): void {
-    const template = templates.find(t => t.id === id);
+    const template = templates.find((t) => t.id === id);
     if (!template) return;
 
     editingTemplateId = id;
 
     // Populate form fields
-    const nameInput = document.getElementById('tpl-name') as HTMLInputElement;
-    const colorInput = document.getElementById('tpl-color') as HTMLInputElement;
-    const colorText = document.getElementById('tpl-color-text') as HTMLInputElement;
+    const nameInput = document.getElementById("tpl-name") as HTMLInputElement;
+    const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
+    const colorText = document.getElementById(
+        "tpl-color-text",
+    ) as HTMLInputElement;
 
     if (nameInput) nameInput.value = template.name;
     if (colorInput) colorInput.value = template.color;
@@ -2589,22 +2883,24 @@ function loadTemplateToForm(id: string): void {
 
     // Populate players
     for (let i = 1; i <= 5; i++) {
-        const playerInput = document.getElementById(`tpl-p${i}`) as HTMLInputElement;
-        const player = template.players?.find(p => p.slot === i);
+        const playerInput = document.getElementById(
+            `tpl-p${i}`,
+        ) as HTMLInputElement;
+        const player = template.players?.find((p) => p.slot === i);
         if (playerInput) {
-            playerInput.value = player?.name || '';
+            playerInput.value = player?.name || "";
         }
     }
 
     // Update button text to show "Update" instead of "Create"
-    const createBtn = document.getElementById('create-template-btn');
+    const createBtn = document.getElementById("create-template-btn");
     if (createBtn) {
-        createBtn.innerHTML = '✏️ Update Template';
-        createBtn.style.background = '#3b82f6';
+        createBtn.innerHTML = "✏️ Update Template";
+        createBtn.style.background = "#3b82f6";
     }
 
     // Scroll to form (visual feedback)
-    const tplName = document.getElementById('tpl-name');
+    const tplName = document.getElementById("tpl-name");
     tplName?.focus();
 }
 
@@ -2614,7 +2910,7 @@ function handleTemplateLogoSelect(input: HTMLInputElement): void {
 
     templateLogoFile = file;
 
-    const preview = document.getElementById('tpl-logo-preview');
+    const preview = document.getElementById("tpl-logo-preview");
     if (preview) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -2638,127 +2934,164 @@ function handleTemplateLogoSelect(input: HTMLInputElement): void {
 
 // Track mouse down target for accurate drag source detection
 let dragSourceElement: HTMLElement | null = null;
-document.addEventListener('mousedown', (e) => {
+document.addEventListener("mousedown", (e) => {
     dragSourceElement = e.target as HTMLElement;
 });
 
-let draggedPlayer: { side: string; slot: number; mode: 'full' | 'hero' } | null = null;
+let draggedPlayer: {
+    side: string;
+    slot: number;
+    mode: "full" | "hero";
+} | null = null;
 
 function handleDragStart(event: DragEvent): void {
-    const card = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    const card = (event.target as HTMLElement).closest(
+        ".player-card",
+    ) as HTMLElement;
     if (!card) return;
 
     // Check if the initial click was within the hero section
-    const heroSection = dragSourceElement?.closest('.player-card__hero');
+    const heroSection = dragSourceElement?.closest(".player-card__hero");
 
     // Debug
-    console.log('Drag Start Source:', {
+    console.log("Drag Start Source:", {
         source: dragSourceElement?.className,
-        isHero: !!heroSection
+        isHero: !!heroSection,
     });
 
     draggedPlayer = {
-        side: card.dataset.side || 'A',
-        slot: parseInt(card.dataset.slot || '1'),
-        mode: heroSection ? 'hero' : 'full'
+        side: card.dataset.side || "A",
+        slot: parseInt(card.dataset.slot || "1"),
+        mode: heroSection ? "hero" : "full",
     };
 
-    card.classList.add('dragging');
+    card.classList.add("dragging");
     if (event.dataTransfer) {
-        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.effectAllowed = "move";
         // Optional: Set custom drag image if needed
     }
 }
 
 function handleDragEnd(event: DragEvent): void {
-    const card = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    const card = (event.target as HTMLElement).closest(
+        ".player-card",
+    ) as HTMLElement;
     if (card) {
-        card.classList.remove('dragging');
+        card.classList.remove("dragging");
     }
-    document.querySelectorAll('.player-card').forEach(c => c.classList.remove('drag-over'));
+    document
+        .querySelectorAll(".player-card")
+        .forEach((c) => c.classList.remove("drag-over"));
     draggedPlayer = null;
 }
 
 function handleDragOver(event: DragEvent): void {
     event.preventDefault();
-    const card = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    const card = (event.target as HTMLElement).closest(
+        ".player-card",
+    ) as HTMLElement;
     if (!card || !draggedPlayer) return;
 
     const targetSide = card.dataset.side;
     if (targetSide !== draggedPlayer.side) return; // Only allow same-team drag
 
-    card.classList.add('drag-over');
+    card.classList.add("drag-over");
 }
 
 async function handleDrop(event: DragEvent): Promise<void> {
     event.preventDefault();
-    const targetCard = (event.target as HTMLElement).closest('.player-card') as HTMLElement;
+    const targetCard = (event.target as HTMLElement).closest(
+        ".player-card",
+    ) as HTMLElement;
     if (!targetCard || !draggedPlayer) return;
 
     const targetSide = targetCard.dataset.side;
-    const targetSlot = parseInt(targetCard.dataset.slot || '1');
+    const targetSlot = parseInt(targetCard.dataset.slot || "1");
 
     if (targetSide !== draggedPlayer.side) return;
     if (targetSlot === draggedPlayer.slot) return;
 
     // Swap players via API
-    const side = draggedPlayer.side as 'A' | 'B';
+    const side = draggedPlayer.side as "A" | "B";
     await swapPlayers(side, draggedPlayer.slot, targetSlot, draggedPlayer.mode);
 
-    targetCard.classList.remove('drag-over');
+    targetCard.classList.remove("drag-over");
     draggedPlayer = null;
 }
 
-async function swapPlayers(side: 'A' | 'B', slot1: number, slot2: number, mode: 'full' | 'hero' = 'full'): Promise<void> {
+async function swapPlayers(
+    side: "A" | "B",
+    slot1: number,
+    slot2: number,
+    mode: "full" | "hero" = "full",
+): Promise<void> {
     if (!currentState) return;
 
     const team = currentState.teams[side];
-    const player1 = team.players.find(p => p.slot === slot1);
-    const player2 = team.players.find(p => p.slot === slot2);
+    const player1 = team.players.find((p) => p.slot === slot1);
+    const player2 = team.players.find((p) => p.slot === slot2);
 
     if (!player1 || !player2) return;
 
-    if (mode === 'hero') {
+    if (mode === "hero") {
         // Swap ONLY Heroes
-        await postAPI('/api/player/update', { side, slot: slot1, hero: player2.hero || '' });
-        await postAPI('/api/player/update', { side, slot: slot2, hero: player1.hero || '' });
+        await postAPI("/api/player/update", {
+            side,
+            slot: slot1,
+            hero: player2.hero || "",
+        });
+        await postAPI("/api/player/update", {
+            side,
+            slot: slot2,
+            hero: player1.hero || "",
+        });
 
         if ((window as any).showNotification) {
-            (window as any).showNotification('Heroes Swapped', `Slot ${slot1} ↔ Slot ${slot2}`, 'success');
+            (window as any).showNotification(
+                "Heroes Swapped",
+                `Slot ${slot1} ↔ Slot ${slot2}`,
+                "success",
+            );
         }
     } else {
         // Full Swap (Reorder)
         const data1 = {
             name: player1.name,
-            hero: player1.hero || '',
-            lane: player1.lane || '',
-            isCaptain: player1.isCaptain || false
+            hero: player1.hero || "",
+            lane: player1.lane || "",
+            isCaptain: player1.isCaptain || false,
         };
         const data2 = {
             name: player2.name,
-            hero: player2.hero || '',
-            lane: player2.lane || '',
-            isCaptain: player2.isCaptain || false
+            hero: player2.hero || "",
+            lane: player2.lane || "",
+            isCaptain: player2.isCaptain || false,
         };
 
-        await postAPI('/api/player/update', {
-            side, slot: slot1,
+        await postAPI("/api/player/update", {
+            side,
+            slot: slot1,
             name: data2.name,
             hero: data2.hero,
             lane: data2.lane,
-            isCaptain: data2.isCaptain
+            isCaptain: data2.isCaptain,
         });
 
-        await postAPI('/api/player/update', {
-            side, slot: slot2,
+        await postAPI("/api/player/update", {
+            side,
+            slot: slot2,
             name: data1.name,
             hero: data1.hero,
             lane: data1.lane,
-            isCaptain: data1.isCaptain
+            isCaptain: data1.isCaptain,
         });
 
         if ((window as any).showNotification) {
-            (window as any).showNotification('Players Reordered', `Slot ${slot1} ↔ Slot ${slot2}`, 'success');
+            (window as any).showNotification(
+                "Players Reordered",
+                `Slot ${slot1} ↔ Slot ${slot2}`,
+                "success",
+            );
         }
     }
 }
@@ -2767,7 +3100,7 @@ async function swapPlayers(side: 'A' | 'B', slot1: number, slot2: number, mode: 
 // Captain Toggle
 // ==========================================
 
-async function toggleCaptain(side: 'A' | 'B', slot: number): Promise<void> {
+async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
     if (!currentState) return;
 
     const team = currentState.teams[side];
@@ -2775,20 +3108,32 @@ async function toggleCaptain(side: 'A' | 'B', slot: number): Promise<void> {
     // Clear captain from all other players in this team
     for (const player of team.players) {
         if (player.slot !== slot && player.isCaptain) {
-            await postAPI('/api/player/update', { side, slot: player.slot, isCaptain: false });
+            await postAPI("/api/player/update", {
+                side,
+                slot: player.slot,
+                isCaptain: false,
+            });
         }
     }
 
     // Toggle captain for selected player
-    const currentPlayer = team.players.find(p => p.slot === slot);
+    const currentPlayer = team.players.find((p) => p.slot === slot);
     const newCaptainStatus = !currentPlayer?.isCaptain;
-    await postAPI('/api/player/update', { side, slot, isCaptain: newCaptainStatus });
+    await postAPI("/api/player/update", {
+        side,
+        slot,
+        isCaptain: newCaptainStatus,
+    });
 
     if ((window as any).showNotification) {
         if (newCaptainStatus) {
-            (window as any).showNotification('Captain set', `Player ${slot} is now captain`, 'success');
+            (window as any).showNotification(
+                "Captain set",
+                `Player ${slot} is now captain`,
+                "success",
+            );
         } else {
-            (window as any).showNotification('Captain removed', '', 'info');
+            (window as any).showNotification("Captain removed", "", "info");
         }
     }
 }
@@ -2799,18 +3144,18 @@ async function toggleCaptain(side: 'A' | 'B', slot: number): Promise<void> {
 
 function toggleTheme(): void {
     const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', newTheme);
+    const currentTheme = html.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", newTheme);
 
     // Update icon
-    const icon = document.getElementById('theme-icon');
+    const icon = document.getElementById("theme-icon");
     if (icon) {
-        icon.className = newTheme === 'dark' ? 'ph-bold ph-moon' : 'ph-bold ph-sun';
+        icon.className = newTheme === "dark" ? "ph-bold ph-moon" : "ph-bold ph-sun";
     }
 
     // Save preference
-    localStorage.setItem('esport-theme', newTheme);
+    localStorage.setItem("esport-theme", newTheme);
 }
 
 // Expose drag & drop and captain functions
@@ -2835,8 +3180,8 @@ function toggleTheme(): void {
 // Initialization
 // ==========================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Esport Control Panel Initializing...');
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Esport Control Panel Initializing...");
 
     // Fetch initial state via REST API
     fetchInitialState();
@@ -2849,21 +3194,32 @@ document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
 
     // Bind UI Events explicitly (Fixes Module Scope issues)
-    document.getElementById('hamburger-btn')?.addEventListener('click', toggleSettingsMenu);
-    document.getElementById('nav-scoreboard')?.addEventListener('click', () => switchPage('scoreboard'));
-    document.getElementById('nav-broadcast')?.addEventListener('click', () => switchPage('broadcast'));
+    document
+        .getElementById("hamburger-btn")
+        ?.addEventListener("click", toggleSettingsMenu);
+    document
+        .getElementById("nav-scoreboard")
+        ?.addEventListener("click", () => switchPage("scoreboard"));
+    document
+        .getElementById("nav-broadcast")
+        ?.addEventListener("click", () => switchPage("broadcast"));
 
     // Theme toggle button
-    document.getElementById('theme-toggle-btn')?.addEventListener('click', toggleTheme);
+    document
+        .getElementById("theme-toggle-btn")
+        ?.addEventListener("click", toggleTheme);
 
     // Helper to bind close on menu outside click
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('settings-menu');
-        const btn = document.getElementById('hamburger-btn');
-        if (menu && menu.classList.contains('active') &&
+    document.addEventListener("click", (e) => {
+        const menu = document.getElementById("settings-menu");
+        const btn = document.getElementById("hamburger-btn");
+        if (
+            menu &&
+            menu.classList.contains("active") &&
             !menu.contains(e.target as Node) &&
-            !btn?.contains(e.target as Node)) {
-            menu.classList.remove('active');
+            !btn?.contains(e.target as Node)
+        ) {
+            menu.classList.remove("active");
         }
     });
 });

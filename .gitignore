@@ -32,3 +32,12 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Tauri build artifacts (large files)
+src-tauri/target/
+*.pdb
+*.lib
+
+# Bun lock file
+bun.lock
+bun.lockb
