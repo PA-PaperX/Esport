@@ -12,7 +12,7 @@ serve({
     if (url.pathname === "/api/status") {
       return Response.json({
         ok: true,
-        status: "Server Connected"
+        status: "Server Connected",
       });
     }
 

@@ -1,16 +1,16 @@
-export { };
+export {};
 
 // ==========================================
 // Interfaces (Strict Typing)
 // ==========================================
 
 interface Player {
-    slot: number;
-    name: string;
-    realName?: string;
-    hero?: string;
-    lane?: string;
-    isCaptain?: boolean;
+  slot: number;
+  name: string;
+  realName?: string;
+  hero?: string;
+  lane?: string;
+  isCaptain?: boolean;
 }
 
 interface Team {
@@ -24,19 +24,19 @@ interface Team {
 }
 
 interface MatchState {
-    matchId: string;
-    bestOf: number;
-    currentGame: number;
-    swapped?: boolean;
-    teams: {
-        A: Team;
-        B: Team;
-    };
+  matchId: string;
+  bestOf: number;
+  currentGame: number;
+  swapped?: boolean;
+  teams: {
+    A: Team;
+    B: Team;
+  };
 }
 
 interface WSMessage {
-    type: string;
-    data: MatchState;
+  type: string;
+  data: MatchState;
 }
 
 // ==========================================
@@ -55,7 +55,7 @@ const API_BASE = `http://${window.location.host}`;
 // ==========================================
 
 const getElement = <T extends HTMLElement>(id: string): T | null =>
-    document.getElementById(id) as T | null;
+  document.getElementById(id) as T | null;
 
 // Logo Cache Busting
 let logoVersions: { A: number; B: number } = {
@@ -87,8 +87,8 @@ const elements = {
 // ==========================================
 
 function updateConnectionStatus(connected: boolean): void {
-    const dot = elements.statusDot();
-    const status = elements.connectionStatus();
+  const dot = elements.statusDot();
+  const status = elements.connectionStatus();
 
     if (dot) {
         // Use 'connected' class for neon glow effect
@@ -116,15 +116,15 @@ function connectWebSocket(): void {
         console.log("✅ WebSocket Connected");
         updateConnectionStatus(true);
 
-        if (reconnectInterval) {
-            clearInterval(reconnectInterval);
-            reconnectInterval = null;
-        }
-    };
+    if (reconnectInterval) {
+      clearInterval(reconnectInterval);
+      reconnectInterval = null;
+    }
+  };
 
-    ws.onmessage = (event: MessageEvent) => {
-        try {
-            const message: WSMessage = JSON.parse(event.data);
+  ws.onmessage = (event: MessageEvent) => {
+    try {
+      const message: WSMessage = JSON.parse(event.data);
 
             if (message.type === "STATE_UPDATE" && message.data) {
                 currentState = message.data;
@@ -170,6 +170,9 @@ async function fetchInitialState(): Promise<void> {
     } catch (err) {
         console.error("❌ Failed to fetch initial state:", err);
     }
+  } catch (err) {
+    console.error("❌ Failed to fetch initial state:", err);
+  }
 }
 
 async function postAPI(endpoint: string, body: object): Promise<boolean> {
@@ -191,12 +194,59 @@ async function postAPI(endpoint: string, body: object): Promise<boolean> {
 // ==========================================
 
 function renderUI(): void {
-    if (!currentState) return;
+  if (!currentState) return;
 
-    const swapped = currentState.swapped || false;
+  const swapped = currentState.swapped || false;
 
-    // When swapped: Left panel shows Team B, Right panel shows Team A
-    // But we keep the original team identity (colors, borders) from the panel
+  // When swapped: Left panel shows Team B, Right panel shows Team A
+  // But we keep the original team identity (colors, borders) from the panel
+  if (swapped) {
+    renderTeamData("A", currentState.teams.B); // Left panel shows Team B data
+    renderTeamData("B", currentState.teams.A); // Right panel shows Team A data
+  } else {
+    renderTeamData("A", currentState.teams.A); // Normal: Left = Team A
+    renderTeamData("B", currentState.teams.B); // Normal: Right = Team B
+  }
+
+  // Update swap status
+  const swapStatus = document.getElementById("swap-status");
+  if (swapStatus) {
+    swapStatus.textContent = swapped ? "🔀 สลับฝั่ง" : "ปกติ";
+  }
+
+  // Update panel titles based on swap state
+  const teamATitle = document.querySelector(
+    "#teamA-section .team-panel__title",
+  );
+  const teamBTitle = document.querySelector(
+    "#teamB-section .team-panel__title",
+  );
+
+  if (teamATitle) {
+    teamATitle.textContent = swapped ? "Team B" : "Team A";
+  }
+  if (teamBTitle) {
+    teamBTitle.textContent = swapped ? "Team A" : "Team B";
+  }
+
+  // Update button labels and colors based on swap state
+  const teamABtn = document.querySelector(
+    '#teamA-section button[onclick*="saveTeam"]',
+  ) as HTMLButtonElement;
+  const teamBBtn = document.querySelector(
+    '#teamB-section button[onclick*="saveTeam"]',
+  ) as HTMLButtonElement;
+
+  if (teamABtn) {
+    teamABtn.textContent = swapped ? "UPDATE TEAM B" : "UPDATE TEAM A";
+    // Set button color dynamically based on the team it represents
+    // If swapped, Team A panel (Left) controls Team B. Team B color is currentState.teams.B.color
+    // Wait, renderTeamData updates colorInput. The color passed to applyThemeColor is the source of truth for "current color".
+    // But here we need to read it from state or DOM.
+    // Easiest is to set it in applyThemeColor? No, that applies to section/card.
+    // Let's set it here based on state.
+
+    let btnColor = "#007AFF"; // Default Blue
     if (swapped) {
         renderTeamData("A", currentState.teams.B); // Left panel shows Team B data
         renderTeamData("B", currentState.teams.A); // Right panel shows Team A data
@@ -225,6 +275,7 @@ function renderUI(): void {
     if (teamBTitle) {
         teamBTitle.textContent = swapped ? "Team A" : "Team B";
     }
+  }
 
     // Update button labels and colors based on swap state
     const teamABtn = document.querySelector(
@@ -289,11 +340,11 @@ function renderUI(): void {
         );
         teamBBtn.style.backgroundColor = btnColor;
 
-        const rgb = hexToRgb(btnColor);
-        if (rgb) {
-            teamBBtn.style.boxShadow = `0 4px 6px -1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
-        }
+    const rgb = hexToRgb(btnColor);
+    if (rgb) {
+      teamBBtn.style.boxShadow = `0 4px 6px -1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
     }
+  }
 }
 
 // Render team data into a specific panel (side = panel position, team = data to show)
@@ -342,13 +393,12 @@ function renderTeamData(side: "A" | "B", team: Team): void {
                     <img src="${logoUrl}" alt="${team.name} Logo" class="w-full h-full object-contain" 
                          style="border-radius: var(--radius-md);">
                 </div>`;
-        } else {
-            logoPreview.innerHTML = `
+    } else {
+      logoPreview.innerHTML = `
                 <i class="ph-duotone ph-image logo-dropzone__icon"></i>
                 <span class="logo-dropzone__text">Click to upload logo</span>
                 <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
             `;
-        }
     }
 
     // Apply theme color to section
@@ -358,6 +408,7 @@ function renderTeamData(side: "A" | "B", team: Team): void {
     colorInput?.addEventListener("input", () => {
         if (colorHex) colorHex.textContent = colorInput.value;
     });
+  }
 }
 
 function applyThemeColor(side: "A" | "B", color: string): void {
@@ -511,7 +562,7 @@ async function saveTeam(side: "A" | "B"): Promise<void> {
     const colorInput =
         side === "A" ? elements.teamAColor() : elements.teamBColor();
 
-    if (!nameInput || !colorInput) return;
+  if (!nameInput || !colorInput) return;
 
     // When swapped, left panel (A) contains Team B data, right panel (B) contains Team A data
     const swapped = currentState?.swapped || false;
@@ -523,31 +574,31 @@ async function saveTeam(side: "A" | "B"): Promise<void> {
         color: colorInput.value,
     });
 
-    if (success) {
-        console.log(`✅ Team ${actualSide} saved (panel ${side})`);
-        // Sync changes back to loaded template if exists
-        await syncTemplateAfterUpdate(actualSide);
-    } else {
-        console.error(`❌ Failed to save Team ${actualSide}`);
-    }
+  if (success) {
+    console.log(`✅ Team ${actualSide} saved (panel ${side})`);
+    // Sync changes back to loaded template if exists
+    await syncTemplateAfterUpdate(actualSide);
+  } else {
+    console.error(`❌ Failed to save Team ${actualSide}`);
+  }
 }
 
 async function adjustScore(side: "A" | "B", delta: number): Promise<void> {
     if (!currentState) return;
 
-    const team = currentState.teams[side];
-    const newScore = Math.max(0, team.score + delta);
+  const team = currentState.teams[side];
+  const newScore = Math.max(0, team.score + delta);
 
     const success = await postAPI("/api/team/update", {
         side,
         score: newScore,
     });
 
-    if (success) {
-        console.log(`✅ Score ${side} updated: ${newScore}`);
-    } else {
-        console.error(`❌ Failed to update score for Team ${side}`);
-    }
+  if (success) {
+    console.log(`✅ Score ${side} updated: ${newScore}`);
+  } else {
+    console.error(`❌ Failed to update score for Team ${side}`);
+  }
 }
 
 async function swapSides(): Promise<void> {
@@ -570,6 +621,9 @@ async function swapSides(): Promise<void> {
     } catch (err) {
         console.error("❌ Swap error:", err);
     }
+  } catch (err) {
+    console.error("❌ Swap error:", err);
+  }
 }
 
 // Trigger transition animation
@@ -588,13 +642,16 @@ async function triggerTransition(): Promise<void> {
     } catch (err) {
         console.error("❌ Transition error:", err);
     }
+  } catch (err) {
+    console.error("❌ Transition error:", err);
+  }
 }
 
 // Transition Logo Upload
 let transitionLogoFile: File | null = null;
 
 function handleTransitionLogoSelect(input: HTMLInputElement): void {
-    previewTransitionLogo(input);
+  previewTransitionLogo(input);
 }
 
 function previewTransitionLogo(input: HTMLInputElement): void {
@@ -637,10 +694,14 @@ async function uploadTransitionLogo(): Promise<void> {
         return;
     }
 
+  if (!transitionLogoFile) {
+    console.log("⚠️ No logo file selected");
     if (status) {
         status.textContent = "⏳ กำลังอัปโหลด...";
         status.className = "text-xs text-blue-400 text-center";
     }
+    return;
+  }
 
     const formData = new FormData();
     formData.append("logo", transitionLogoFile);
@@ -673,6 +734,7 @@ async function uploadTransitionLogo(): Promise<void> {
             status.className = "text-xs text-red-400 text-center";
         }
     }
+  }
 }
 
 // Combined function: select and upload in one step
@@ -723,6 +785,10 @@ async function uploadTransitionLogoFromInput(
         console.error("❌ Transition logo upload error:", err);
         if (status) status.textContent = "❌ เกิดข้อผิดพลาด";
     }
+  } catch (err) {
+    console.error("❌ Transition logo upload error:", err);
+    if (status) status.textContent = "❌ เกิดข้อผิดพลาด";
+  }
 }
 
 // Load current transition logo on page load
@@ -748,6 +814,9 @@ async function loadTransitionLogo(): Promise<void> {
     } catch (err) {
         console.log("No transition logo found");
     }
+  } catch (err) {
+    console.log("No transition logo found");
+  }
 }
 
 // ==========================================
@@ -793,6 +862,9 @@ async function updateLowerThird(): Promise<void> {
     } catch (err) {
         console.error("❌ Lower Third update error:", err);
     }
+  } catch (err) {
+    console.error("❌ Lower Third update error:", err);
+  }
 }
 
 // Upload logo for specific slot
@@ -823,6 +895,9 @@ async function uploadSlotLogo(
     } catch (err) {
         console.error("❌ Slot logo upload error:", err);
     }
+  } catch (err) {
+    console.error("❌ Slot logo upload error:", err);
+  }
 }
 
 // Load Lower Third state on page load
@@ -879,7 +954,7 @@ function toggleSettingsMenu(): void {
 let currentPage: string = "scoreboard";
 
 function switchPage(page: string): void {
-    currentPage = page;
+  currentPage = page;
 
     // Hide ALL pages by removing 'active' class
     const allPages = ["scoreboard", "broadcast", "bracket"];
@@ -907,7 +982,7 @@ function switchPage(page: string): void {
     const menu = document.getElementById("settings-menu");
     if (menu) menu.classList.remove("active");
 
-    console.log(`📄 Switched to page: ${page}`);
+  console.log(`📄 Switched to page: ${page}`);
 }
 
 // Close menu when clicking outside
@@ -972,6 +1047,7 @@ async function saveGeneralSettings(): Promise<void> {
             console.error("❌ Logo upload error:", err);
         }
     }
+  }
 
     // Close menu
     toggleSettingsMenu();
@@ -1021,7 +1097,7 @@ function closeSettingsPanel(): void {
 }
 
 function getGeneralSettingsContent(): string {
-    return `
+  return `
         <div class="space-y-6">
             <!-- Event/Tournament Name -->
             <div>
@@ -1074,8 +1150,8 @@ function getGeneralSettingsContent(): string {
 }
 
 function getOverlayURLsContent(): string {
-    const baseUrl = window.location.origin;
-    return `
+  const baseUrl = window.location.origin;
+  return `
         <div class="space-y-4">
             <p class="text-sm text-gray-400 mb-4">คัดลอก URL เหล่านี้ไปใช้ใน OBS Browser Source</p>
             
@@ -1166,7 +1242,7 @@ function copyToClipboard(text: string): void {
 
 // Load saved settings on init
 function loadGeneralSettings(): void {
-    // Settings are now loaded when panel opens
+  // Settings are now loaded when panel opens
 }
 
 function updateSwapUI(swapped: boolean): void {
@@ -1307,7 +1383,9 @@ function openCropModal(file: File, side: "A" | "B"): void {
         };
         cropImage.src = e.target?.result as string;
     };
-    reader.readAsDataURL(file);
+    cropImage.src = e.target?.result as string;
+  };
+  reader.readAsDataURL(file);
 }
 
 function closeCropModal(): void {
@@ -1321,8 +1399,8 @@ function updateCropZoom(): void {
     const zoomInput = document.getElementById("crop-zoom") as HTMLInputElement;
     if (!zoomInput || !cropImage || !cropCanvas) return;
 
-    // Zoom relative to center would be nice, but simple scale is okay for now.
-    // Better: maintain center point.
+  // Zoom relative to center would be nice, but simple scale is okay for now.
+  // Better: maintain center point.
 
     const newScale = parseFloat(zoomInput.value);
     // Adjust offsets to keep center?
@@ -1335,45 +1413,45 @@ function updateCropZoom(): void {
     // Let's use raw multiplier logic relative to image size.
     // Re-calculate based on slider.
 
-    // To smooth experience:
-    // oldScale
-    const oldScale = cropScale;
+  // To smooth experience:
+  // oldScale
+  const oldScale = cropScale;
 
-    // Calculate base fit scale again
-    const scaleX = cropCanvas.width / cropImage.width;
-    const scaleY = cropCanvas.height / cropImage.height;
-    const baseScale = Math.min(scaleX, scaleY); // Fit scale
+  // Calculate base fit scale again
+  const scaleX = cropCanvas.width / cropImage.width;
+  const scaleY = cropCanvas.height / cropImage.height;
+  const baseScale = Math.min(scaleX, scaleY); // Fit scale
 
-    cropScale = baseScale * newScale;
+  cropScale = baseScale * newScale;
 
-    // Maintain center
-    // CenterX of canvas in image coords
-    // This is complex to do perfectly without more state.
-    // Simple approach: Center image on canvas when zooming if not dragged?
-    // Let's just redraw.
-    drawCrop();
+  // Maintain center
+  // CenterX of canvas in image coords
+  // This is complex to do perfectly without more state.
+  // Simple approach: Center image on canvas when zooming if not dragged?
+  // Let's just redraw.
+  drawCrop();
 }
 
 function startDrag(e: MouseEvent): void {
-    isDragging = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
+  isDragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
 }
 
 function drag(e: MouseEvent): void {
-    if (!isDragging) return;
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    lastX = e.clientX;
-    lastY = e.clientY;
+  if (!isDragging) return;
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
 
-    cropOffsetX += dx;
-    cropOffsetY += dy;
-    drawCrop();
+  cropOffsetX += dx;
+  cropOffsetY += dy;
+  drawCrop();
 }
 
 function endDrag(): void {
-    isDragging = false;
+  isDragging = false;
 }
 
 function handleWheel(e: WheelEvent): void {
@@ -1381,13 +1459,13 @@ function handleWheel(e: WheelEvent): void {
     const zoomInput = document.getElementById("crop-zoom") as HTMLInputElement;
     if (!zoomInput) return;
 
-    let val = parseFloat(zoomInput.value);
-    if (e.deltaY < 0) val += 0.1;
-    else val -= 0.1;
+  let val = parseFloat(zoomInput.value);
+  if (e.deltaY < 0) val += 0.1;
+  else val -= 0.1;
 
-    val = Math.max(1, Math.min(3, val));
-    zoomInput.value = val.toString();
-    updateCropZoom();
+  val = Math.max(1, Math.min(3, val));
+  zoomInput.value = val.toString();
+  updateCropZoom();
 }
 
 function drawCrop(): void {
@@ -1445,7 +1523,7 @@ function drawCrop(): void {
 }
 
 function confirmCrop(): void {
-    if (!cropCanvas || !currentCropSide) return;
+  if (!cropCanvas || !currentCropSide) return;
 
     cropCanvas.toBlob(async (blob) => {
         if (blob && currentCropSide) {
@@ -1471,8 +1549,11 @@ async function uploadLogo(side: "A" | "B", file: File): Promise<void> {
             const result = await response.json();
             console.log(`✅ Logo for Team ${side} uploaded successfully`, result);
 
-            // Update logo version to force refresh
-            logoVersions[side] = Date.now();
+  try {
+    const response = await fetch(`${API_BASE}/api/logo/upload`, {
+      method: "POST",
+      body: formData,
+    });
 
             // Update local state is optional if WS sends update, but good for immediate feedback.
             // However, WS update might not have the version param, so relying on logoVersions global is better.
@@ -1494,6 +1575,10 @@ async function uploadLogo(side: "A" | "B", file: File): Promise<void> {
         console.error("❌ Logo upload error:", err);
         alert("Failed to upload logo. Please try again.");
     }
+  } catch (err) {
+    console.error("❌ Logo upload error:", err);
+    alert("Failed to upload logo. Please try again.");
+  }
 }
 
 // Color picker state
@@ -1520,6 +1605,11 @@ async function pickScreenColor(side: "A" | "B"): Promise<void> {
             "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)",
         );
     }
+  } else {
+    alert(
+      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)",
+    );
+  }
 }
 
 async function pickLogoColor(side: "A" | "B"): Promise<void> {
@@ -1536,8 +1626,8 @@ async function pickLogoColor(side: "A" | "B"): Promise<void> {
     const swapped = currentState?.swapped || false;
     const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
 
-    // Open pixel picker modal with both actual and panel side
-    openPixelPickerModal(actualSide, side, logoImg.src);
+  // Open pixel picker modal with both actual and panel side
+  openPixelPickerModal(actualSide, side, logoImg.src);
 }
 
 function openPixelPickerModal(
@@ -1574,7 +1664,7 @@ function openPixelPickerModal(
         margin-bottom: 20px;
         text-align: center;
     `;
-    header.innerHTML = `
+  header.innerHTML = `
         <div style="font-weight: bold; margin-bottom: 8px;">🎨 คลิกเลือกสีจากโลโก้ Team ${panelSide}</div>
         <div style="font-size: 14px; color: #888;">กด ESC หรือคลิกนอกภาพเพื่อยกเลิก</div>
     `;
@@ -1591,7 +1681,7 @@ function openPixelPickerModal(
         background: #1f2937;
         border-radius: 8px;
     `;
-    colorPreview.innerHTML = `
+  colorPreview.innerHTML = `
         <div id="picker-color-box" style="width: 40px; height: 40px; border-radius: 8px; border: 2px solid white; background: #888;"></div>
         <div id="picker-color-hex" style="font-family: monospace; font-size: 18px; color: white;">#------</div>
     `;
@@ -1699,12 +1789,12 @@ function openPixelPickerModal(
 }
 
 function closePixelPickerModal(): void {
-    if (pickerOverlay) {
-        pickerOverlay.remove();
-        pickerOverlay = null;
-    }
-    activePickerSide = null;
-    activePickerPanelSide = null;
+  if (pickerOverlay) {
+    pickerOverlay.remove();
+    pickerOverlay = null;
+  }
+  activePickerSide = null;
+  activePickerPanelSide = null;
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
@@ -1740,8 +1830,8 @@ function applyColor(
 function toggleLogoFit(side: "A" | "B"): void {
     if (!currentState) return;
 
-    const swapped = currentState.swapped || false;
-    let targetTeam: Team;
+  const swapped = currentState.swapped || false;
+  let targetTeam: Team;
 
     // Determine which team is currently in the panel 'side'
     if (side === "A") {
@@ -1759,36 +1849,36 @@ function toggleLogoFit(side: "A" | "B"): void {
 // ==========================================
 
 declare global {
-    interface Window {
-        saveTeam: typeof saveTeam;
-        adjustScore: typeof adjustScore;
-        updatePlayer: typeof updatePlayer;
-        handleLogoSelect: typeof handleLogoSelect;
-        pickScreenColor: typeof pickScreenColor;
-        pickLogoColor: typeof pickLogoColor;
-        openHeroPicker: typeof openHeroPicker;
-        swapSides: typeof swapSides;
-        updateSwapUI: typeof updateSwapUI;
-        triggerTransition: typeof triggerTransition;
-        toggleSettingsMenu: typeof toggleSettingsMenu;
-        handleMainLogoSelect: typeof handleMainLogoSelect;
-        saveGeneralSettings: typeof saveGeneralSettings;
-        openSettingsPanel: typeof openSettingsPanel;
-        closeSettingsPanel: typeof closeSettingsPanel;
-        saveCurrentSettings: typeof saveCurrentSettings;
-        copyToClipboard: typeof copyToClipboard;
-        switchPage: typeof switchPage;
-        handleTransitionLogoSelect: typeof handleTransitionLogoSelect;
-        uploadTransitionLogo: typeof uploadTransitionLogo;
-        uploadTransitionLogoFromInput: typeof uploadTransitionLogoFromInput;
-        previewTransitionLogo: typeof previewTransitionLogo;
-        updateLowerThird: typeof updateLowerThird;
-        uploadSlotLogo: typeof uploadSlotLogo;
-        loadLowerThird: typeof loadLowerThird;
-        closeCropModal: typeof closeCropModal;
-        confirmCrop: typeof confirmCrop;
-        updateCropZoom: typeof updateCropZoom;
-    }
+  interface Window {
+    saveTeam: typeof saveTeam;
+    adjustScore: typeof adjustScore;
+    updatePlayer: typeof updatePlayer;
+    handleLogoSelect: typeof handleLogoSelect;
+    pickScreenColor: typeof pickScreenColor;
+    pickLogoColor: typeof pickLogoColor;
+    openHeroPicker: typeof openHeroPicker;
+    swapSides: typeof swapSides;
+    updateSwapUI: typeof updateSwapUI;
+    triggerTransition: typeof triggerTransition;
+    toggleSettingsMenu: typeof toggleSettingsMenu;
+    handleMainLogoSelect: typeof handleMainLogoSelect;
+    saveGeneralSettings: typeof saveGeneralSettings;
+    openSettingsPanel: typeof openSettingsPanel;
+    closeSettingsPanel: typeof closeSettingsPanel;
+    saveCurrentSettings: typeof saveCurrentSettings;
+    copyToClipboard: typeof copyToClipboard;
+    switchPage: typeof switchPage;
+    handleTransitionLogoSelect: typeof handleTransitionLogoSelect;
+    uploadTransitionLogo: typeof uploadTransitionLogo;
+    uploadTransitionLogoFromInput: typeof uploadTransitionLogoFromInput;
+    previewTransitionLogo: typeof previewTransitionLogo;
+    updateLowerThird: typeof updateLowerThird;
+    uploadSlotLogo: typeof uploadSlotLogo;
+    loadLowerThird: typeof loadLowerThird;
+    closeCropModal: typeof closeCropModal;
+    confirmCrop: typeof confirmCrop;
+    updateCropZoom: typeof updateCropZoom;
+  }
 }
 
 window.saveTeam = saveTeam;
@@ -1982,16 +2072,16 @@ const HERO_FILE_MAP: Record<string, { name: string; ext: string }> = {
 
 // Updated for PNG assets (standardized)
 function getHeroImagePath(heroName: string): string {
-    // Standardize: "Lu Bu" -> "Lu_Bu", "D'Arcy" -> "D'Arcy" (file has quote)
-    let formatted = heroName.trim();
-    formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  // Standardize: "Lu Bu" -> "Lu_Bu", "D'Arcy" -> "D'Arcy" (file has quote)
+  let formatted = heroName.trim();
+  formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
 
     // Check specific manual overrides if needed (e.g. for files that don't match simple logic)
     // But D'Arcy.png exists.
     // Replace spaces with underscores
     formatted = formatted.replace(/\s+/g, "_");
 
-    return `/src/ROV/${formatted}.png`;
+  return `/src/ROV/${formatted}.png`;
 }
 
 let heroPickerOverlay: HTMLDivElement | null = null;
@@ -2041,7 +2131,7 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
         align-items: center;
         justify-content: space-between;
     `;
-    header.innerHTML = `
+  header.innerHTML = `
         <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.25rem; font-weight: 600; margin: 0;">
             <i class="ph-duotone ph-game-controller" style="color: var(--color-accent, #0a84ff); margin-right: 8px;"></i>
             Select Hero - Team ${side} Player ${slot}
@@ -2141,7 +2231,7 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
         }
     };
 
-    renderHeroes();
+  renderHeroes();
 
     // Search input event
     searchInput.addEventListener("input", (e) => {
@@ -2172,28 +2262,28 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
     };
     document.addEventListener("keydown", handleEsc);
 
-    // Assemble modal
-    modal.appendChild(header);
-    modal.appendChild(searchInput);
-    modal.appendChild(gridContainer);
-    heroPickerOverlay.appendChild(modal);
-    document.body.appendChild(heroPickerOverlay);
+  // Assemble modal
+  modal.appendChild(header);
+  modal.appendChild(searchInput);
+  modal.appendChild(gridContainer);
+  heroPickerOverlay.appendChild(modal);
+  document.body.appendChild(heroPickerOverlay);
 
-    // Focus search input
-    searchInput.focus();
+  // Focus search input
+  searchInput.focus();
 }
 
 function closeHeroPicker(): void {
-    if (heroPickerOverlay) {
-        heroPickerOverlay.remove();
-        heroPickerOverlay = null;
-    }
-    heroPickerSide = null;
-    heroPickerSlot = null;
+  if (heroPickerOverlay) {
+    heroPickerOverlay.remove();
+    heroPickerOverlay = null;
+  }
+  heroPickerSide = null;
+  heroPickerSlot = null;
 }
 
 async function selectHero(heroName: string): Promise<void> {
-    if (!heroPickerSide || !heroPickerSlot) return;
+  if (!heroPickerSide || !heroPickerSlot) return;
 
     const success = await postAPI("/api/player/update", {
         side: heroPickerSide,
@@ -2209,7 +2299,7 @@ async function selectHero(heroName: string): Promise<void> {
         console.error("❌ Failed to update hero");
     }
 
-    closeHeroPicker();
+  closeHeroPicker();
 }
 
 // Expose selectHero to window for onclick
@@ -2275,7 +2365,7 @@ function openLanePicker(side: "A" | "B", slot: number): void {
         align-items: center;
         justify-content: space-between;
     `;
-    header.innerHTML = `
+  header.innerHTML = `
         <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.125rem; font-weight: 600; margin: 0;">
             <i class="ph-duotone ph-map-pin" style="color: var(--color-warning, #ff9f0a); margin-right: 8px;"></i>
             Select Lane - Player ${slot}
@@ -2359,20 +2449,20 @@ function openLanePicker(side: "A" | "B", slot: number): void {
     };
     document.addEventListener("keydown", handleEsc);
 
-    // Assemble modal
-    modal.appendChild(header);
-    modal.appendChild(gridContainer);
-    lanePickerOverlay.appendChild(modal);
-    document.body.appendChild(lanePickerOverlay);
+  // Assemble modal
+  modal.appendChild(header);
+  modal.appendChild(gridContainer);
+  lanePickerOverlay.appendChild(modal);
+  document.body.appendChild(lanePickerOverlay);
 }
 
 function closeLanePicker(): void {
-    if (lanePickerOverlay) {
-        lanePickerOverlay.remove();
-        lanePickerOverlay = null;
-    }
-    lanePickerSide = null;
-    lanePickerSlot = null;
+  if (lanePickerOverlay) {
+    lanePickerOverlay.remove();
+    lanePickerOverlay = null;
+  }
+  lanePickerSide = null;
+  lanePickerSlot = null;
 }
 
 async function selectLane(laneName: string): Promise<void> {
@@ -2393,7 +2483,7 @@ async function selectLane(laneName: string): Promise<void> {
         console.error("❌ Failed to update lane");
     }
 
-    closeLanePicker();
+  closeLanePicker();
 }
 
 // Expose Lane functions to window
@@ -2419,6 +2509,7 @@ function handleLaneClick(
             );
         }
     }
+  }
 }
 (window as any).handleLaneClick = handleLaneClick;
 
@@ -2427,12 +2518,12 @@ function handleLaneClick(
 // ==========================================
 
 interface TeamTemplate {
-    id: string;
-    name: string;
-    color: string;
-    logo: string;
-    players: { slot: number; name: string }[];
-    createdAt: string;
+  id: string;
+  name: string;
+  color: string;
+  logo: string;
+  players: { slot: number; name: string }[];
+  createdAt: string;
 }
 
 let templates: TeamTemplate[] = [];
@@ -2451,6 +2542,9 @@ async function fetchTemplates(): Promise<void> {
     } catch (err) {
         console.error("❌ Failed to fetch templates:", err);
     }
+  } catch (err) {
+    console.error("❌ Failed to fetch templates:", err);
+  }
 }
 
 function renderTemplateDropdowns(): void {
@@ -2497,6 +2591,9 @@ async function loadTemplate(side: "A" | "B"): Promise<void> {
     } catch (err) {
         console.error("❌ Load template error:", err);
     }
+  } catch (err) {
+    console.error("❌ Load template error:", err);
+  }
 }
 
 async function saveAsTemplate(side: "A" | "B"): Promise<void> {
@@ -2505,7 +2602,7 @@ async function saveAsTemplate(side: "A" | "B"): Promise<void> {
     const team = currentState.teams[side];
     const templateName = prompt("Enter template name:", team.name);
 
-    if (!templateName) return;
+  if (!templateName) return;
 
     const templateData = {
         name: templateName,
@@ -2531,6 +2628,9 @@ async function saveAsTemplate(side: "A" | "B"): Promise<void> {
     } catch (err) {
         console.error("❌ Save template error:", err);
     }
+  } catch (err) {
+    console.error("❌ Save template error:", err);
+  }
 }
 
 async function syncTemplateAfterUpdate(side: "A" | "B"): Promise<void> {
@@ -2539,7 +2639,7 @@ async function syncTemplateAfterUpdate(side: "A" | "B"): Promise<void> {
         return; // No template loaded for this side
     }
 
-    const team = currentState.teams[side];
+  const team = currentState.teams[side];
 
     try {
         const response = await fetch(`${API_BASE}/api/templates/${templateId}`, {
@@ -2560,6 +2660,9 @@ async function syncTemplateAfterUpdate(side: "A" | "B"): Promise<void> {
     } catch (err) {
         console.error("❌ Template sync error:", err);
     }
+  } catch (err) {
+    console.error("❌ Template sync error:", err);
+  }
 }
 // ==========================================
 // Template Manager Modal
@@ -2733,10 +2836,10 @@ function openTemplateManager(): void {
 }
 
 function closeTemplateManager(): void {
-    if (templateManagerOverlay) {
-        templateManagerOverlay.remove();
-        templateManagerOverlay = null;
-    }
+  if (templateManagerOverlay) {
+    templateManagerOverlay.remove();
+    templateManagerOverlay = null;
+  }
 }
 
 async function createTemplateFromForm(): Promise<void> {
@@ -2791,6 +2894,9 @@ async function createTemplateFromForm(): Promise<void> {
     } catch (err) {
         console.error("Save template error:", err);
     }
+  } catch (err) {
+    console.error("Save template error:", err);
+  }
 }
 
 function deleteTemplate(id: string): void {
@@ -2815,7 +2921,7 @@ function deleteTemplate(id: string): void {
         z-index: 99999;
     `;
 
-    confirmOverlay.innerHTML = `
+  confirmOverlay.innerHTML = `
         <div style="background: #1f2937; border-radius: 12px; padding: 24px; max-width: 400px; text-align: center; box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);">
             <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 16px;">⚠️ ยืนยันการลบ</h3>
             <p style="color: white; margin-bottom: 8px;">คุณต้องการลบ Template</p>
@@ -2857,11 +2963,34 @@ function deleteTemplate(id: string): void {
         confirmOverlay.remove();
     };
 
-    confirmOverlay.onclick = (e) => {
-        if (e.target === confirmOverlay) {
-            confirmOverlay.remove();
-        }
-    };
+    try {
+      console.log(`Deleting template: ${id}`);
+      const response = await fetch(`${API_BASE}/api/templates/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        await fetchTemplates();
+        closeTemplateManager();
+        openTemplateManager();
+      } else {
+        alert("❌ ไม่สามารถลบได้");
+      }
+    } catch (err) {
+      console.error("Delete template error:", err);
+    }
+  };
+
+  document.getElementById("confirm-delete-no")!.onclick = () => {
+    confirmOverlay.remove();
+  };
+
+  confirmOverlay.onclick = (e) => {
+    if (e.target === confirmOverlay) {
+      confirmOverlay.remove();
+    }
+  };
 }
 
 function loadTemplateToForm(id: string): void {
@@ -2898,6 +3027,14 @@ function loadTemplateToForm(id: string): void {
         createBtn.innerHTML = "✏️ Update Template";
         createBtn.style.background = "#3b82f6";
     }
+  }
+
+  // Update button text to show "Update" instead of "Create"
+  const createBtn = document.getElementById("create-template-btn");
+  if (createBtn) {
+    createBtn.innerHTML = "✏️ Update Template";
+    createBtn.style.background = "#3b82f6";
+  }
 
     // Scroll to form (visual feedback)
     const tplName = document.getElementById("tpl-name");
@@ -2992,8 +3129,8 @@ function handleDragOver(event: DragEvent): void {
     ) as HTMLElement;
     if (!card || !draggedPlayer) return;
 
-    const targetSide = card.dataset.side;
-    if (targetSide !== draggedPlayer.side) return; // Only allow same-team drag
+  const targetSide = card.dataset.side;
+  if (targetSide !== draggedPlayer.side) return; // Only allow same-team drag
 
     card.classList.add("drag-over");
 }
@@ -3094,6 +3231,7 @@ async function swapPlayers(
             );
         }
     }
+  }
 }
 
 // ==========================================
@@ -3103,7 +3241,7 @@ async function swapPlayers(
 async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
     if (!currentState) return;
 
-    const team = currentState.teams[side];
+  const team = currentState.teams[side];
 
     // Clear captain from all other players in this team
     for (const player of team.players) {
@@ -3136,6 +3274,7 @@ async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
             (window as any).showNotification("Captain removed", "", "info");
         }
     }
+  }
 }
 
 // ==========================================
