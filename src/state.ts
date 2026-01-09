@@ -25,8 +25,8 @@ export interface Team {
 
 export interface MatchState {
   matchId: string;
-  linkedMatchId: string | null;  // Bracket match ID for score sync
-  bestOf: number;    // แข่งกี่เกม (Bo1, Bo3, Bo5)
+  linkedMatchId: string | null; // Bracket match ID for score sync
+  bestOf: number; // แข่งกี่เกม (Bo1, Bo3, Bo5)
   currentGame: number;
   swapped: boolean; // สลับฝั่ง: false = Team A ซ้าย, true = Team A ขวา
   teams: {
@@ -151,7 +151,7 @@ export class StateManager {
   public setLinkedMatch(matchId: string | null): void {
     this.state.linkedMatchId = matchId;
     this.saveToDisk();
-    console.log(`🔗 Linked match: ${matchId || 'none'}`);
+    console.log(`🔗 Linked match: ${matchId || "none"}`);
   }
 
   public getLinkedMatch(): string | null {

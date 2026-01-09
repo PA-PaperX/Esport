@@ -1024,31 +1024,6 @@ body {
   pointer-events: none;
 }
 
-.list-selection {
-  background: var(--color-bg-primary);
-  padding: var(--space-4);
-  @apply border rounded-lg flex-1 border-[var(--color-border)] space-y-2 max-h-150 overflow-hidden;
-}
-
-.del-btn {
-  @apply cursor-pointer;
-}
-
-#template-list {
-  max-height: 95%;
-  @apply rounded-sm overflow-y-auto;
-}
-
-.team-select {
-  color: var(--color-text-primary);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  @apply bg-[var(--color-bg-secondary)] hover:bg-blue-500/20 transition duration-300 ease-in-out;
-}
-
 .modal {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
@@ -1139,4 +1114,78 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.55);
+}
+
+/* Create Template */
+
+#create-template-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  @apply bg-[var(--color-bg-secondary)] hover:bg-blue-500/20 transition duration-300 ease-in-out;
+}
+
+/* List Selection */
+
+.list-selection {
+  background: var(--color-bg-primary);
+  padding: var(--space-4);
+  @apply border rounded-lg flex-1 border-[var(--color-border)] space-y-2 max-h-150 overflow-hidden;
+}
+
+.del-btn {
+  @apply cursor-pointer;
+}
+
+#template-list {
+  max-height: 95%;
+  @apply rounded-sm overflow-y-auto;
+}
+
+.team-select {
+  color: var(--color-text-primary);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  @apply bg-[var(--color-bg-secondary)] hover:bg-blue-500/20 transition duration-300 ease-in-out;
+}
+
+/* iput */
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  @apply bg-[var(--color-bg-secondary)] border border-[var(--color-border)];
+}
+
+/* button  */
+
+.choose-btn {
+  @apply flex w-full py-2.5 border border-[var(--color-border)] justify-center items-center gap-2 rounded-[10px] bg-[var(--color-bg-secondary)] cursor-pointer hover:bg-blue-500/20 hover:border-[var(--color-border)]/50 transition duration-300 ease-in-out;
+}
+
+/* confirm del */
+.confirm-delete {
+  @apply bg-[var(--color-bg-primary)] border border-[var(--color-border)]  rounded-lg p-4 min-w-sm;
+}
+
+/* Tournament Title */
+
+.tournament-title {
+  font-size: 32px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 40px;
+  text-align: center;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

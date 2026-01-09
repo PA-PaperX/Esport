@@ -69,19 +69,22 @@ const server = Bun.serve({
 
         // 2. Sync scores to linked bracket match (if exists)
         const linkedMatchId = stateManager.getLinkedMatch();
-        if (linkedMatchId && (data.score !== undefined)) {
+        if (linkedMatchId && data.score !== undefined) {
           const state = stateManager.getState();
           bracketManager.updateMatch(linkedMatchId, {
             scoreA: state.teams.A.score,
-            scoreB: state.teams.B.score
+            scoreB: state.teams.B.score,
           });
 
           // Broadcast bracket update
           const bracket = bracketManager.getState();
-          server.publish("overlay", JSON.stringify({
-            type: "BRACKET_UPDATE",
-            data: bracket
-          }));
+          server.publish(
+            "overlay",
+            JSON.stringify({
+              type: "BRACKET_UPDATE",
+              data: bracket,
+            }),
+          );
           console.log(`📊 Score synced to bracket match: ${linkedMatchId}`);
         }
 
@@ -136,15 +139,21 @@ const server = Bun.serve({
 
         // Broadcast updated state
         const newState = stateManager.getState();
-        server.publish("overlay", JSON.stringify({
-          type: "STATE_UPDATE",
-          data: newState
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
 
-        return Response.json({
-          success: true,
-          linkedMatchId: matchId || null
-        }, { headers });
+        return Response.json(
+          {
+            success: true,
+            linkedMatchId: matchId || null,
+          },
+          { headers },
+        );
       } catch (err) {
         return new Response("Link match failed", { status: 500 });
       }

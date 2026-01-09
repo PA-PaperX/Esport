@@ -41,3 +41,8 @@ src-tauri/target/
 # Bun lock file
 bun.lock
 bun.lockb
+
+# data
+data/*
+lower-third-data.json
+match-data.json
