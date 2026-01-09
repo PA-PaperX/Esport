@@ -483,18 +483,22 @@ async function saveTeam(side: 'A' | 'B'): Promise<void> {
 async function adjustScore(side: 'A' | 'B', delta: number): Promise<void> {
     if (!currentState) return;
 
-    const team = currentState.teams[side];
+    // When swapped, left panel (A) contains Team B data, right panel (B) contains Team A data
+    const swapped = currentState.swapped || false;
+    const actualSide = swapped ? (side === 'A' ? 'B' : 'A') : side;
+
+    const team = currentState.teams[actualSide];
     const newScore = Math.max(0, team.score + delta);
 
     const success = await postAPI('/api/team/update', {
-        side,
+        side: actualSide,
         score: newScore,
     });
 
     if (success) {
-        console.log(`✅ Score ${side} updated: ${newScore}`);
+        console.log(`✅ Score ${actualSide} updated: ${newScore} (panel ${side})`);
     } else {
-        console.error(`❌ Failed to update score for Team ${side}`);
+        console.error(`❌ Failed to update score for Team ${actualSide}`);
     }
 }
 
