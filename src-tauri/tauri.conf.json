@@ -4,9 +4,8 @@
   "version": "1.0.0",
   "identifier": "com.paperx.esportcontrol",
   "build": {
-    "devUrl": "http://localhost:3000",
     "frontendDist": "../public",
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "",
     "beforeBuildCommand": ""
   },
   "app": {

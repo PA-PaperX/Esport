@@ -99,15 +99,19 @@
       }
 
       .logo {
-        width: 140px;
+        width: 120px;
         height: 120px;
         position: absolute;
         top: 6px;
         left: 30px;
+        background-color: transparent;
         background-position: center;
         background-size: contain;
         background-repeat: no-repeat;
         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+        border-radius: 50%;
+        overflow: hidden;
+        border: none;
       }
 
       .teamname {
@@ -275,7 +279,7 @@
     <div class="players-grid" id="players-container"></div>
 
     <script>
-      const WS_URL = `ws://${window.location.host}`;
+      const WS_URL = `ws://localhost:3000/ws`;
       const TEAM_SIDE = "A";
       let ws = null;
       let currentState = null;
@@ -544,7 +548,7 @@
 
       async function init() {
         try {
-          const res = await fetch(`http://${window.location.host}/api/state`);
+          const res = await fetch(`http://localhost:3000/api/state`);
           if (res.ok) {
             currentState = await res.json();
             render();

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "tpl_1767946624118",
+    "name": "kai",
+    "color": "#ff0000",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "1"
+      },
+      {
+        "slot": 2,
+        "name": "2"
+      },
+      {
+        "slot": 3,
+        "name": "3"
+      },
+      {
+        "slot": 4,
+        "name": "4"
+      },
+      {
+        "slot": 5,
+        "name": "5"
+      }
+    ],
+    "createdAt": "2026-01-09T08:17:04.118Z",
+    "updatedAt": "2026-01-09T12:26:11.795Z"
+  },
+  {
+    "id": "tpl_1767946642470",
+    "name": "ez",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "1"
+      },
+      {
+        "slot": 2,
+        "name": "2"
+      },
+      {
+        "slot": 3,
+        "name": "3"
+      },
+      {
+        "slot": 4,
+        "name": "4"
+      },
+      {
+        "slot": 5,
+        "name": "5"
+      }
+    ],
+    "createdAt": "2026-01-09T08:17:22.470Z"
+  },
+  {
+    "id": "tpl_1767946653363",
+    "name": "fsafawf",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "1"
+      },
+      {
+        "slot": 2,
+        "name": "2"
+      },
+      {
+        "slot": 3,
+        "name": "3"
+      },
+      {
+        "slot": 4,
+        "name": "4"
+      },
+      {
+        "slot": 5,
+        "name": "5"
+      }
+    ],
+    "createdAt": "2026-01-09T08:17:33.363Z"
+  },
+  {
+    "id": "tpl_1767946686886",
+    "name": "a",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-09T08:18:06.886Z"
+  }
+]

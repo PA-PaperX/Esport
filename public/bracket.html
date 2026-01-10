@@ -390,7 +390,7 @@
 
       // WebSocket Connection
       function connectWebSocket() {
-        const wsUrl = `ws://${window.location.host}`;
+        const wsUrl = `ws://localhost:3000/ws`;
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {

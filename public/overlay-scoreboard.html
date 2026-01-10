@@ -288,7 +288,7 @@
 
     <script>
       // WebSocket Connection
-      const WS_URL = `ws://${window.location.host}`;
+      const WS_URL = `ws://localhost:3000/ws`;
       let ws = null;
       let reconnectInterval = null;
       const RECONNECT_DELAY = 3000;
@@ -426,9 +426,7 @@
       // Fetch Initial State
       async function fetchInitialState() {
         try {
-          const response = await fetch(
-            `http://${window.location.host}/api/state`,
-          );
+          const response = await fetch(`http://localhost:3000/api/state`);
           if (response.ok) {
             currentState = await response.json();
             renderOverlay();

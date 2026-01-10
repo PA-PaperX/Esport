@@ -295,7 +295,7 @@
     <div class="players-grid" id="players-container"></div>
 
     <script>
-      const WS_URL = `ws://${window.location.host}`;
+      const WS_URL = `ws://localhost:3000/ws`;
       const TEAM_SIDE = "B";
       let ws = null;
       let currentState = null;
@@ -601,7 +601,7 @@
 
       async function init() {
         try {
-          const res = await fetch(`http://${window.location.host}/api/state`);
+          const res = await fetch(`http://localhost:3000/api/state`);
           if (res.ok) {
             currentState = await res.json();
             render();

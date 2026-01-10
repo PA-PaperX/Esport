@@ -247,7 +247,7 @@
       }
 
       // WebSocket Connection
-      const WS_URL = `ws://${window.location.host}`;
+      const WS_URL = `ws://localhost:3000/ws`;
       let ws = null;
       let currentState = null;
       let previousScores = { A: 0, B: 0 };
@@ -397,7 +397,7 @@
 
       async function init() {
         try {
-          const res = await fetch(`http://${window.location.host}/api/state`);
+          const res = await fetch(`http://localhost:3000/api/state`);
           if (res.ok) {
             currentState = await res.json();
             renderOverlay();
