@@ -21,14 +21,13 @@ WebSocket API (แบบเรียลไทม์)
 เมื่อมีการเปลี่ยนแปลงของสายการแข่งขัน (เช่น การอัปเดตคะแนน หรือการเปลี่ยนรอบการแข่งขัน) เซิร์ฟเวอร์จะส่งข้อความกระจายข้อมูลดังนี้
 
 {
-  "type": "BRACKET_UPDATE",
-  "data": {
-    "id": "bracket_123",
-    "name": "Tournament Name",
-    "matches": [ ...match objects... ]
-  }
+"type": "BRACKET_UPDATE",
+"data": {
+"id": "bracket_123",
+"name": "Tournament Name",
+"matches": [ ...match objects... ]
 }
-
+}
 
 คำแนะนำสำหรับการทำแอนิเมชัน
 
@@ -52,10 +51,10 @@ POST /api/bracket/create
 ข้อมูลที่ส่งไป (Body):
 
 {
-  "name": "Tournament Name",
-  "type": "single", // หรือ "double"
-  "teams": ["Team A", "Team B", ...],
-  "teamData": [ { "name": "Team A", "logo": "...", "color": "..." }, ... ]
+"name": "Tournament Name",
+"type": "single", // หรือ "double"
+"teams": ["Team A", "Team B", ...],
+"teamData": [ { "name": "Team A", "logo": "...", "color": "..." }, ... ]
 }
 
 อัปเดตคะแนนของการแข่งขัน
@@ -64,32 +63,32 @@ POST /api/bracket/match/update
 ข้อมูลที่ส่งไป (Body):
 
 {
-  "matchId": "match_r1_1",
-  "scoreA": 2,
-  "scoreB": 1,
-  "winner": "A" // ไม่บังคับ: "A", "B" หรือ null
+"matchId": "match_r1_1",
+"scoreA": 2,
+"scoreB": 1,
+"winner": "A" // ไม่บังคับ: "A", "B" หรือ null
 }
 
 โครงสร้างข้อมูล
 ออบเจกต์ Bracket
 {
-  "id": "uuid",
-  "name": "Tournament 2025",
-  "type": "single",
-  "matches": [ ... ]
+"id": "uuid",
+"name": "Tournament 2025",
+"type": "single",
+"matches": [ ... ]
 }
 
 ออบเจกต์ Match
 {
-  "id": "match_r1_1",
-  "round": 1,
-  "position": 1,
-  "roundName": "Quarterfinal",
-  "teamA": { "name": "Team 1", "logo": "url", "color": "#hex" },
-  "teamB": { "name": "Team 2", "logo": "url", "color": "#hex" },
-  "scoreA": 0,
-  "scoreB": 0,
-  "winner": null, // จะเป็น "A" หรือ "B" เมื่อมีการตัดสินผล
-  "nextMatchId": "match_r2_1",
-  "nextSlot": "A"
+"id": "match_r1_1",
+"round": 1,
+"position": 1,
+"roundName": "Quarterfinal",
+"teamA": { "name": "Team 1", "logo": "url", "color": "#hex" },
+"teamB": { "name": "Team 2", "logo": "url", "color": "#hex" },
+"scoreA": 0,
+"scoreB": 0,
+"winner": null, // จะเป็น "A" หรือ "B" เมื่อมีการตัดสินผล
+"nextMatchId": "match_r2_1",
+"nextSlot": "A"
 }
