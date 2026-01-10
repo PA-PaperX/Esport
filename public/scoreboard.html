@@ -31,8 +31,15 @@ Available Styles:
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     />
+    <!-- Custom Fonts (injected dynamically) -->
+    <style id="custom-fonts"></style>
 
     <style>
+      :root {
+        --custom-font-teamname: "Rajdhani";
+        --custom-font-score: "Rajdhani";
+      }
+
       body {
         /* background-color: #C80013; */
         /* background-image: url('../GameImages/cod-example.webp'); */
@@ -279,7 +286,7 @@ Available Styles:
       }
 
       .teamname {
-        font-family: "Rajdhani";
+        font-family: var(--custom-font-teamname), "Rajdhani", sans-serif;
         font-size: var(--teamNameSize);
         color: white;
         text-transform: uppercase;
@@ -300,7 +307,7 @@ Available Styles:
       }
 
       .score {
-        font-family: "Rajdhani";
+        font-family: var(--custom-font-score), "Rajdhani", sans-serif;
         font-size: var(--scoreSize);
         font-weight: bold;
         color: white;
@@ -1075,6 +1082,70 @@ Available Styles:
         interval();
         setInterval(interval, Loopinterval);
       });
+      // Load custom font settings
+      async function loadFontSettings() {
+        try {
+          const response = await fetch("/api/fonts");
+          if (response.ok) {
+            const fontSettings = await response.json();
+            applyCustomFonts(fontSettings);
+          }
+        } catch (e) {
+          console.log("Failed to load font settings");
+        }
+      }
+
+      function applyCustomFonts(fontSettings) {
+        if (!fontSettings) return;
+
+        // Inject @font-face rules
+        const styleEl = document.getElementById("custom-fonts");
+        let css = "";
+        for (const font of fontSettings.fonts || []) {
+          css += `
+            @font-face {
+              font-family: '${font.name}';
+              src: url('${font.path}') format('${font.format}');
+              font-weight: ${font.weight || "normal"};
+              font-style: ${font.style || "normal"};
+              font-display: swap;
+            }
+          `;
+        }
+        styleEl.textContent = css;
+
+        // Apply font assignments
+        const assignments = fontSettings.assignments || {};
+
+        const getFontName = (fontId) => {
+          if (!fontId) return null;
+          const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
+          return font ? font.name : null;
+        };
+
+        // Apply to team name
+        const teamNameFont = getFontName(assignments.scoreboardTeamName);
+        if (teamNameFont) {
+          document.documentElement.style.setProperty(
+            "--custom-font-teamname",
+            `'${teamNameFont}'`,
+          );
+        }
+
+        // Apply to score
+        const scoreFont = getFontName(assignments.scoreboardScore);
+        if (scoreFont) {
+          document.documentElement.style.setProperty(
+            "--custom-font-score",
+            `'${scoreFont}'`,
+          );
+        }
+
+        console.log("🔤 Custom fonts applied to scoreboard");
+      }
+
+      // Load fonts on page load
+      loadFontSettings();
     </script>
   </body>
 
@@ -1095,14 +1166,17 @@ Available Styles:
         rgba(30, 40, 50, 0.85) 100%
       ) !important;
 
-      border: none !important; /* ลบขอบเดิม */
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* เพิ่มเงาให้ดูลอย */
+      border: none !important;
+      /* ลบขอบเดิม */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      /* เพิ่มเงาให้ดูลอย */
 
       /* สไตล์เดิมมันจะใช้ clip-path ตัดขอบให้แหลมๆ
       เราเอามันออก ให้เป็นสี่เหลี่ยมธรรมดา
     */
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%) !important;
-      border-radius: 5px; /* ทำให้ขอบมนเล็กน้อย */
+      border-radius: 5px;
+      /* ทำให้ขอบมนเล็กน้อย */
     }
 
     /* เพิ่มขอบสีแดงให้ทีมซ้าย (เหมือน Valorant) */
@@ -1117,29 +1191,34 @@ Available Styles:
 
     /* ปรับฟอนต์ชื่อทีม */
     body.valorantPositions .teamname {
-      color: #ffffff !important; /* สีขาว */
-      font-size: 1.5em !important; /* ปรับขนาดฟอนต์ (em คือเทียบกับขนาดปกติ) */
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* เงาเรืองแสงสีขาว */
+      color: #ffffff !important;
+      /* สีขาว */
+      font-size: 1.5em !important;
+      /* ปรับขนาดฟอนต์ (em คือเทียบกับขนาดปกติ) */
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+      /* เงาเรืองแสงสีขาว */
     }
 
     /* ปรับฟอนต์คะแนน */
     body.valorantPositions .score {
-      color: #ffee00 !important; /* สีเหลืองทอง */
-      font-size: 3em !important; /* ใหญ่ขึ้น! */
-      text-shadow: 0 0 10px #ffee00; /* เงาเรืองแสงสีทอง */
+      color: #ffee00 !important;
+      /* สีเหลืองทอง */
+      font-size: 3em !important;
+      /* ใหญ่ขึ้น! */
+      text-shadow: 0 0 10px #ffee00;
+      /* เงาเรืองแสงสีทอง */
     }
 
     /* ปรับกล่องข้อความตรงกลาง (เช่น "MAP 1 of 3") */
     body.valorantPositions .center .matchtext {
-      background-color: rgba(
-        10,
-        20,
-        30,
-        0.9
-      ) !important; /* สีเดียวกับกล่องทีม */
-      border-bottom: 2px solid #ff4655; /* ขอบล่างสีแดง */
-      border-radius: 0 0 5px 5px; /* ขอบมนเฉพาะด้านล่าง */
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* เพิ่มเงา */
+      background-color: rgba(10, 20, 30, 0.9) !important;
+      /* สีเดียวกับกล่องทีม */
+      border-bottom: 2px solid #ff4655;
+      /* ขอบล่างสีแดง */
+      border-radius: 0 0 5px 5px;
+      /* ขอบมนเฉพาะด้านล่าง */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      /* เพิ่มเงา */
     }
   </style>
 </html>

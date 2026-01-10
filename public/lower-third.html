@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=1920, height=1080" />
     <title>Lower Third - Esport Control</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Custom Fonts (injected dynamically) -->
+    <style id="custom-fonts"></style>
     <style>
       * {
         margin: 0;
@@ -16,7 +18,7 @@
       }
 
       body {
-        font-family: "Rajdhani", sans-serif;
+        font-family: "Outfit", "Rajdhani", sans-serif;
         background: transparent;
         overflow: hidden;
         width: 1920px;
@@ -24,112 +26,158 @@
       }
 
       /* ========================================
-           LOWER THIRD BAR
+           LOWER THIRD - MODERN ESPORT DESIGN
            ======================================== */
 
       .lower-third {
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 50px;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%) translateY(150%);
+        min-width: 800px;
+        max-width: 1400px;
+        height: auto;
         background: linear-gradient(
-          90deg,
-          #1a472a 0%,
-          #0d2818 50%,
-          #1a472a 100%
+          135deg,
+          rgba(15, 15, 25, 0.95) 0%,
+          rgba(25, 25, 45, 0.9) 50%,
+          rgba(15, 15, 25, 0.95) 100%
         );
-        border-top: 3px solid #00ff88;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        transform: translateY(100%);
-        transition: transform 0.5s ease-out;
+        padding: 20px 40px;
+        gap: 16px;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1000;
-      }
-
-      .lower-third.visible {
-        transform: translateY(0);
-      }
-
-      /* Hazard stripes decoration */
-      .lower-third::before,
-      .lower-third::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        width: 80px;
-        height: 100%;
-        background: repeating-linear-gradient(
-          -45deg,
-          #000000,
-          #000000 10px,
-          #ffcc00 10px,
-          #ffcc00 20px
-        );
-        opacity: 0.8;
+        box-shadow:
+          0 25px 50px rgba(0, 0, 0, 0.5),
+          0 0 100px rgba(79, 70, 229, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
       }
 
       .lower-third::before {
+        content: "";
+        position: absolute;
+        top: 0;
         left: 0;
-      }
-
-      .lower-third::after {
         right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          #6366f1 20%,
+          #a855f7 50%,
+          #6366f1 80%,
+          transparent 100%
+        );
+        border-radius: 16px 16px 0 0;
       }
 
-      /* Content container */
-      .lower-third-content {
+      .lower-third.visible {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* Main Title Section */
+      .title-section {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 40px;
-        padding: 0 100px;
-        height: 100%;
+        gap: 20px;
+        width: 100%;
       }
 
-      /* Main title */
+      .title-decoration {
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #6366f1);
+      }
+
+      .title-decoration.right {
+        background: linear-gradient(90deg, #6366f1, transparent);
+      }
+
       .main-title {
-        font-size: 24px;
+        font-family: var(--custom-font-title, "Rajdhani"), sans-serif;
+        font-size: 28px;
         font-weight: 700;
         color: #ffffff;
         text-transform: uppercase;
-        letter-spacing: 3px;
-        text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        letter-spacing: 4px;
+        text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
         white-space: nowrap;
       }
 
-      /* Chevron decorations */
-      .chevron-left,
-      .chevron-right {
-        font-size: 28px;
-        color: #00ff88;
-        font-weight: 700;
-      }
-
-      /* Slots container */
+      /* Slots Container */
       .slots-container {
         display: flex;
         align-items: center;
-        gap: 20px;
-        position: absolute;
-        right: 100px;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
       }
 
       .slot {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 5px 15px;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 5px;
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        transition: opacity 0.3s ease;
+        gap: 10px;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .slot:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(99, 102, 241, 0.5);
+        transform: translateY(-2px);
       }
 
       .slot.hidden {
         opacity: 0;
+        transform: translateY(20px);
         pointer-events: none;
+        display: none;
+      }
+
+      .slot-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+
+      /* Social Media Icons using Unicode/Emoji alternatives */
+      .slot-icon.facebook {
+        color: #1877f2;
+      }
+
+      .slot-icon.youtube {
+        color: #ff0000;
+      }
+
+      .slot-icon.tiktok {
+        color: #ffffff;
+      }
+
+      .slot-icon.twitch {
+        color: #9146ff;
+      }
+
+      .slot-icon.discord {
+        color: #5865f2;
+      }
+
+      .slot-icon.twitter {
+        color: #1da1f2;
       }
 
       .slot-logo {
@@ -138,37 +186,123 @@
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
+        border-radius: 4px;
       }
 
       .slot-text {
-        font-size: 14px;
-        color: #ffffff;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.9);
         font-weight: 600;
-        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-family: var(--custom-font-slots, "Outfit"), sans-serif;
+      }
+
+      /* Animation keyframes */
+      @keyframes slideIn {
+        0% {
+          opacity: 0;
+          transform: translateX(-50%) translateY(150%);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+
+      @keyframes slideOut {
+        0% {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateX(-50%) translateY(150%);
+        }
+      }
+
+      @keyframes glow {
+        0%,
+        100% {
+          box-shadow:
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            0 0 60px rgba(99, 102, 241, 0.1);
+        }
+
+        50% {
+          box-shadow:
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            0 0 80px rgba(99, 102, 241, 0.2);
+        }
+      }
+
+      .lower-third.visible {
+        animation: glow 4s ease-in-out infinite;
+      }
+
+      /* Status indicator (hidden in production) */
+      .status {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 20px;
+        font-size: 12px;
+        z-index: 1000;
+        display: none;
+        /* Hidden by default */
+      }
+
+      .status .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.5;
+        }
       }
     </style>
   </head>
 
   <body>
     <div class="lower-third" id="lower-third">
-      <div class="lower-third-content">
-        <span class="chevron-left">❮</span>
+      <div class="title-section">
+        <div class="title-decoration"></div>
         <span class="main-title" id="main-title"
           >ROV PRO LEAGUE 2025 WINTER</span
         >
-        <span class="chevron-right">❯</span>
+        <div class="title-decoration right"></div>
       </div>
+
       <div class="slots-container" id="slots-container">
         <div class="slot" id="slot-1">
-          <div class="slot-logo" id="slot-1-logo"></div>
+          <div class="slot-icon facebook" id="slot-1-icon">📘</div>
+          <div class="slot-logo" id="slot-1-logo" style="display: none"></div>
           <span class="slot-text" id="slot-1-text">Facebook</span>
         </div>
         <div class="slot" id="slot-2">
-          <div class="slot-logo" id="slot-2-logo"></div>
+          <div class="slot-icon youtube" id="slot-2-icon">▶️</div>
+          <div class="slot-logo" id="slot-2-logo" style="display: none"></div>
           <span class="slot-text" id="slot-2-text">YouTube</span>
         </div>
         <div class="slot" id="slot-3">
-          <div class="slot-logo" id="slot-3-logo"></div>
+          <div class="slot-icon tiktok" id="slot-3-icon">🎵</div>
+          <div class="slot-logo" id="slot-3-logo" style="display: none"></div>
           <span class="slot-text" id="slot-3-text">TikTok</span>
         </div>
       </div>
@@ -183,9 +317,22 @@
       let ws = null;
       let currentState = null;
 
+      // Default social media icons (emoji fallback)
+      const defaultIcons = {
+        facebook: "📘",
+        youtube: "▶️",
+        tiktok: "🎵",
+        twitch: "🎮",
+        discord: "💬",
+        twitter: "🐦",
+      };
+
+      // Font state
+      let fontSettings = null;
+
       // WebSocket connection
       function connectWebSocket() {
-        ws = new WebSocket(`ws://${window.location.host}`);
+        ws = new WebSocket(`ws://localhost:3000/ws`);
 
         ws.onopen = () => {
           console.log("✅ Connected to server");
@@ -198,6 +345,12 @@
             if (msg.type === "LOWER_THIRD_UPDATE" && msg.data) {
               currentState = msg.data;
               renderLowerThird();
+            }
+
+            // Handle font updates
+            if (msg.type === "FONT_UPDATE" && msg.data) {
+              fontSettings = msg.data;
+              applyCustomFonts();
             }
           } catch (e) {
             console.error("Message parse error:", e);
@@ -226,37 +379,59 @@
         // Update title
         mainTitle.textContent = currentState.title || "";
 
-        // Update colors
-        if (currentState.backgroundColor) {
-          lowerThird.style.background = currentState.backgroundColor;
-        }
-        if (currentState.textColor) {
-          mainTitle.style.color = currentState.textColor;
-        }
-
         // Update slots
         currentState.slots?.forEach((slot) => {
           const slotEl = document.getElementById(`slot-${slot.id}`);
+          const iconEl = document.getElementById(`slot-${slot.id}-icon`);
           const logoEl = document.getElementById(`slot-${slot.id}-logo`);
           const textEl = document.getElementById(`slot-${slot.id}-text`);
 
           if (!slotEl) return;
 
-          // Show/hide slot
+          // Show/hide slot based on enabled state
           if (slot.enabled) {
             slotEl.classList.remove("hidden");
+            slotEl.style.display = "";
           } else {
             slotEl.classList.add("hidden");
+            slotEl.style.display = "none";
           }
 
-          // Logo or Text mode
+          // Update text
+          textEl.textContent = slot.text || slot.label || "";
+
+          // Logo or Icon mode
           if (slot.type === "logo" && slot.logoPath) {
+            // Show custom logo
             logoEl.style.backgroundImage = `url('${slot.logoPath}?t=${Date.now()}')`;
             logoEl.style.display = "block";
-            textEl.textContent = slot.label || "";
+            iconEl.style.display = "none";
           } else {
+            // Show default icon
             logoEl.style.display = "none";
-            textEl.textContent = slot.text || slot.label || "";
+            iconEl.style.display = "flex";
+
+            // Set icon based on label/text
+            const label = (slot.label || slot.text || "").toLowerCase();
+            if (label.includes("facebook")) {
+              iconEl.textContent = defaultIcons.facebook;
+              iconEl.className = "slot-icon facebook";
+            } else if (label.includes("youtube")) {
+              iconEl.textContent = defaultIcons.youtube;
+              iconEl.className = "slot-icon youtube";
+            } else if (label.includes("tiktok")) {
+              iconEl.textContent = defaultIcons.tiktok;
+              iconEl.className = "slot-icon tiktok";
+            } else if (label.includes("twitch")) {
+              iconEl.textContent = defaultIcons.twitch;
+              iconEl.className = "slot-icon twitch";
+            } else if (label.includes("discord")) {
+              iconEl.textContent = defaultIcons.discord;
+              iconEl.className = "slot-icon discord";
+            } else if (label.includes("twitter") || label.includes("x")) {
+              iconEl.textContent = defaultIcons.twitter;
+              iconEl.className = "slot-icon twitter";
+            }
           }
         });
       }
@@ -276,7 +451,70 @@
 
         // Connect WebSocket for updates
         connectWebSocket();
+
+        // Load font settings
+        loadFontSettings();
       });
+
+      // Load font settings
+      async function loadFontSettings() {
+        try {
+          const response = await fetch("/api/fonts");
+          if (response.ok) {
+            fontSettings = await response.json();
+            applyCustomFonts();
+          }
+        } catch (e) {
+          console.log("Failed to load font settings");
+        }
+      }
+
+      // Apply custom fonts
+      function applyCustomFonts() {
+        if (!fontSettings) return;
+
+        // Inject @font-face rules
+        const styleEl = document.getElementById("custom-fonts");
+        let css = "";
+        for (const font of fontSettings.fonts || []) {
+          css += `
+          @font-face {
+            font-family: '${font.name}';
+            src: url('${font.path}') format('${font.format}');
+            font-weight: ${font.weight || "normal"};
+            font-style: ${font.style || "normal"};
+            font-display: swap;
+          }
+        `;
+        }
+        styleEl.textContent = css;
+
+        // Apply font assignments
+        const assignments = fontSettings.assignments || {};
+
+        // Get font name by ID
+        const getFontName = (fontId) => {
+          if (!fontId) return null;
+          const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
+          return font ? font.name : null;
+        };
+
+        // Apply to title
+        const titleFont = getFontName(assignments.lowerThirdTitle);
+        document.documentElement.style.setProperty(
+          "--custom-font-title",
+          titleFont ? `'${titleFont}'` : '"Rajdhani"',
+        );
+
+        // Apply to slots
+        const slotsFont = getFontName(assignments.lowerThirdSlots);
+        document.documentElement.style.setProperty(
+          "--custom-font-slots",
+          slotsFont ? `'${slotsFont}'` : '"Outfit"',
+        );
+
+        console.log("🔤 Custom fonts applied");
+      }
     </script>
   </body>
 </html>

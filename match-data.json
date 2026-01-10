@@ -1,16 +1,16 @@
 {
   "matchId": "match_init",
-  "linkedMatchId": "match_r1_1",
+  "linkedMatchId": "match_r1_2",
   "bestOf": 3,
   "currentGame": 1,
-  "swapped": true,
+  "swapped": false,
   "teams": {
     "A": {
-      "name": "HOME TEAM",
+      "name": "kai",
       "shortName": "HOME",
-      "color": "#ff0000",
+      "color": "#007AFF",
       "logo": "",
-      "logoVersion": 1767913793301,
+      "logoVersion": 1767983122812,
       "score": 0,
       "players": [
         {
@@ -43,9 +43,9 @@
     "B": {
       "name": "ez",
       "shortName": "AWAY",
-      "color": "#007aff",
+      "color": "#FF453A",
       "logo": "",
-      "logoVersion": 1767913793301,
+      "logoVersion": 1767983122812,
       "score": 0,
       "players": [
         {

@@ -1,1119 +1,1917 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esport Control Panel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles/tokens.css">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        /* App Layout */
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Header */
-        .app-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-4) var(--space-6);
-            background: var(--color-bg-secondary);
-            border-bottom: 1px solid var(--color-border-light);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .app-header__brand {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        .app-header__logo {
-            font-size: var(--font-size-xl);
-            font-weight: var(--font-weight-bold);
-            color: var(--color-text-primary);
-            letter-spacing: -0.5px;
-        }
-
-        .app-header__version {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            background: var(--color-bg-tertiary);
-            padding: var(--space-1) var(--space-2);
-            border-radius: var(--radius-full);
-        }
-
-        .app-header__actions {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        /* Connection Status */
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--color-danger);
-            transition: all var(--transition-normal);
-        }
-
-        .status-dot.connected {
-            background: #00FF66;
-            box-shadow:
-                0 0 4px #00FF66,
-                0 0 8px #00FF66,
-                0 0 16px rgba(0, 255, 102, 0.5);
-            animation: neon-pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes neon-pulse {
-
-            0%,
-            100% {
-                box-shadow:
-                    0 0 4px #00FF66,
-                    0 0 8px #00FF66,
-                    0 0 16px rgba(0, 255, 102, 0.5);
-            }
-
-            50% {
-                box-shadow:
-                    0 0 6px #00FF66,
-                    0 0 12px #00FF66,
-                    0 0 24px rgba(0, 255, 102, 0.7);
-            }
-        }
-
-        /* Main Layout */
-        .main-content {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 0;
-            overflow: hidden;
-        }
-
-        /* Team Panel */
-        .team-panel {
-            padding: var(--space-6);
-            overflow-y: auto;
-            background: var(--color-bg-primary);
-        }
-
-        .team-panel--a {
-            border-right: 1px solid var(--color-border-light);
-        }
-
-        .team-panel--b {
-            border-left: 1px solid var(--color-border-light);
-        }
-
-        .team-panel__header {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            margin-bottom: var(--space-6);
-        }
-
-        .team-panel__indicator {
-            width: 4px;
-            height: 24px;
-            border-radius: var(--radius-full);
-        }
-
-        .team-panel--a .team-panel__indicator {
-            background: var(--color-team-a);
-        }
-
-        .team-panel--b .team-panel__indicator {
-            background: var(--color-team-b);
-        }
-
-        .team-panel__title {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-        }
-
-        .team-panel__subtitle {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            margin-left: var(--space-2);
-        }
-
-        /* Team Card */
-        .team-card {
-            background: var(--color-bg-secondary);
-            border: 1px solid var(--color-border-light);
-            border-radius: var(--radius-lg);
-            padding: var(--space-5);
-            margin-bottom: var(--space-6);
-        }
-
-        .team-card--a {
-            border-left: 3px solid var(--color-team-a);
-        }
-
-        .team-card--b {
-            border-left: 3px solid var(--color-team-b);
-        }
-
-        .form-group {
-            margin-bottom: var(--space-4);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--space-4);
-        }
-
-        /* Color Picker Row */
-        .color-picker-row {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            margin-top: var(--space-1);
-        }
-
-        .color-swatch {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-md);
-            border: 2px solid var(--color-border);
-            cursor: pointer;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .color-swatch::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-
-        .color-swatch::-webkit-color-swatch {
-            border: none;
-            border-radius: var(--radius-sm);
-        }
-
-        .color-hex {
-            font-size: var(--font-size-xs);
-            font-family: monospace;
-            color: var(--color-text-tertiary);
-        }
-
-        /* Score Control */
-        .score-control {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            margin-top: var(--space-1);
-        }
-
-        .score-btn {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-bold);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .score-btn--minus {
-            background: var(--color-bg-tertiary);
-            color: var(--color-text-primary);
-        }
-
-        .score-btn--minus:hover {
-            background: var(--color-border);
-        }
-
-        .score-btn--plus-a {
-            background: var(--color-team-a);
-            color: white;
-        }
-
-        .score-btn--plus-b {
-            background: var(--color-team-b);
-            color: white;
-        }
-
-        .score-display {
-            width: 56px;
-            height: 36px;
-            text-align: center;
-            font-size: var(--font-size-2xl);
-            font-weight: var(--font-weight-bold);
-            color: var(--color-text-primary);
-            background: var(--color-bg-primary);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-md);
-        }
-
-        /* Logo Upload */
-        .logo-upload {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            margin-top: var(--space-2);
-        }
-
-        .logo-preview {
-            width: 64px;
-            height: 64px;
-            border-radius: var(--radius-lg);
-            background: var(--color-bg-tertiary);
-            border: 2px dashed var(--color-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .logo-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .logo-preview__placeholder {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-        }
-
-        .logo-upload__actions {
-            flex: 1;
-        }
-
-        .logo-upload__hint {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            margin-top: var(--space-1);
-        }
-
-        /* Update Button */
-        .btn-update {
-            width: 100%;
-            padding: var(--space-3);
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
-            margin-top: var(--space-4);
-        }
-
-        .btn-update--a {
-            background: var(--color-team-a);
-            color: white;
-        }
-
-        .btn-update--a:hover {
-            filter: brightness(1.1);
-        }
-
-        .btn-update--b {
-            background: var(--color-team-b);
-            color: white;
-        }
-
-        .btn-update--b:hover {
-            filter: brightness(1.1);
-        }
-
-        /* Roster Section */
-        .roster-section {
-            margin-top: var(--space-2);
-        }
-
-        .roster-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: var(--space-3);
-        }
-
-        .roster-title {
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-medium);
-            color: var(--color-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .roster-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-2);
-        }
-
-        .roster-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            padding: var(--space-3);
-            background: var(--color-bg-secondary);
-            border: 1px solid var(--color-border-light);
-            border-radius: var(--radius-md);
-            transition: all var(--transition-fast);
-        }
-
-        .roster-item:hover {
-            border-color: var(--color-border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .roster-item__slot {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-tertiary);
-            background: var(--color-bg-tertiary);
-            border-radius: var(--radius-sm);
-        }
-
-        .roster-item__name {
-            flex: 1;
-        }
-
-        .roster-item__name input {
-            width: 100%;
-            padding: var(--space-1) var(--space-2);
-            font-size: var(--font-size-sm);
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: var(--radius-sm);
-            color: var(--color-text-primary);
-            transition: all var(--transition-fast);
-        }
-
-        .roster-item__name input:hover {
-            background: var(--color-bg-primary);
-            border-color: var(--color-border-light);
-        }
-
-        .roster-item__name input:focus {
-            outline: none;
-            background: var(--color-bg-primary);
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
-        }
-
-        .roster-item__actions {
-            display: flex;
-            gap: var(--space-1);
-        }
-
-        .roster-btn {
-            padding: var(--space-1) var(--space-2);
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--color-border);
-            background: var(--color-bg-primary);
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: flex;
-            align-items: center;
-            gap: var(--space-1);
-        }
-
-        .roster-btn:hover {
-            background: var(--color-bg-tertiary);
-            color: var(--color-text-primary);
-        }
-
-        /* Center Column - Swap */
-        .center-column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-4);
-            background: var(--color-bg-secondary);
-            border-left: 1px solid var(--color-border-light);
-            border-right: 1px solid var(--color-border-light);
-            min-width: 80px;
-        }
-
-        .swap-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-4);
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            transition: all var(--transition-normal);
-        }
-
-        .swap-btn:hover {
-            background: var(--color-bg-tertiary);
-            box-shadow: var(--shadow-md);
-            transform: scale(1.02);
-        }
-
-        .swap-btn i {
-            font-size: var(--font-size-2xl);
-            color: var(--color-text-primary);
-        }
-
-        .swap-btn span {
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .swap-status {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            margin-top: var(--space-3);
-            text-align: center;
-        }
-
-        /* Template Selector */
-        .template-selector {
-            display: flex;
-            gap: var(--space-2);
-            margin-bottom: var(--space-4);
-        }
-
-        .template-selector select {
-            flex: 1;
-        }
-
-        /* Navigation Menu */
-        .nav-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 280px;
-            background: var(--color-bg-elevated);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-            margin-top: var(--space-2);
-            overflow: hidden;
-            display: none;
-            z-index: 200;
-        }
-
-        .nav-menu.active {
-            display: block;
-        }
-
-        .nav-menu__header {
-            padding: var(--space-3) var(--space-4);
-            border-bottom: 1px solid var(--color-border-light);
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-secondary);
-        }
-
-        .nav-menu__item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            padding: var(--space-3) var(--space-4);
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            transition: background var(--transition-fast);
-            color: var(--color-text-primary);
-        }
-
-        .nav-menu__item:hover {
-            background: var(--color-bg-tertiary);
-        }
-
-        .nav-menu__item.active {
-            background: var(--color-team-a-bg);
-            border-left: 3px solid var(--color-accent);
-        }
-
-        .nav-menu__item i {
-            font-size: var(--font-size-xl);
-            color: var(--color-text-secondary);
-        }
-
-        .nav-menu__item-text {
-            flex: 1;
-        }
-
-        .nav-menu__item-title {
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-medium);
-        }
-
-        .nav-menu__item-desc {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-        }
-
-        /* Hidden pages */
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Ensure bracket page is explicitly hidden when not active */
-        #page-bracket:not(.active) {
-            display: none !important;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Esport Control Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles/tokens.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    /* App Layout */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-6);
+      background: var(--color-bg-secondary);
+      border-bottom: 1px solid var(--color-border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header__brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .app-header__logo {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .app-header__version {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      background: var(--color-bg-tertiary);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-full);
+    }
+
+    .app-header__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* Connection Status */
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-danger);
+      transition: all var(--transition-normal);
+    }
+
+    .status-dot.connected {
+      background: #00ff66;
+      box-shadow:
+        0 0 4px #00ff66,
+        0 0 8px #00ff66,
+        0 0 16px rgba(0, 255, 102, 0.5);
+      animation: neon-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes neon-pulse {
+
+      0%,
+      100% {
+        box-shadow:
+          0 0 4px #00ff66,
+          0 0 8px #00ff66,
+          0 0 16px rgba(0, 255, 102, 0.5);
+      }
+
+      50% {
+        box-shadow:
+          0 0 6px #00ff66,
+          0 0 12px #00ff66,
+          0 0 24px rgba(0, 255, 102, 0.7);
+      }
+    }
+
+    /* Main Layout */
+    .main-content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* Team Panel */
+    .team-panel {
+      padding: var(--space-6);
+      overflow-y: auto;
+      background: var(--color-bg-primary);
+    }
+
+    .team-panel--a {
+      border-right: 1px solid var(--color-border-light);
+    }
+
+    .team-panel--b {
+      border-left: 1px solid var(--color-border-light);
+    }
+
+    .team-panel__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .team-panel__indicator {
+      width: 4px;
+      height: 24px;
+      border-radius: var(--radius-full);
+    }
+
+    .team-panel--a .team-panel__indicator {
+      background: var(--color-team-a);
+    }
+
+    .team-panel--b .team-panel__indicator {
+      background: var(--color-team-b);
+    }
+
+    .team-panel__title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+    }
+
+    .team-panel__subtitle {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-left: var(--space-2);
+    }
+
+    /* Team Card */
+    .team-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+
+    .team-card--a {
+      border-left: 3px solid var(--color-team-a);
+    }
+
+    .team-card--b {
+      border-left: 3px solid var(--color-team-b);
+    }
+
+    .form-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+
+    /* Color Picker Row */
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-1);
+    }
+
+    .color-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--color-border);
+      cursor: pointer;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .color-swatch::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-swatch::-webkit-color-swatch {
+      border: none;
+      border-radius: var(--radius-sm);
+    }
+
+    .color-hex {
+      font-size: var(--font-size-xs);
+      font-family: monospace;
+      color: var(--color-text-tertiary);
+    }
+
+    /* Score Control */
+    .score-control {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-1);
+    }
+
+    .score-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .score-btn--minus {
+      background: var(--color-bg-tertiary);
+      color: var(--color-text-primary);
+    }
+
+    .score-btn--minus:hover {
+      background: var(--color-border);
+    }
+
+    .score-btn--plus-a {
+      background: var(--color-team-a);
+      color: white;
+    }
+
+    .score-btn--plus-b {
+      background: var(--color-team-b);
+      color: white;
+    }
+
+    .score-display {
+      width: 56px;
+      height: 36px;
+      text-align: center;
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      background: var(--color-bg-primary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+
+    /* Logo Upload */
+    .logo-upload {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-top: var(--space-2);
+    }
+
+    .logo-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-lg);
+      background: var(--color-bg-tertiary);
+      border: 2px dashed var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .logo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .logo-preview__placeholder {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    .logo-upload__actions {
+      flex: 1;
+    }
+
+    .logo-upload__hint {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      margin-top: var(--space-1);
+    }
+
+    /* Update Button */
+    .btn-update {
+      width: 100%;
+      padding: var(--space-3);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      margin-top: var(--space-4);
+    }
+
+    .btn-update--a {
+      background: var(--color-team-a);
+      color: white;
+    }
+
+    .btn-update--a:hover {
+      filter: brightness(1.1);
+    }
+
+    .btn-update--b {
+      background: var(--color-team-b);
+      color: white;
+    }
+
+    .btn-update--b:hover {
+      filter: brightness(1.1);
+    }
+
+    /* Roster Section */
+    .roster-section {
+      margin-top: var(--space-2);
+    }
+
+    .roster-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+
+    .roster-title {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .roster-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .roster-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+
+    .roster-item:hover {
+      border-color: var(--color-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .roster-item__slot {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-tertiary);
+      background: var(--color-bg-tertiary);
+      border-radius: var(--radius-sm);
+    }
+
+    .roster-item__name {
+      flex: 1;
+    }
+
+    .roster-item__name input {
+      width: 100%;
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--font-size-sm);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      color: var(--color-text-primary);
+      transition: all var(--transition-fast);
+    }
+
+    .roster-item__name input:hover {
+      background: var(--color-bg-primary);
+      border-color: var(--color-border-light);
+    }
+
+    .roster-item__name input:focus {
+      outline: none;
+      background: var(--color-bg-primary);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    }
+
+    .roster-item__actions {
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .roster-btn {
+      padding: var(--space-1) var(--space-2);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-medium);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-primary);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .roster-btn:hover {
+      background: var(--color-bg-tertiary);
+      color: var(--color-text-primary);
+    }
+
+    /* Center Column - Swap */
+    .center-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+      background: var(--color-bg-secondary);
+      border-left: 1px solid var(--color-border-light);
+      border-right: 1px solid var(--color-border-light);
+      min-width: 80px;
+    }
+
+    .swap-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all var(--transition-normal);
+    }
+
+    .swap-btn:hover {
+      background: var(--color-bg-tertiary);
+      box-shadow: var(--shadow-md);
+      transform: scale(1.02);
+    }
+
+    .swap-btn i {
+      font-size: var(--font-size-2xl);
+      color: var(--color-text-primary);
+    }
+
+    .swap-btn span {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .swap-status {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      margin-top: var(--space-3);
+      text-align: center;
+    }
+
+    /* Template Selector */
+    .template-selector {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .template-selector select {
+      flex: 1;
+    }
+
+    /* Navigation Menu */
+    .nav-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 280px;
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      margin-top: var(--space-2);
+      overflow: hidden;
+      display: none;
+      z-index: 200;
+    }
+
+    .nav-menu.active {
+      display: block;
+    }
+
+    .nav-menu__header {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border-light);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-secondary);
+    }
+
+    .nav-menu__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      color: var(--color-text-primary);
+    }
+
+    .nav-menu__item:hover {
+      background: var(--color-bg-tertiary);
+    }
+
+    .nav-menu__item.active {
+      background: var(--color-team-a-bg);
+      border-left: 3px solid var(--color-accent);
+    }
+
+    .nav-menu__item i {
+      font-size: var(--font-size-xl);
+      color: var(--color-text-secondary);
+    }
+
+    .nav-menu__item-text {
+      flex: 1;
+    }
+
+    .nav-menu__item-title {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-medium);
+    }
+
+    .nav-menu__item-desc {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* Hidden pages */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Ensure bracket page is explicitly hidden when not active */
+    #page-bracket:not(.active) {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body class="app-container">
-    <!-- Header -->
-    <header class="app-header">
-        <div class="app-header__brand" style="position: relative;">
-            <button id="hamburger-btn" class="btn btn-secondary btn-icon">
-                <i class="ph-bold ph-list"></i>
-            </button>
-            <span class="app-header__logo">Esport Control</span>
-            <span class="app-header__version">v1.0</span>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-header__brand" style="position: relative">
+      <button id="hamburger-btn" class="btn btn-secondary btn-icon">
+        <i class="ph-bold ph-list"></i>
+      </button>
+      <span class="app-header__logo">Esport Control</span>
+      <span class="app-header__version">v1.0</span>
 
-            <!-- Navigation Menu -->
-            <nav id="settings-menu" class="nav-menu">
-                <div class="nav-menu__header">Menu</div>
-                <button id="nav-scoreboard" class="nav-menu__item active" onclick="switchPage('scoreboard')">
-                    <i class="ph-duotone ph-game-controller"></i>
-                    <div class="nav-menu__item-text">
-                        <div class="nav-menu__item-title">Scoreboard</div>
-                        <div class="nav-menu__item-desc">Teams, scores, players</div>
-                    </div>
-                </button>
-                <button id="nav-broadcast" class="nav-menu__item" onclick="switchPage('broadcast')">
-                    <i class="ph-duotone ph-broadcast"></i>
-                    <div class="nav-menu__item-text">
-                        <div class="nav-menu__item-title">Broadcast</div>
-                        <div class="nav-menu__item-desc">Transitions, overlays</div>
-                    </div>
-                </button>
-                <button id="nav-bracket" class="nav-menu__item" onclick="switchPage('bracket')">
-                    <i class="ph-duotone ph-trophy"></i>
-                    <div class="nav-menu__item-text">
-                        <div class="nav-menu__item-title">Bracket</div>
-                        <div class="nav-menu__item-desc">Tournament brackets</div>
-                    </div>
-                </button>
-            </nav>
+      <!-- Navigation Menu -->
+      <nav id="settings-menu" class="nav-menu">
+        <div class="nav-menu__header">Menu</div>
+        <button id="nav-scoreboard" class="nav-menu__item active" onclick="switchPage('scoreboard')">
+          <i class="ph-duotone ph-game-controller"></i>
+          <div class="nav-menu__item-text">
+            <div class="nav-menu__item-title">Scoreboard</div>
+            <div class="nav-menu__item-desc">Teams, scores, players</div>
+          </div>
+        </button>
+        <button id="nav-broadcast" class="nav-menu__item" onclick="switchPage('broadcast')">
+          <i class="ph-duotone ph-broadcast"></i>
+          <div class="nav-menu__item-text">
+            <div class="nav-menu__item-title">Broadcast</div>
+            <div class="nav-menu__item-desc">Overlay links</div>
+          </div>
+        </button>
+        <button id="nav-showinfo" class="nav-menu__item" onclick="switchPage('showinfo')">
+          <i class="ph-duotone ph-info"></i>
+          <div class="nav-menu__item-text">
+            <div class="nav-menu__item-title">Show Info</div>
+            <div class="nav-menu__item-desc">Lower third, transitions</div>
+          </div>
+        </button>
+        <button id="nav-bracket" class="nav-menu__item" onclick="switchPage('bracket')">
+          <i class="ph-duotone ph-trophy"></i>
+          <div class="nav-menu__item-text">
+            <div class="nav-menu__item-title">Bracket</div>
+            <div class="nav-menu__item-desc">Tournament brackets</div>
+          </div>
+        </button>
+        <button id="nav-fonts" class="nav-menu__item" onclick="switchPage('fonts')">
+          <i class="ph-duotone ph-text-aa"></i>
+          <div class="nav-menu__item-text">
+            <div class="nav-menu__item-title">Font Settings</div>
+            <div class="nav-menu__item-desc">Custom fonts for overlays</div>
+          </div>
+        </button>
+      </nav>
+    </div>
+
+    <div class="app-header__actions">
+      <button onclick="openTemplateManager()" class="btn btn-primary">
+        <i class="ph-bold ph-folders"></i>
+        Templates
+      </button>
+      <button onclick="location.reload()" class="btn btn-secondary">
+        <i class="ph-bold ph-arrows-clockwise"></i>
+      </button>
+      <button id="theme-toggle-btn" class="btn btn-secondary btn-icon" title="Toggle theme">
+        <i class="ph-bold ph-moon" id="theme-icon"></i>
+      </button>
+      <div class="status-indicator">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="connection-status">Disconnected</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page: Scoreboard -->
+  <div id="page-scoreboard" class="page active">
+    <main class="main-content">
+      <!-- Bracket Match Quick Load -->
+      <section class="bracket-match-selector" style="
+            grid-column: 1 / -1;
+            background: linear-gradient(
+              135deg,
+              var(--color-primary-alpha) 0%,
+              transparent 100%
+            );
+            border: 1px solid var(--color-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+          ">
+        <div style="display: flex; align-items: center; gap: var(--space-2)">
+          <i class="ph-duotone ph-trophy" style="font-size: 24px; color: var(--color-primary)"></i>
+          <span style="font-weight: var(--font-weight-semibold)">Load from Bracket:</span>
+        </div>
+        <select id="bracket-match-selector" class="input" style="flex: 1; min-width: 200px; max-width: 400px">
+          <option value="">Select a match...</option>
+        </select>
+        <button onclick="loadMatchFromBracket()" class="btn btn-primary">
+          <i class="ph-bold ph-download-simple"></i>
+          Load Match
+        </button>
+        <button onclick="refreshBracketMatches()" class="btn btn-secondary" title="Refresh matches">
+          <i class="ph-bold ph-arrows-clockwise"></i>
+        </button>
+      </section>
+
+      <!-- Team A Panel -->
+      <section class="team-panel team-panel--a" id="teamA-section">
+        <div class="team-panel__header" id="teamA-header">
+          <div class="team-panel__indicator" id="teamA-accent"></div>
+          <h2 class="team-panel__title">Team A</h2>
+          <span class="team-panel__subtitle">(Home)</span>
         </div>
 
-        <div class="app-header__actions">
-            <button onclick="openTemplateManager()" class="btn btn-primary">
-                <i class="ph-bold ph-folders"></i>
-                Templates
-            </button>
-            <button onclick="location.reload()" class="btn btn-secondary">
-                <i class="ph-bold ph-arrows-clockwise"></i>
-            </button>
-            <button id="theme-toggle-btn" class="btn btn-secondary btn-icon" title="Toggle theme">
-                <i class="ph-bold ph-moon" id="theme-icon"></i>
-            </button>
-            <div class="status-indicator">
-                <div class="status-dot" id="status-dot"></div>
-                <span id="connection-status">Disconnected</span>
+        <!-- Template Selector -->
+        <div class="template-selector">
+          <select id="teamA-template" class="input">
+            <option value="">Select Template...</option>
+          </select>
+          <button onclick="loadTemplate('A')" class="btn btn-secondary">
+            <i class="ph-bold ph-download-simple"></i>
+            Load
+          </button>
+        </div>
+
+        <!-- Team Card -->
+        <div class="team-card team-card--a" id="teamA-card">
+          <div class="form-group">
+            <label class="label">Team Name</label>
+            <input type="text" id="teamA-name" class="input" placeholder="Enter team name" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="teamA-color" class="color-swatch" value="#007AFF" />
+                <button onclick="pickScreenColor('A')" class="btn btn-secondary btn-icon" title="Pick from screen">
+                  <i class="ph-bold ph-eyedropper"></i>
+                </button>
+                <button onclick="pickLogoColor('A')" class="btn btn-secondary btn-icon" title="Pick from logo">
+                  <i class="ph-bold ph-image"></i>
+                </button>
+                <span id="teamA-color-hex" class="color-hex">#007AFF</span>
+              </div>
             </div>
-        </div>
-    </header>
+            <div class="form-group">
+              <label class="label">Score</label>
+              <div class="score-control">
+                <button onclick="adjustScore('A', -1)" class="score-btn score-btn--minus">
+                  −
+                </button>
+                <input type="number" id="teamA-score" class="score-display" value="0" readonly />
+                <button onclick="adjustScore('A', 1)" class="score-btn score-btn--plus-a">
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
 
-    <!-- Page: Scoreboard -->
-    <div id="page-scoreboard" class="page active">
-        <main class="main-content">
-            <!-- Bracket Match Quick Load -->
-            <section class="bracket-match-selector" style="
-                grid-column: 1 / -1;
-                background: linear-gradient(135deg, var(--color-primary-alpha) 0%, transparent 100%);
-                border: 1px solid var(--color-primary);
-                border-radius: var(--radius-lg);
-                padding: var(--space-4);
-                margin-bottom: var(--space-4);
+          <div class="form-group">
+            <label class="label">Team Logo</label>
+            <div class="logo-dropzone" id="teamA-dropzone"
+              onclick="document.getElementById('teamA-logo-input').click()">
+              <input type="file" id="teamA-logo-input" accept="image/*" style="display: none"
+                onchange="handleLogoSelect('A', this)" />
+              <div id="teamA-logo-preview" class="logo-dropzone__preview">
+                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
+                <span class="logo-dropzone__text">Click to upload logo</span>
+                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="saveTeam('A')" class="btn btn-update btn-update--a">
+            Update Team A
+          </button>
+        </div>
+
+        <!-- Roster -->
+        <div class="roster-section">
+          <div class="roster-header">
+            <span class="roster-title">Active Roster</span>
+          </div>
+          <div id="teamA-players" class="roster-list"></div>
+        </div>
+      </section>
+
+      <!-- Swap Button -->
+      <div class="center-column">
+        <button onclick="swapSides()" class="swap-btn" id="swap-btn">
+          <i class="ph-bold ph-arrows-left-right"></i>
+          <span>Swap</span>
+        </button>
+        <span id="swap-status" class="swap-status">Normal</span>
+      </div>
+
+      <!-- Team B Panel -->
+      <section class="team-panel team-panel--b" id="teamB-section">
+        <div class="team-panel__header" id="teamB-header">
+          <div class="team-panel__indicator" id="teamB-accent"></div>
+          <h2 class="team-panel__title">Team B</h2>
+          <span class="team-panel__subtitle">(Away)</span>
+        </div>
+
+        <!-- Template Selector -->
+        <div class="template-selector">
+          <select id="teamB-template" class="input">
+            <option value="">Select Template...</option>
+          </select>
+          <button onclick="loadTemplate('B')" class="btn btn-secondary">
+            <i class="ph-bold ph-download-simple"></i>
+            Load
+          </button>
+        </div>
+
+        <!-- Team Card -->
+        <div class="team-card team-card--b" id="teamB-card">
+          <div class="form-group">
+            <label class="label">Team Name</label>
+            <input type="text" id="teamB-name" class="input" placeholder="Enter team name" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label">Color</label>
+              <div class="color-picker-row">
+                <input type="color" id="teamB-color" class="color-swatch" value="#FF3B30" />
+                <button onclick="pickScreenColor('B')" class="btn btn-secondary btn-icon" title="Pick from screen">
+                  <i class="ph-bold ph-eyedropper"></i>
+                </button>
+                <button onclick="pickLogoColor('B')" class="btn btn-secondary btn-icon" title="Pick from logo">
+                  <i class="ph-bold ph-image"></i>
+                </button>
+                <span id="teamB-color-hex" class="color-hex">#FF3B30</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="label">Score</label>
+              <div class="score-control">
+                <button onclick="adjustScore('B', -1)" class="score-btn score-btn--minus">
+                  −
+                </button>
+                <input type="number" id="teamB-score" class="score-display" value="0" readonly />
+                <button onclick="adjustScore('B', 1)" class="score-btn score-btn--plus-b">
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label">Team Logo</label>
+            <div class="logo-dropzone" id="teamB-dropzone"
+              onclick="document.getElementById('teamB-logo-input').click()">
+              <input type="file" id="teamB-logo-input" accept="image/*" style="display: none"
+                onchange="handleLogoSelect('B', this)" />
+              <div id="teamB-logo-preview" class="logo-dropzone__preview">
+                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
+                <span class="logo-dropzone__text">Click to upload logo</span>
+                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="saveTeam('B')" class="btn btn-update btn-update--b">
+            Update Team B
+          </button>
+        </div>
+
+        <!-- Roster -->
+        <div class="roster-section">
+          <div class="roster-header">
+            <span class="roster-title">Active Roster</span>
+          </div>
+          <div id="teamB-players" class="roster-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Page: Broadcast (Placeholder) -->
+  <div id="page-broadcast" class="page">
+    <main style="padding: var(--space-6); overflow-y: auto">
+      <h2 style="
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-6);
+          ">
+        Broadcast Settings
+      </h2>
+
+      <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4)">
+        <h3 style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            ">
+          Overlay URLs
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: var(--space-3)">
+          <div>
+            <label class="label">Scoreboard Overlay</label>
+            <div style="display: flex; gap: var(--space-2)">
+              <input type="text" class="input" id="overlay-rov-url" readonly />
+              <button onclick="copyUrlById('overlay-rov-url')" class="btn btn-secondary">
+                <i class="ph-bold ph-copy"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="label">Hero Roster - Team A</label>
+            <div style="display: flex; gap: var(--space-2)">
+              <input type="text" class="input" id="hero-team-a-url" readonly />
+              <button onclick="copyUrlById('hero-team-a-url')" class="btn btn-secondary">
+                <i class="ph-bold ph-copy"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="label">Hero Roster - Team B</label>
+            <div style="display: flex; gap: var(--space-2)">
+              <input type="text" class="input" id="hero-team-b-url" readonly />
+              <button onclick="copyUrlById('hero-team-b-url')" class="btn btn-secondary">
+                <i class="ph-bold ph-copy"></i>
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="label">Smart Transition</label>
+            <div style="display: flex; gap: var(--space-2)">
+              <input type="text" class="input" id="smart-transition-url" readonly />
+              <button onclick="copyUrlById('smart-transition-url')" class="btn btn-secondary">
+                <i class="ph-bold ph-copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Page: Show Info -->
+  <div id="page-showinfo" class="page">
+    <main style="padding: var(--space-6); overflow-y: auto">
+      <h2 style="
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-6);
+          ">
+        <i class="ph-duotone ph-info" style="margin-right: var(--space-2)"></i>
+        Show Info
+      </h2>
+
+      <!-- Transition Logo Card -->
+      <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4)">
+        <h3 style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            ">
+          <i class="ph-duotone ph-video" style="margin-right: var(--space-2)"></i>
+          Transition Logo
+        </h3>
+        <div style="display: flex; align-items: center; gap: var(--space-4)">
+          <div id="transition-logo-preview" style="
+                width: 120px;
+                height: 80px;
+                background: var(--surface-2);
+                border-radius: var(--radius-md);
                 display: flex;
                 align-items: center;
-                gap: var(--space-4);
-                flex-wrap: wrap;
+                justify-content: center;
+                border: 1px solid var(--border-color);
+                background-size: contain;
+                background-position: center;
+                background-repeat: no-repeat;
+              ">
+            <i class="ph-duotone ph-image" style="font-size: 24px; color: var(--text-tertiary)"></i>
+          </div>
+          <div>
+            <input type="file" id="transition-logo-input" accept="image/*" style="display: none" />
+            <button onclick="
+                  document.getElementById('transition-logo-input').click()
+                " class="btn btn-secondary">
+              <i class="ph-bold ph-upload"></i> Upload Logo
+            </button>
+            <p style="
+                  font-size: 12px;
+                  color: var(--text-tertiary);
+                  margin-top: var(--space-2);
+                ">
+              ใช้ใน transition.html สำหรับ OBS Stinger
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lower Third Card -->
+      <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4)">
+        <h3 style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
             ">
-                <div style="display: flex; align-items: center; gap: var(--space-2);">
-                    <i class="ph-duotone ph-trophy" style="font-size: 24px; color: var(--color-primary);"></i>
-                    <span style="font-weight: var(--font-weight-semibold);">Load from Bracket:</span>
-                </div>
-                <select id="bracket-match-selector" class="input" style="flex: 1; min-width: 200px; max-width: 400px;">
-                    <option value="">Select a match...</option>
-                </select>
-                <button onclick="loadMatchFromBracket()" class="btn btn-primary">
-                    <i class="ph-bold ph-download-simple"></i>
-                    Load Match
-                </button>
-                <button onclick="refreshBracketMatches()" class="btn btn-secondary" title="Refresh matches">
-                    <i class="ph-bold ph-arrows-clockwise"></i>
-                </button>
-            </section>
+          <i class="ph-duotone ph-article" style="margin-right: var(--space-2)"></i>
+          Lower Third
+        </h3>
 
-            <!-- Team A Panel -->
-            <section class="team-panel team-panel--a" id="teamA-section">
-                <div class="team-panel__header" id="teamA-header">
-                    <div class="team-panel__indicator" id="teamA-accent"></div>
-                    <h2 class="team-panel__title">Team A</h2>
-                    <span class="team-panel__subtitle">(Home)</span>
-                </div>
+        <!-- Title Input -->
+        <div style="margin-bottom: var(--space-4)">
+          <label class="label">ข้อความกลาง</label>
+          <input type="text" id="lower-third-title" class="input" placeholder="ROV PRO LEAGUE 2025 WINTER"
+            style="max-width: 400px" />
+        </div>
 
-                <!-- Template Selector -->
-                <div class="template-selector">
-                    <select id="teamA-template" class="input">
-                        <option value="">Select Template...</option>
-                    </select>
-                    <button onclick="loadTemplate('A')" class="btn btn-secondary">
-                        <i class="ph-bold ph-download-simple"></i>
-                        Load
-                    </button>
-                </div>
-
-                <!-- Team Card -->
-                <div class="team-card team-card--a" id="teamA-card">
-                    <div class="form-group">
-                        <label class="label">Team Name</label>
-                        <input type="text" id="teamA-name" class="input" placeholder="Enter team name">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="label">Color</label>
-                            <div class="color-picker-row">
-                                <input type="color" id="teamA-color" class="color-swatch" value="#007AFF">
-                                <button onclick="pickScreenColor('A')" class="btn btn-secondary btn-icon"
-                                    title="Pick from screen">
-                                    <i class="ph-bold ph-eyedropper"></i>
-                                </button>
-                                <button onclick="pickLogoColor('A')" class="btn btn-secondary btn-icon"
-                                    title="Pick from logo">
-                                    <i class="ph-bold ph-image"></i>
-                                </button>
-                                <span id="teamA-color-hex" class="color-hex">#007AFF</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="label">Score</label>
-                            <div class="score-control">
-                                <button onclick="adjustScore('A', -1)" class="score-btn score-btn--minus">−</button>
-                                <input type="number" id="teamA-score" class="score-display" value="0" readonly>
-                                <button onclick="adjustScore('A', 1)" class="score-btn score-btn--plus-a">+</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="label">Team Logo</label>
-                        <div class="logo-dropzone" id="teamA-dropzone"
-                            onclick="document.getElementById('teamA-logo-input').click()">
-                            <input type="file" id="teamA-logo-input" accept="image/*" style="display: none;"
-                                onchange="handleLogoSelect('A', this)">
-                            <div id="teamA-logo-preview" class="logo-dropzone__preview">
-                                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
-                                <span class="logo-dropzone__text">Click to upload logo</span>
-                                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onclick="saveTeam('A')" class="btn btn-update btn-update--a">
-                        Update Team A
-                    </button>
-                </div>
-
-                <!-- Roster -->
-                <div class="roster-section">
-                    <div class="roster-header">
-                        <span class="roster-title">Active Roster</span>
-                    </div>
-                    <div id="teamA-players" class="roster-list"></div>
-                </div>
-            </section>
-
-            <!-- Swap Button -->
-            <div class="center-column">
-                <button onclick="swapSides()" class="swap-btn" id="swap-btn">
-                    <i class="ph-bold ph-arrows-left-right"></i>
-                    <span>Swap</span>
-                </button>
-                <span id="swap-status" class="swap-status">Normal</span>
+        <!-- Social Media Slots -->
+        <div>
+          <label class="label" style="margin-bottom: var(--space-3)">Social Media Slots</label>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3)">
+            <!-- Slot 1 -->
+            <div class="slot-config" style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-3);
+                  padding: var(--space-3);
+                  background: var(--surface-2);
+                  border-radius: var(--radius-md);
+                ">
+              <div id="slot-1-logo-preview" style="
+                    width: 40px;
+                    height: 40px;
+                    background: var(--color-bg-tertiary);
+                    border-radius: var(--radius-md);
+                    background-size: contain;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px dashed var(--color-border-light);
+                  ">
+                <i class="ph-duotone ph-image" style="font-size: 16px; color: var(--color-text-tertiary)"></i>
+              </div>
+              <input type="file" id="slot-1-logo-input" accept="image/*" style="display: none"
+                onchange="uploadSlotLogo(1, this)" />
+              <button onclick="document.getElementById('slot-1-logo-input').click()" class="btn btn-secondary btn-sm"
+                title="อัพโหลดโลโก้">
+                <i class="ph-bold ph-upload"></i>
+              </button>
+              <input type="text" id="slot-1-text" class="input" placeholder="ชื่อ Social Media"
+                style="flex: 1; max-width: 200px" />
+              <button onclick="clearSlot(1)" class="btn btn-secondary btn-sm" style="color: var(--color-danger)"
+                title="ล้าง">
+                <i class="ph-bold ph-x"></i>
+              </button>
             </div>
 
-            <!-- Team B Panel -->
-            <section class="team-panel team-panel--b" id="teamB-section">
-                <div class="team-panel__header" id="teamB-header">
-                    <div class="team-panel__indicator" id="teamB-accent"></div>
-                    <h2 class="team-panel__title">Team B</h2>
-                    <span class="team-panel__subtitle">(Away)</span>
-                </div>
-
-                <!-- Template Selector -->
-                <div class="template-selector">
-                    <select id="teamB-template" class="input">
-                        <option value="">Select Template...</option>
-                    </select>
-                    <button onclick="loadTemplate('B')" class="btn btn-secondary">
-                        <i class="ph-bold ph-download-simple"></i>
-                        Load
-                    </button>
-                </div>
-
-                <!-- Team Card -->
-                <div class="team-card team-card--b" id="teamB-card">
-                    <div class="form-group">
-                        <label class="label">Team Name</label>
-                        <input type="text" id="teamB-name" class="input" placeholder="Enter team name">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="label">Color</label>
-                            <div class="color-picker-row">
-                                <input type="color" id="teamB-color" class="color-swatch" value="#FF3B30">
-                                <button onclick="pickScreenColor('B')" class="btn btn-secondary btn-icon"
-                                    title="Pick from screen">
-                                    <i class="ph-bold ph-eyedropper"></i>
-                                </button>
-                                <button onclick="pickLogoColor('B')" class="btn btn-secondary btn-icon"
-                                    title="Pick from logo">
-                                    <i class="ph-bold ph-image"></i>
-                                </button>
-                                <span id="teamB-color-hex" class="color-hex">#FF3B30</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="label">Score</label>
-                            <div class="score-control">
-                                <button onclick="adjustScore('B', -1)" class="score-btn score-btn--minus">−</button>
-                                <input type="number" id="teamB-score" class="score-display" value="0" readonly>
-                                <button onclick="adjustScore('B', 1)" class="score-btn score-btn--plus-b">+</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="label">Team Logo</label>
-                        <div class="logo-dropzone" id="teamB-dropzone"
-                            onclick="document.getElementById('teamB-logo-input').click()">
-                            <input type="file" id="teamB-logo-input" accept="image/*" style="display: none;"
-                                onchange="handleLogoSelect('B', this)">
-                            <div id="teamB-logo-preview" class="logo-dropzone__preview">
-                                <i class="ph-duotone ph-image logo-dropzone__icon"></i>
-                                <span class="logo-dropzone__text">Click to upload logo</span>
-                                <span class="logo-dropzone__hint">PNG, JPG, SVG (max 2MB)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onclick="saveTeam('B')" class="btn btn-update btn-update--b">
-                        Update Team B
-                    </button>
-                </div>
-
-                <!-- Roster -->
-                <div class="roster-section">
-                    <div class="roster-header">
-                        <span class="roster-title">Active Roster</span>
-                    </div>
-                    <div id="teamB-players" class="roster-list"></div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Page: Broadcast (Placeholder) -->
-    <div id="page-broadcast" class="page">
-        <main style="padding: var(--space-6); overflow-y: auto;">
-            <h2
-                style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin-bottom: var(--space-6);">
-                Broadcast Settings</h2>
-
-            <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4);">
-                <h3
-                    style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4);">
-                    Overlay URLs</h3>
-                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-                    <div>
-                        <label class="label">Scoreboard Overlay</label>
-                        <div style="display: flex; gap: var(--space-2);">
-                            <input type="text" class="input" id="overlay-rov-url" readonly>
-                            <button onclick="copyUrlById('overlay-rov-url')" class="btn btn-secondary">
-                                <i class="ph-bold ph-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label">Hero Roster - Team A</label>
-                        <div style="display: flex; gap: var(--space-2);">
-                            <input type="text" class="input" id="hero-team-a-url" readonly>
-                            <button onclick="copyUrlById('hero-team-a-url')" class="btn btn-secondary">
-                                <i class="ph-bold ph-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label">Hero Roster - Team B</label>
-                        <div style="display: flex; gap: var(--space-2);">
-                            <input type="text" class="input" id="hero-team-b-url" readonly>
-                            <button onclick="copyUrlById('hero-team-b-url')" class="btn btn-secondary">
-                                <i class="ph-bold ph-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label">Smart Transition</label>
-                        <div style="display: flex; gap: var(--space-2);">
-                            <input type="text" class="input" id="smart-transition-url" readonly>
-                            <button onclick="copyUrlById('smart-transition-url')" class="btn btn-secondary">
-                                <i class="ph-bold ph-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Page: Bracket -->
-    <div id="page-bracket" class="page">
-        <main style="padding: var(--space-6); overflow-y: auto; height: calc(100vh - 64px);">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6);">
-                <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);">
-                    <i class="ph-duotone ph-trophy" style="margin-right: var(--space-2);"></i>
-                    Tournament Bracket
-                </h2>
-                <div style="display: flex; gap: var(--space-2);">
-                    <button onclick="copyBracketOverlayUrl()" class="btn btn-secondary">
-                        <i class="ph-bold ph-copy"></i>
-                        Copy Overlay URL
-                    </button>
-                    <button onclick="resetBracket()" class="btn btn-secondary" style="color: var(--color-error);">
-                        <i class="ph-bold ph-trash"></i>
-                        Reset
-                    </button>
-                </div>
+            <!-- Slot 2 -->
+            <div class="slot-config" style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-3);
+                  padding: var(--space-3);
+                  background: var(--surface-2);
+                  border-radius: var(--radius-md);
+                ">
+              <div id="slot-2-logo-preview" style="
+                    width: 40px;
+                    height: 40px;
+                    background: var(--color-bg-tertiary);
+                    border-radius: var(--radius-md);
+                    background-size: contain;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px dashed var(--color-border-light);
+                  ">
+                <i class="ph-duotone ph-image" style="font-size: 16px; color: var(--color-text-tertiary)"></i>
+              </div>
+              <input type="file" id="slot-2-logo-input" accept="image/*" style="display: none"
+                onchange="uploadSlotLogo(2, this)" />
+              <button onclick="document.getElementById('slot-2-logo-input').click()" class="btn btn-secondary btn-sm"
+                title="อัพโหลดโลโก้">
+                <i class="ph-bold ph-upload"></i>
+              </button>
+              <input type="text" id="slot-2-text" class="input" placeholder="ชื่อ Social Media"
+                style="flex: 1; max-width: 200px" />
+              <button onclick="clearSlot(2)" class="btn btn-secondary btn-sm" style="color: var(--color-danger)"
+                title="ล้าง">
+                <i class="ph-bold ph-x"></i>
+              </button>
             </div>
 
-            <!-- Create Bracket Section -->
-            <div id="bracket-create-section" class="card"
-                style="padding: var(--space-5); margin-bottom: var(--space-6);">
-                <h3
-                    style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin-bottom: var(--space-4);">
-                    Create New Bracket
-                </h3>
-                <div
-                    style="display: grid; grid-template-columns: 1fr 200px 150px; gap: var(--space-4); align-items: end;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label class="label">Tournament Name</label>
-                        <input type="text" id="bracket-name" class="input" placeholder="e.g. ROV Pro League 2025">
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label class="label">Type</label>
-                        <div style="display: flex; gap: var(--space-1);">
-                            <button id="bracket-type-single" class="btn btn-primary" style="flex: 1;"
-                                onclick="setBracketType('single')">
-                                Single Elim
-                            </button>
-                            <button id="bracket-type-double" class="btn btn-secondary" style="flex: 1;"
-                                onclick="setBracketType('double')">
-                                Double Elim
-                            </button>
-                        </div>
-                    </div>
-                    <button onclick="createBracket()" class="btn btn-primary" style="height: 44px;">
-                        <i class="ph-bold ph-plus"></i>
-                        Create
-                    </button>
-                </div>
-
-                <!-- Team Selection from Templates -->
-                <div style="margin-top: var(--space-4);">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
-                        <label class="label" style="margin-bottom: 0;">Select Teams from Templates</label>
-                        <span id="bracket-selected-count"
-                            style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">0
-                            selected</span>
-                    </div>
-
-                    <!-- Template List with Checkboxes -->
-                    <div id="bracket-template-list" style="
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                        gap: var(--space-2);
-                        max-height: 300px;
-                        overflow-y: auto;
-                        padding: var(--space-3);
-                        background: var(--color-bg-primary);
-                        border: 1px solid var(--color-border-light);
-                        border-radius: var(--radius-md);
-                    ">
-                        <div
-                            style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); grid-column: 1 / -1; text-align: center; padding: var(--space-4);">
-                            <i class="ph-duotone ph-folder-open"
-                                style="font-size: 24px; display: block; margin-bottom: var(--space-2);"></i>
-                            No templates found. Create templates first in the Template Manager.
-                        </div>
-                    </div>
-
-                    <p
-                        style="font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-top: var(--space-2);">
-                        Select 2-16 teams from templates. If teams don't fill a power of 2, some will get BYE
-                        automatically.
-                    </p>
-                </div>
+            <!-- Slot 3 -->
+            <div class="slot-config" style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-3);
+                  padding: var(--space-3);
+                  background: var(--surface-2);
+                  border-radius: var(--radius-md);
+                ">
+              <div id="slot-3-logo-preview" style="
+                    width: 40px;
+                    height: 40px;
+                    background: var(--color-bg-tertiary);
+                    border-radius: var(--radius-md);
+                    background-size: contain;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px dashed var(--color-border-light);
+                  ">
+                <i class="ph-duotone ph-image" style="font-size: 16px; color: var(--color-text-tertiary)"></i>
+              </div>
+              <input type="file" id="slot-3-logo-input" accept="image/*" style="display: none"
+                onchange="uploadSlotLogo(3, this)" />
+              <button onclick="document.getElementById('slot-3-logo-input').click()" class="btn btn-secondary btn-sm"
+                title="อัพโหลดโลโก้">
+                <i class="ph-bold ph-upload"></i>
+              </button>
+              <input type="text" id="slot-3-text" class="input" placeholder="ชื่อ Social Media"
+                style="flex: 1; max-width: 200px" />
+              <button onclick="clearSlot(3)" class="btn btn-secondary btn-sm" style="color: var(--color-danger)"
+                title="ล้าง">
+                <i class="ph-bold ph-x"></i>
+              </button>
             </div>
+          </div>
+        </div>
 
-            <!-- Bracket Display -->
-            <div id="bracket-display" class="card" style="padding: var(--space-5); display: none;">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-3);">
-                    <div style="display: flex; align-items: center; gap: var(--space-3);">
-                        <h3 id="bracket-title"
-                            style="font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin: 0;">
-                            Tournament Name
-                        </h3>
-                        <span id="bracket-info"
-                            style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
-                            8 Teams • Single Elimination
-                        </span>
-                    </div>
-                    <div style="display: flex; gap: var(--space-2);">
-                        <button id="bracket-shuffle-btn" onclick="shuffleBracketTeams()" class="btn btn-secondary"
-                            title="Re-shuffle team matchups (only before scoring starts)">
-                            <i class="ph-bold ph-shuffle"></i>
-                            Shuffle
-                        </button>
-                    </div>
-                </div>
+        <!-- Save Button -->
+        <div style="margin-top: var(--space-4)">
+          <button onclick="saveLowerThird()" class="btn btn-primary">
+            <i class="ph-bold ph-floppy-disk"></i> Save Lower Third Settings
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
 
-                <!-- Bracket Container -->
-                <div id="bracket-container"
-                    style="display: flex; gap: var(--space-6); overflow-x: auto; padding: var(--space-4) 0;">
-                    <!-- Rounds will be dynamically generated here -->
-                </div>
+  <!-- Page: Bracket -->
+  <div id="page-bracket" class="page">
+    <main style="
+          padding: var(--space-6);
+          overflow-y: auto;
+          height: calc(100vh - 64px);
+        ">
+      <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+          ">
+        <h2 style="
+              font-size: var(--font-size-2xl);
+              font-weight: var(--font-weight-bold);
+            ">
+          <i class="ph-duotone ph-trophy" style="margin-right: var(--space-2)"></i>
+          Tournament Bracket
+        </h2>
+        <div style="display: flex; gap: var(--space-2)">
+          <button onclick="copyBracketOverlayUrl()" class="btn btn-secondary">
+            <i class="ph-bold ph-copy"></i>
+            Copy Overlay URL
+          </button>
+          <button onclick="resetBracket()" class="btn btn-secondary" style="color: var(--color-error)">
+            <i class="ph-bold ph-trash"></i>
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Create Bracket Section -->
+      <div id="bracket-create-section" class="card" style="padding: var(--space-5); margin-bottom: var(--space-6)">
+        <h3 style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            ">
+          Create New Bracket
+        </h3>
+        <div style="
+              display: grid;
+              grid-template-columns: 1fr 200px 150px;
+              gap: var(--space-4);
+              align-items: end;
+            ">
+          <div class="form-group" style="margin-bottom: 0">
+            <label class="label">Tournament Name</label>
+            <input type="text" id="bracket-name" class="input" placeholder="e.g. ROV Pro League 2025" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0">
+            <label class="label">Type</label>
+            <div style="display: flex; gap: var(--space-1)">
+              <button id="bracket-type-single" class="btn btn-primary" style="flex: 1"
+                onclick="setBracketType('single')">
+                Single Elim
+              </button>
+              <button id="bracket-type-double" class="btn btn-secondary" style="flex: 1"
+                onclick="setBracketType('double')">
+                Double Elim
+              </button>
             </div>
-        </main>
-    </div>
+          </div>
+          <button onclick="createBracket()" class="btn btn-primary" style="height: 44px">
+            <i class="ph-bold ph-plus"></i>
+            Create
+          </button>
+        </div>
 
-    <!-- Load main.ts -->
-    <script src="/main.js"></script>
-    <script>
-        // Theme Toggle
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon();
+        <!-- Team Selection from Templates -->
+        <div style="margin-top: var(--space-4)">
+          <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-3);
+              ">
+            <label class="label" style="margin-bottom: 0">Select Teams from Templates</label>
+            <span id="bracket-selected-count" style="
+                  font-size: var(--font-size-sm);
+                  color: var(--color-text-secondary);
+                ">0 selected</span>
+          </div>
+
+          <!-- Template List with Checkboxes -->
+          <div id="bracket-template-list" style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: var(--space-2);
+                max-height: 300px;
+                overflow-y: auto;
+                padding: var(--space-3);
+                background: var(--color-bg-primary);
+                border: 1px solid var(--color-border-light);
+                border-radius: var(--radius-md);
+              ">
+            <div style="
+                  color: var(--color-text-tertiary);
+                  font-size: var(--font-size-sm);
+                  grid-column: 1 / -1;
+                  text-align: center;
+                  padding: var(--space-4);
+                ">
+              <i class="ph-duotone ph-folder-open" style="
+                    font-size: 24px;
+                    display: block;
+                    margin-bottom: var(--space-2);
+                  "></i>
+              No templates found. Create templates first in the Template
+              Manager.
+            </div>
+          </div>
+
+          <p style="
+                font-size: var(--font-size-xs);
+                color: var(--color-text-tertiary);
+                margin-top: var(--space-2);
+              ">
+            Select 2-16 teams from templates. If teams don't fill a power of
+            2, some will get BYE automatically.
+          </p>
+        </div>
+      </div>
+
+      <!-- Bracket Display -->
+      <div id="bracket-display" class="card" style="padding: var(--space-5); display: none">
+        <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--space-4);
+              flex-wrap: wrap;
+              gap: var(--space-3);
+            ">
+          <div style="display: flex; align-items: center; gap: var(--space-3)">
+            <h3 id="bracket-title" style="
+                  font-size: var(--font-size-lg);
+                  font-weight: var(--font-weight-semibold);
+                  margin: 0;
+                ">
+              Tournament Name
+            </h3>
+            <span id="bracket-info" style="
+                  font-size: var(--font-size-sm);
+                  color: var(--color-text-secondary);
+                ">
+              8 Teams • Single Elimination
+            </span>
+          </div>
+          <div style="display: flex; gap: var(--space-2)">
+            <button id="bracket-shuffle-btn" onclick="shuffleBracketTeams()" class="btn btn-secondary"
+              title="Re-shuffle team matchups (only before scoring starts)">
+              <i class="ph-bold ph-shuffle"></i>
+              Shuffle
+            </button>
+          </div>
+        </div>
+
+        <!-- Bracket Container -->
+        <div id="bracket-container" style="
+              display: flex;
+              gap: var(--space-6);
+              overflow-x: auto;
+              padding: var(--space-4) 0;
+            ">
+          <!-- Rounds will be dynamically generated here -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Page: Fonts -->
+  <div id="page-fonts" class="page">
+    <main style="padding: var(--space-6); overflow-y: auto">
+      <h2 style="
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-6);
+          ">
+        <i class="ph-duotone ph-text-aa" style="margin-right: var(--space-2)"></i>
+        Font Settings
+      </h2>
+
+      <!-- Upload Font Card -->
+      <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4)">
+        <h3 style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            ">
+          <i class="ph-duotone ph-upload" style="margin-right: var(--space-2)"></i>
+          Upload Font
+        </h3>
+        <p style="
+              font-size: var(--font-size-sm);
+              color: var(--color-text-secondary);
+              margin-bottom: var(--space-4);
+            ">
+          อัพโหลดไฟล์ฟอนต์ (.ttf, .otf, .woff, .woff2) จากเครื่องของคุณ
+          หรือวางไฟล์ฟอนต์ลงในโฟลเดอร์
+          <code>public/fonts/custom/</code>
+        </p>
+        <div style="
+              display: flex;
+              gap: var(--space-3);
+              flex-wrap: wrap;
+              align-items: flex-end;
+            ">
+          <div style="flex: 1; min-width: 200px">
+            <label class="label">เลือกไฟล์ฟอนต์</label>
+            <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" class="input"
+              style="padding: var(--space-2)" />
+          </div>
+          <button onclick="uploadFont()" class="btn btn-primary" style="height: 44px">
+            <i class="ph-bold ph-upload"></i>
+            Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- Uploaded Fonts List -->
+      <div class="card" style="padding: var(--space-5); margin-bottom: var(--space-4)">
+        <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: var(--space-4);
+            ">
+          <h3 style="
+                font-size: var(--font-size-lg);
+                font-weight: var(--font-weight-semibold);
+                margin: 0;
+              ">
+            <i class="ph-duotone ph-folder-open" style="margin-right: var(--space-2)"></i>
+            Uploaded Fonts
+          </h3>
+          <button onclick="refreshFonts()" class="btn btn-secondary">
+            <i class="ph-bold ph-arrows-clockwise"></i>
+            Refresh
+          </button>
+        </div>
+        <div id="fonts-list" style="display: flex; flex-direction: column; gap: var(--space-2)">
+          <div style="
+                color: var(--color-text-tertiary);
+                text-align: center;
+                padding: var(--space-6);
+              ">
+            <i class="ph-duotone ph-text-aa" style="
+                  font-size: 48px;
+                  display: block;
+                  margin-bottom: var(--space-2);
+                "></i>
+            ยังไม่มีฟอนต์ กรุณาอัพโหลดฟอนต์หรือวางไฟล์ในโฟลเดอร์
+            public/fonts/custom/
+          </div>
+        </div>
+      </div>
+
+      <!-- Font Assignments -->
+      <div class="card" style="padding: var(--space-5)">
+        <h3 style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            ">
+          <i class="ph-duotone ph-sliders" style="margin-right: var(--space-2)"></i>
+          Font Assignments
+        </h3>
+        <p style="
+              font-size: var(--font-size-sm);
+              color: var(--color-text-secondary);
+              margin-bottom: var(--space-4);
+            ">
+          เลือกฟอนต์สำหรับแต่ละส่วนของ Overlay
+          แต่ละส่วนสามารถมีฟอนต์ที่แตกต่างกันได้
+        </p>
+
+        <div style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+              gap: var(--space-4);
+            ">
+          <!-- Lower Third Title -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-article" style="font-size: 20px; color: var(--color-primary)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Lower Third - Title</span>
+            </div>
+            <select id="font-assign-lowerThirdTitle" class="input"
+              onchange="updateFontAssignment('lowerThirdTitle', this.value)">
+              <option value="">Default (Rajdhani)</option>
+            </select>
+          </div>
+
+          <!-- Lower Third Slots -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-chat-text" style="font-size: 20px; color: var(--color-primary)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Lower Third - Slots</span>
+            </div>
+            <select id="font-assign-lowerThirdSlots" class="input"
+              onchange="updateFontAssignment('lowerThirdSlots', this.value)">
+              <option value="">Default (Outfit)</option>
+            </select>
+          </div>
+
+          <!-- Scoreboard Team Name -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-game-controller" style="font-size: 20px; color: var(--color-team-a)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Scoreboard - Team Name</span>
+            </div>
+            <select id="font-assign-scoreboardTeamName" class="input" onchange="
+                  updateFontAssignment('scoreboardTeamName', this.value)
+                ">
+              <option value="">Default (Rajdhani)</option>
+            </select>
+          </div>
+
+          <!-- Scoreboard Score -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-hash" style="font-size: 20px; color: var(--color-team-b)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Scoreboard - Score</span>
+            </div>
+            <select id="font-assign-scoreboardScore" class="input"
+              onchange="updateFontAssignment('scoreboardScore', this.value)">
+              <option value="">Default (Rajdhani Bold)</option>
+            </select>
+          </div>
+
+          <!-- Versus Team Name -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-x-circle" style="font-size: 20px; color: var(--color-warning)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Versus - Team Name</span>
+            </div>
+            <select id="font-assign-versusTeamName" class="input"
+              onchange="updateFontAssignment('versusTeamName', this.value)">
+              <option value="">Default (Rajdhani)</option>
+            </select>
+          </div>
+
+          <!-- Bracket Team Name -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-trophy" style="font-size: 20px; color: var(--color-success)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Bracket - Team Name</span>
+            </div>
+            <select id="font-assign-bracketTeamName" class="input"
+              onchange="updateFontAssignment('bracketTeamName', this.value)">
+              <option value="">Default (Inter)</option>
+            </select>
+          </div>
+
+          <!-- Transition Title -->
+          <div style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              ">
+            <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                ">
+              <i class="ph-duotone ph-video" style="font-size: 20px; color: var(--color-accent)"></i>
+              <span style="font-weight: var(--font-weight-medium)">Transition - Title</span>
+            </div>
+            <select id="font-assign-transitionTitle" class="input"
+              onchange="updateFontAssignment('transitionTitle', this.value)">
+              <option value="">Default (System)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Load main.ts -->
+  <script src="/main.js"></script>
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", newTheme);
+      localStorage.setItem("theme", newTheme);
+      updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+      const icon = document.getElementById("theme-icon");
+      const theme = document.documentElement.getAttribute("data-theme");
+      icon.className =
+        theme === "dark" ? "ph-bold ph-moon" : "ph-bold ph-sun";
+    }
+
+    // Load saved theme
+    (function () {
+      const savedTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light");
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      updateThemeIcon();
+    })();
+
+    // Navigation Menu Toggle
+    function toggleSettingsMenu() {
+      const menu = document.getElementById("settings-menu");
+      menu.classList.toggle("active");
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      const menu = document.getElementById("settings-menu");
+      const btn = document.getElementById("hamburger-btn");
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.remove("active");
+      }
+    });
+
+    // Page Switching
+    function switchPage(pageName) {
+      document
+        .querySelectorAll(".page")
+        .forEach((p) => p.classList.remove("active"));
+      document
+        .querySelectorAll(".nav-menu__item")
+        .forEach((n) => n.classList.remove("active"));
+
+      document.getElementById(`page-${pageName}`).classList.add("active");
+      document.getElementById(`nav-${pageName}`).classList.add("active");
+
+      document.getElementById("settings-menu").classList.remove("active");
+
+      // Load fonts when switching to fonts page
+      if (pageName === "fonts") {
+        refreshFonts();
+      }
+    }
+
+    // ==========================================
+    // Font Management Functions
+    // ==========================================
+
+    let currentFontsState = { fonts: [], assignments: {} };
+
+    async function refreshFonts() {
+      try {
+        const response = await fetch("/api/fonts");
+        if (response.ok) {
+          currentFontsState = await response.json();
+          renderFontsList();
+          updateFontDropdowns();
         }
+      } catch (err) {
+        console.error("Failed to load fonts:", err);
+      }
+    }
 
-        function updateThemeIcon() {
-            const icon = document.getElementById('theme-icon');
-            const theme = document.documentElement.getAttribute('data-theme');
-            icon.className = theme === 'dark' ? 'ph-bold ph-moon' : 'ph-bold ph-sun';
-        }
+    async function uploadFont() {
+      const fileInput = document.getElementById("font-file-input");
 
-        // Load saved theme
-        (function () {
-            const savedTheme = localStorage.getItem('theme') ||
-                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon();
-        })();
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showNotification("Error", "กรุณาเลือกไฟล์ฟอนต์", "error");
+        return;
+      }
 
-        // Navigation Menu Toggle
-        function toggleSettingsMenu() {
-            const menu = document.getElementById('settings-menu');
-            menu.classList.toggle('active');
-        }
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append("font", file);
+      // Name will be auto-derived from filename on server
 
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('settings-menu');
-            const btn = document.getElementById('hamburger-btn');
-            if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                menu.classList.remove('active');
-            }
+      try {
+        const response = await fetch("/api/fonts/upload", {
+          method: "POST",
+          body: formData,
         });
 
-        // Page Switching
-        function switchPage(pageName) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-menu__item').forEach(n => n.classList.remove('active'));
-
-            document.getElementById(`page-${pageName}`).classList.add('active');
-            document.getElementById(`nav-${pageName}`).classList.add('active');
-
-            document.getElementById('settings-menu').classList.remove('active');
+        if (response.ok) {
+          const result = await response.json();
+          showNotification(
+            "Success",
+            `ฟอนต์ "${result.font.name}" อัพโหลดสำเร็จ`,
+            "success",
+          );
+          fileInput.value = "";
+          refreshFonts();
+        } else {
+          const error = await response.text();
+          showNotification("Error", error, "error");
         }
+      } catch (err) {
+        console.error("Upload font error:", err);
+        showNotification("Error", "อัพโหลดฟอนต์ไม่สำเร็จ", "error");
+      }
+    }
 
-        // Set Overlay URLs
-        const baseUrl = window.location.origin;
-        document.getElementById('overlay-rov-url').value = `${baseUrl}/overlay-rov.html`;
-        document.getElementById('hero-team-a-url').value = `${baseUrl}/hero-team-a.html`;
-        document.getElementById('hero-team-b-url').value = `${baseUrl}/hero-team-b.html`;
-        document.getElementById('smart-transition-url').value = `${baseUrl}/smart-transition.html`;
+    async function deleteFont(fontId) {
+      try {
+        const response = await fetch(`/api/fonts/${fontId}`, {
+          method: "DELETE",
+        });
 
-        function copyUrlById(inputId) {
-            const input = document.getElementById(inputId);
-            navigator.clipboard.writeText(input.value);
-            showNotification('Copied!', 'URL copied to clipboard', 'success');
+        if (response.ok) {
+          showNotification("Deleted", "ลบฟอนต์สำเร็จ", "info");
+          refreshFonts();
+        } else {
+          showNotification("Error", "ลบฟอนต์ไม่สำเร็จ", "error");
         }
+      } catch (err) {
+        console.error("Delete font error:", err);
+        showNotification("Error", "ลบฟอนต์ไม่สำเร็จ", "error");
+      }
+    }
 
-        // ===========================================
-        // DYNAMIC ISLAND NOTIFICATION SYSTEM
-        // ===========================================
+    function renderFontsList() {
+      const container = document.getElementById("fonts-list");
 
-        let notificationTimeout = null;
+      if (!currentFontsState.fonts || currentFontsState.fonts.length === 0) {
+        container.innerHTML = `
+                    <div style="color: var(--color-text-tertiary); text-align: center; padding: var(--space-6);">
+                        <i class="ph-duotone ph-text-aa" style="font-size: 48px; display: block; margin-bottom: var(--space-2);"></i>
+                        ยังไม่มีฟอนต์ กรุณาอัพโหลดฟอนต์หรือวางไฟล์ในโฟลเดอร์ public/fonts/custom/
+                    </div>
+                `;
+        return;
+      }
 
-        function showNotification(title, subtitle = '', type = 'info', duration = 3000) {
-            // Get or create island element
-            let island = document.getElementById('dynamic-island');
-            if (!island) {
-                island = document.createElement('div');
-                island.id = 'dynamic-island';
-                island.className = 'dynamic-island';
-                island.innerHTML = `
+      // Inject custom fonts CSS
+      injectCustomFontsCSS();
+
+      container.innerHTML = currentFontsState.fonts
+        .map(
+          (font) => `
+                <div style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--color-bg-primary); border: 1px solid var(--color-border-light); border-radius: var(--radius-md);">
+                    <div style="width: 40px; height: 40px; background: var(--color-bg-tertiary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                        <i class="ph-duotone ph-text-aa" style="font-size: 20px; color: var(--color-primary);"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: var(--font-weight-semibold);">${escapeHtml(font.name)}</div>
+                        <div style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">
+                            ${font.weight} • ${font.style} • ${font.format}
+                        </div>
+                    </div>
+                    <div style="flex: 1; font-family: '${font.name}', sans-serif; font-size: 18px; color: var(--color-text-primary);">
+                        The quick brown fox 0123456789
+                    </div>
+                    <button onclick="deleteFont('${font.id}')" class="btn btn-secondary btn-icon" style="color: var(--color-danger);" title="Delete font">
+                        <i class="ph-bold ph-trash"></i>
+                    </button>
+                </div>
+            `,
+        )
+        .join("");
+    }
+
+    function injectCustomFontsCSS() {
+      // Remove existing custom fonts style
+      let styleEl = document.getElementById("custom-fonts-style");
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "custom-fonts-style";
+        document.head.appendChild(styleEl);
+      }
+
+      let css = "";
+      for (const font of currentFontsState.fonts) {
+        css += `
+                    @font-face {
+                        font-family: '${font.name}';
+                        src: url('${font.path}') format('${font.format}');
+                        font-weight: ${font.weight || "normal"};
+                        font-style: ${font.style || "normal"};
+                        font-display: swap;
+                    }
+                `;
+      }
+      styleEl.textContent = css;
+    }
+
+    function updateFontDropdowns() {
+      const assignmentKeys = [
+        "lowerThirdTitle",
+        "lowerThirdSlots",
+        "scoreboardTeamName",
+        "scoreboardScore",
+        "versusTeamName",
+        "bracketTeamName",
+        "transitionTitle",
+      ];
+
+      const defaultLabels = {
+        lowerThirdTitle: "Default (Rajdhani)",
+        lowerThirdSlots: "Default (Outfit)",
+        scoreboardTeamName: "Default (Rajdhani)",
+        scoreboardScore: "Default (Rajdhani Bold)",
+        versusTeamName: "Default (Rajdhani)",
+        bracketTeamName: "Default (Inter)",
+        transitionTitle: "Default (System)",
+      };
+
+      for (const key of assignmentKeys) {
+        const select = document.getElementById(`font-assign-${key}`);
+        if (!select) continue;
+
+        const currentValue = currentFontsState.assignments[key] || "";
+
+        select.innerHTML = `<option value="">${defaultLabels[key]}</option>`;
+
+        for (const font of currentFontsState.fonts) {
+          const selected = font.id === currentValue ? "selected" : "";
+          select.innerHTML += `<option value="${font.id}" ${selected}>${escapeHtml(font.name)} (${font.weight})</option>`;
+        }
+      }
+    }
+
+    async function updateFontAssignment(key, fontId) {
+      currentFontsState.assignments[key] = fontId || null;
+
+      // Auto-save immediately
+      try {
+        const response = await fetch("/api/fonts/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentFontsState.assignments),
+        });
+
+        if (response.ok) {
+          showNotification("Saved", "เปลี่ยนฟอนต์เรียบร้อย", "success");
+        }
+      } catch (err) {
+        console.error("Auto-save font assignment error:", err);
+      }
+    }
+
+    async function saveFontAssignments() {
+      try {
+        const response = await fetch("/api/fonts/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(currentFontsState.assignments),
+        });
+
+        if (response.ok) {
+          showNotification("Saved", "บันทึกการตั้งค่าฟอนต์สำเร็จ", "success");
+        } else {
+          showNotification("Error", "บันทึกไม่สำเร็จ", "error");
+        }
+      } catch (err) {
+        console.error("Save font assignments error:", err);
+        showNotification("Error", "บันทึกไม่สำเร็จ", "error");
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize fonts on page load
+    refreshFonts();
+
+    // Set Overlay URLs - use localhost:3000 for OBS compatibility
+    const baseUrl = "http://localhost:3000";
+    document.getElementById("overlay-rov-url").value =
+      `${baseUrl}/overlay-rov.html`;
+    document.getElementById("hero-team-a-url").value =
+      `${baseUrl}/hero-team-a.html`;
+    document.getElementById("hero-team-b-url").value =
+      `${baseUrl}/hero-team-b.html`;
+    document.getElementById("smart-transition-url").value =
+      `${baseUrl}/smart-transition.html`;
+
+    function copyUrlById(inputId) {
+      const input = document.getElementById(inputId);
+      navigator.clipboard.writeText(input.value);
+      showNotification("Copied!", "URL copied to clipboard", "success");
+    }
+
+    // ===========================================
+    // DYNAMIC ISLAND NOTIFICATION SYSTEM
+    // ===========================================
+
+    let notificationTimeout = null;
+
+    function showNotification(
+      title,
+      subtitle = "",
+      type = "info",
+      duration = 3000,
+    ) {
+      // Get or create island element
+      let island = document.getElementById("dynamic-island");
+      if (!island) {
+        island = document.createElement("div");
+        island.id = "dynamic-island";
+        island.className = "dynamic-island";
+        island.innerHTML = `
                     <div class="dynamic-island__content">
                         <div class="dynamic-island__icon"></div>
                         <div class="dynamic-island__text">
@@ -1122,234 +1920,299 @@
                         </div>
                     </div>
                 `;
-                document.body.appendChild(island);
-            }
+        document.body.appendChild(island);
+      }
 
-            // Clear any existing timeout
-            if (notificationTimeout) {
-                clearTimeout(notificationTimeout);
-            }
+      // Clear any existing timeout
+      if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+      }
 
-            // Update content
-            const iconEl = island.querySelector('.dynamic-island__icon');
-            const titleEl = island.querySelector('.dynamic-island__title');
-            const subtitleEl = island.querySelector('.dynamic-island__subtitle');
+      // Update content
+      const iconEl = island.querySelector(".dynamic-island__icon");
+      const titleEl = island.querySelector(".dynamic-island__title");
+      const subtitleEl = island.querySelector(".dynamic-island__subtitle");
 
-            // Set icon based on type
-            const icons = {
-                success: '<i class="ph-bold ph-check"></i>',
-                error: '<i class="ph-bold ph-x"></i>',
-                warning: '<i class="ph-bold ph-warning"></i>',
-                info: '<i class="ph-bold ph-info"></i>'
-            };
+      // Set icon based on type
+      const icons = {
+        success: '<i class="ph-bold ph-check"></i>',
+        error: '<i class="ph-bold ph-x"></i>',
+        warning: '<i class="ph-bold ph-warning"></i>',
+        info: '<i class="ph-bold ph-info"></i>',
+      };
 
-            iconEl.innerHTML = icons[type] || icons.info;
-            iconEl.className = `dynamic-island__icon dynamic-island__icon--${type}`;
-            titleEl.textContent = title;
-            subtitleEl.textContent = subtitle;
-            subtitleEl.style.display = subtitle ? 'block' : 'none';
+      iconEl.innerHTML = icons[type] || icons.info;
+      iconEl.className = `dynamic-island__icon dynamic-island__icon--${type}`;
+      titleEl.textContent = title;
+      subtitleEl.textContent = subtitle;
+      subtitleEl.style.display = subtitle ? "block" : "none";
 
-            // Show with animation
-            island.classList.remove('animate-out', 'show', 'compact');
-            island.classList.add(subtitle ? 'expanded' : 'compact');
+      // Show with animation
+      island.classList.remove("animate-out", "show", "compact");
+      island.classList.add(subtitle ? "expanded" : "compact");
 
-            // Force reflow
-            void island.offsetWidth;
+      // Force reflow
+      void island.offsetWidth;
 
-            island.classList.add('animate-in', 'show');
+      island.classList.add("animate-in", "show");
 
-            // Auto hide
-            notificationTimeout = setTimeout(() => {
-                hideNotification();
-            }, duration);
+      // Auto hide
+      notificationTimeout = setTimeout(() => {
+        hideNotification();
+      }, duration);
+    }
+
+    function hideNotification() {
+      const island = document.getElementById("dynamic-island");
+      if (island) {
+        island.classList.remove("animate-in");
+        island.classList.add("animate-out");
+        setTimeout(() => {
+          island.classList.remove("show", "animate-out");
+        }, 300);
+      }
+    }
+
+    // ===========================================
+    // BRACKET MATCH LOADING FOR SCOREBOARD
+    // ===========================================
+
+    let currentBracketData = null;
+
+    async function refreshBracketMatches() {
+      const selector = document.getElementById("bracket-match-selector");
+      if (!selector) return;
+
+      try {
+        const response = await fetch("/api/bracket");
+        const bracket = await response.json();
+        currentBracketData = bracket;
+
+        // Clear existing options
+        selector.innerHTML = '<option value="">Select a match...</option>';
+
+        if (!bracket || !bracket.matches || bracket.matches.length === 0) {
+          selector.innerHTML =
+            '<option value="">No bracket available</option>';
+          return;
         }
 
-        function hideNotification() {
-            const island = document.getElementById('dynamic-island');
-            if (island) {
-                island.classList.remove('animate-in');
-                island.classList.add('animate-out');
-                setTimeout(() => {
-                    island.classList.remove('show', 'animate-out');
-                }, 300);
-            }
-        }
+        // Group matches by round
+        const matchesByRound = {};
+        bracket.matches.forEach((match, idx) => {
+          // Filter out completed matches (where winner is decided)
+          if (match.winner) return;
 
-        // ===========================================
-        // BRACKET MATCH LOADING FOR SCOREBOARD
-        // ===========================================
+          // Filter out matches where teams are not ready (TBA)
+          if (!match.teamA || !match.teamB) return;
 
-        let currentBracketData = null;
+          const round = match.round || 1;
+          if (!matchesByRound[round]) matchesByRound[round] = [];
+          matchesByRound[round].push({ ...match, originalIndex: idx });
+        });
 
-        async function refreshBracketMatches() {
-            const selector = document.getElementById('bracket-match-selector');
-            if (!selector) return;
+        // Add options grouped by round
+        let matchNumber = 1;
+        Object.keys(matchesByRound)
+          .sort((a, b) => a - b)
+          .forEach((round) => {
+            const roundName = getRoundName(
+              parseInt(round),
+              bracket.matches.length,
+            );
+            matchesByRound[round].forEach((match) => {
+              const teamA = match.teamA?.name || "TBA";
+              const teamB = match.teamB?.name || "TBA";
+              const option = document.createElement("option");
+              option.value = match.id;
+              option.textContent = `Match ${matchNumber}: ${teamA} vs ${teamB} (${roundName})`;
+              selector.appendChild(option);
+              matchNumber++;
+            });
+          });
 
-            try {
-                const response = await fetch('/api/bracket');
-                const bracket = await response.json();
-                currentBracketData = bracket;
+        showNotification(
+          "Refreshed",
+          `${bracket.matches.length} matches loaded`,
+          "success",
+        );
+      } catch (err) {
+        console.error("Failed to load bracket matches:", err);
+        selector.innerHTML =
+          '<option value="">Error loading matches</option>';
+      }
+    }
 
-                // Clear existing options
-                selector.innerHTML = '<option value="">Select a match...</option>';
+    function getRoundName(round, totalMatches) {
+      // Simple round naming based on typical bracket structure
+      if (totalMatches <= 1) return "Final";
+      if (totalMatches <= 3 && round === 1) return "Semifinal";
+      if (totalMatches <= 3 && round === 2) return "Final";
+      if (round === 1) return "Round 1";
+      if (round === 2) return "Quarterfinal";
+      if (round === 3) return "Semifinal";
+      if (round === 4) return "Final";
+      return `Round ${round}`;
+    }
 
-                if (!bracket || !bracket.matches || bracket.matches.length === 0) {
-                    selector.innerHTML = '<option value="">No bracket available</option>';
-                    return;
-                }
+    async function loadMatchFromBracket() {
+      const selector = document.getElementById("bracket-match-selector");
+      const matchId = selector?.value;
 
-                // Group matches by round
-                const matchesByRound = {};
-                bracket.matches.forEach((match, idx) => {
-                    // Filter out completed matches (where winner is decided)
-                    if (match.winner) return;
+      if (!matchId) {
+        showNotification(
+          "Select Match",
+          "Please select a match to load",
+          "warning",
+        );
+        return;
+      }
 
-                    // Filter out matches where teams are not ready (TBA)
-                    if (!match.teamA || !match.teamB) return;
+      if (!currentBracketData || !currentBracketData.matches) {
+        await refreshBracketMatches();
+      }
 
-                    const round = match.round || 1;
-                    if (!matchesByRound[round]) matchesByRound[round] = [];
-                    matchesByRound[round].push({ ...match, originalIndex: idx });
-                });
+      const match = currentBracketData?.matches?.find(
+        (m) => m.id === matchId,
+      );
+      console.log("🔍 Loaded match:", match);
+      if (!match) {
+        showNotification("Error", "Match not found", "error");
+        return;
+      }
 
-                // Add options grouped by round
-                let matchNumber = 1;
-                Object.keys(matchesByRound).sort((a, b) => a - b).forEach(round => {
-                    const roundName = getRoundName(parseInt(round), bracket.matches.length);
-                    matchesByRound[round].forEach(match => {
-                        const teamA = match.teamA?.name || 'TBA';
-                        const teamB = match.teamB?.name || 'TBA';
-                        const option = document.createElement('option');
-                        option.value = match.id;
-                        option.textContent = `Match ${matchNumber}: ${teamA} vs ${teamB} (${roundName})`;
-                        selector.appendChild(option);
-                        matchNumber++;
-                    });
-                });
+      // 1. Link this match for score sync
+      try {
+        await fetch("/api/match/link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matchId: matchId }),
+        });
+        console.log("🔗 Match linked for score sync:", matchId);
+        updateLinkedMatchIndicator(matchId, match);
+      } catch (err) {
+        console.error("Failed to link match:", err);
+      }
 
-                showNotification('Refreshed', `${bracket.matches.length} matches loaded`, 'success');
-            } catch (err) {
-                console.error('Failed to load bracket matches:', err);
-                selector.innerHTML = '<option value="">Error loading matches</option>';
-            }
-        }
+      // CHECK SWAP STATE - get from API state instead of DOM
+      let isSwapped = false;
+      try {
+        const stateResponse = await fetch("/api/state");
+        const state = await stateResponse.json();
+        isSwapped = state?.swapped || false;
+      } catch (e) {
+        console.log("Could not get swap state, using default");
+      }
+      console.log("🔄 Load Match - Swapped:", isSwapped);
 
-        function getRoundName(round, totalMatches) {
-            // Simple round naming based on typical bracket structure
-            if (totalMatches <= 1) return 'Final';
-            if (totalMatches <= 3 && round === 1) return 'Semifinal';
-            if (totalMatches <= 3 && round === 2) return 'Final';
-            if (round === 1) return 'Round 1';
-            if (round === 2) return 'Quarterfinal';
-            if (round === 3) return 'Semifinal';
-            if (round === 4) return 'Final';
-            return `Round ${round}`;
-        }
+      const inputA = isSwapped ? "B" : "A";
+      const inputB = isSwapped ? "A" : "B";
 
-        async function loadMatchFromBracket() {
-            const selector = document.getElementById('bracket-match-selector');
-            const matchId = selector?.value;
+      // 2. Load Team A
+      if (match.teamA) {
+        document.getElementById(`team${inputA}-name`).value =
+          match.teamA.name || "";
+        document.getElementById(`team${inputA}-color`).value =
+          match.teamA.color || "#007AFF";
+        const hexEl = document.getElementById(`team${inputA}-color-hex`);
+        if (hexEl) hexEl.textContent = match.teamA.color || "#007AFF";
 
-            if (!matchId) {
-                showNotification('Select Match', 'Please select a match to load', 'warning');
-                return;
-            }
-
-            if (!currentBracketData || !currentBracketData.matches) {
-                await refreshBracketMatches();
-            }
-
-            const match = currentBracketData?.matches?.find(m => m.id === matchId);
-            console.log('🔍 Loaded match:', match);
-            if (!match) {
-                showNotification('Error', 'Match not found', 'error');
-                return;
-            }
-
-            // 1. Link this match for score sync
-            try {
-                await fetch('/api/match/link', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ matchId: matchId })
-                });
-                console.log('🔗 Match linked for score sync:', matchId);
-                updateLinkedMatchIndicator(matchId, match);
-            } catch (err) {
-                console.error('Failed to link match:', err);
-            }
-
-            // CHECK SWAP STATE
-            const teamATitle = document.querySelector('#teamA-section .team-panel__title');
-            const isSwapped = teamATitle && teamATitle.textContent.includes('Team B');
-            console.log('🔄 Load Match - Swapped:', isSwapped);
-
-            const inputA = isSwapped ? 'B' : 'A';
-            const inputB = isSwapped ? 'A' : 'B';
-
-            // 2. Load Team A
-            if (match.teamA) {
-                document.getElementById(`team${inputA}-name`).value = match.teamA.name || '';
-                document.getElementById(`team${inputA}-color`).value = match.teamA.color || '#007AFF';
-                const hexEl = document.getElementById(`team${inputA}-color-hex`);
-                if (hexEl) hexEl.textContent = match.teamA.color || '#007AFF';
-
-                if (match.teamA.logo) {
-                    const preview = document.getElementById(`team${inputA}-logo-preview`);
-                    const dropzone = document.getElementById(`team${inputA}-dropzone`);
-                    if (preview) {
-                        preview.innerHTML = `<div class="relative w-full h-full group">
+        if (match.teamA.logo) {
+          const preview = document.getElementById(
+            `team${inputA}-logo-preview`,
+          );
+          const dropzone = document.getElementById(`team${inputA}-dropzone`);
+          if (preview) {
+            preview.innerHTML = `<div class="relative w-full h-full group">
                             <img src="${match.teamA.logo}" alt="${match.teamA.name} Logo" class="w-full h-full object-contain" 
                                  style="border-radius: var(--radius-md);">
                         </div>`;
-                        if (dropzone) dropzone.classList.add('has-logo');
-                    }
-                }
-            }
+            if (dropzone) dropzone.classList.add("has-logo");
+          }
+        }
+      }
 
-            // 3. Load Team B
-            if (match.teamB) {
-                document.getElementById(`team${inputB}-name`).value = match.teamB.name || '';
-                document.getElementById(`team${inputB}-color`).value = match.teamB.color || '#FF453A';
-                const hexEl = document.getElementById(`team${inputB}-color-hex`);
-                if (hexEl) hexEl.textContent = match.teamB.color || '#FF453A';
+      // 3. Load Team B
+      if (match.teamB) {
+        document.getElementById(`team${inputB}-name`).value =
+          match.teamB.name || "";
+        document.getElementById(`team${inputB}-color`).value =
+          match.teamB.color || "#FF453A";
+        const hexEl = document.getElementById(`team${inputB}-color-hex`);
+        if (hexEl) hexEl.textContent = match.teamB.color || "#FF453A";
 
-                if (match.teamB.logo) {
-                    const preview = document.getElementById(`team${inputB}-logo-preview`);
-                    const dropzone = document.getElementById(`team${inputB}-dropzone`);
-                    if (preview) {
-                        preview.innerHTML = `<div class="relative w-full h-full group">
+        if (match.teamB.logo) {
+          const preview = document.getElementById(
+            `team${inputB}-logo-preview`,
+          );
+          const dropzone = document.getElementById(`team${inputB}-dropzone`);
+          if (preview) {
+            preview.innerHTML = `<div class="relative w-full h-full group">
                             <img src="${match.teamB.logo}" alt="${match.teamB.name} Logo" class="w-full h-full object-contain" 
                                  style="border-radius: var(--radius-md);">
                         </div>`;
-                        if (dropzone) dropzone.classList.add('has-logo');
-                    }
-                }
-            }
-
-            // 4. Update scores from bracket
-            document.getElementById(`team${inputA}-score`).value = match.scoreA || 0;
-            document.getElementById(`team${inputB}-score`).value = match.scoreB || 0;
-
-            // 5. Save both teams to sync with backend
-            if (typeof saveTeam === 'function') {
-                await saveTeam('A');
-                await saveTeam('B');
-            }
-
-            showNotification('Match Loaded & Linked', `${match.teamA?.name || 'TBA'} vs ${match.teamB?.name || 'TBA'}`, 'success');
+            if (dropzone) dropzone.classList.add("has-logo");
+          }
         }
+      }
 
-        // Show linked match indicator
-        function updateLinkedMatchIndicator(matchId, match) {
-            let indicator = document.getElementById('linked-match-indicator');
-            if (!indicator) {
-                // Create indicator element
-                const selectorSection = document.querySelector('.bracket-match-selector');
-                if (selectorSection) {
-                    indicator = document.createElement('div');
-                    indicator.id = 'linked-match-indicator';
-                    indicator.style.cssText = `
+      // 4. Update scores from bracket
+      document.getElementById(`team${inputA}-score`).value =
+        match.scoreA || 0;
+      document.getElementById(`team${inputB}-score`).value =
+        match.scoreB || 0;
+
+      // 5. Save both teams to sync with backend - use direct API calls to avoid race condition
+      // (saveTeam triggers syncTemplateAfterUpdate which refreshes UI and overwrites the other team's data)
+      try {
+        // Save Team A data
+        await fetch("/api/team/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            side: "A",
+            name: match.teamA?.name || "",
+            color: match.teamA?.color || "#007AFF",
+            logo: match.teamA?.logo || "",
+          }),
+        });
+
+        // Save Team B data
+        await fetch("/api/team/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            side: "B",
+            name: match.teamB?.name || "",
+            color: match.teamB?.color || "#FF453A",
+            logo: match.teamB?.logo || "",
+          }),
+        });
+
+        console.log("✅ Both teams saved directly from bracket data");
+      } catch (err) {
+        console.error("Failed to save teams:", err);
+      }
+
+      showNotification(
+        "Match Loaded & Linked",
+        `${match.teamA?.name || "TBA"} vs ${match.teamB?.name || "TBA"}`,
+        "success",
+      );
+    }
+
+    // Show linked match indicator
+    function updateLinkedMatchIndicator(matchId, match) {
+      let indicator = document.getElementById("linked-match-indicator");
+      if (!indicator) {
+        // Create indicator element
+        const selectorSection = document.querySelector(
+          ".bracket-match-selector",
+        );
+        if (selectorSection) {
+          indicator = document.createElement("div");
+          indicator.id = "linked-match-indicator";
+          indicator.style.cssText = `
                         display: flex;
                         align-items: center;
                         gap: var(--space-2);
@@ -1360,11 +2223,11 @@
                         font-size: var(--font-size-sm);
                         color: #00FF66;
                     `;
-                    selectorSection.appendChild(indicator);
-                }
-            }
-            if (indicator) {
-                indicator.innerHTML = `
+          selectorSection.appendChild(indicator);
+        }
+      }
+      if (indicator) {
+        indicator.innerHTML = `
                     <i class="ph-bold ph-link" style="font-size: 16px;"></i>
                     <span>Linked: ${match?.roundName || matchId}</span>
                     <button onclick="unlinkMatch()" style="
@@ -1376,241 +2239,267 @@
                         font-size: 12px;
                     " title="Unlink match">✕</button>
                 `;
-            }
+      }
+    }
+
+    // Unlink match
+    async function unlinkMatch() {
+      try {
+        await fetch("/api/match/link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matchId: null }),
+        });
+        const indicator = document.getElementById("linked-match-indicator");
+        if (indicator) indicator.remove();
+        showNotification("Unlinked", "Score sync disabled", "info");
+      } catch (err) {
+        console.error("Failed to unlink match:", err);
+      }
+    }
+
+    window.unlinkMatch = unlinkMatch;
+
+    // Load bracket matches on page load
+    setTimeout(refreshBracketMatches, 500);
+
+    // Expose globally for main.ts to use
+    window.showNotification = showNotification;
+    window.hideNotification = hideNotification;
+    window.refreshBracketMatches = refreshBracketMatches;
+    window.loadMatchFromBracket = loadMatchFromBracket;
+
+    // ===========================================
+    // LOGO UPLOAD HANDLER
+    // ===========================================
+
+    function handleLogoSelect(side, input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      // Validate file size (2MB max)
+      if (file.size > 2 * 1024 * 1024) {
+        showNotification("File too large", "Maximum size is 2MB", "error");
+        input.value = "";
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        showNotification(
+          "Invalid file",
+          "Please select an image file",
+          "error",
+        );
+        input.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const previewId = `team${side}-logo-preview`;
+        const dropzoneId = `team${side}-dropzone`;
+        const preview = document.getElementById(previewId);
+        const dropzone = document.getElementById(dropzoneId);
+
+        if (preview && dropzone) {
+          // Add has-logo class to dropzone
+          dropzone.classList.add("has-logo");
+
+          // Replace preview content with image
+          preview.innerHTML = `<img src="${e.target.result}" class="logo-dropzone__image" alt="Team ${side} Logo">`;
+
+          // Show success notification
+          showNotification(
+            "Logo uploaded",
+            `Team ${side} logo updated`,
+            "success",
+          );
         }
+      };
+      reader.readAsDataURL(file);
+    }
 
-        // Unlink match
-        async function unlinkMatch() {
-            try {
-                await fetch('/api/match/link', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ matchId: null })
-                });
-                const indicator = document.getElementById('linked-match-indicator');
-                if (indicator) indicator.remove();
-                showNotification('Unlinked', 'Score sync disabled', 'info');
-            } catch (err) {
-                console.error('Failed to unlink match:', err);
+    // Expose globally
+    window.handleLogoSelect = handleLogoSelect;
+
+    // ===========================================
+    // BRACKET MANAGEMENT
+    // ===========================================
+
+    let currentBracketType = "single";
+    let currentBracket = null;
+
+    function setBracketType(type) {
+      currentBracketType = type;
+      document.getElementById("bracket-type-single").className =
+        type === "single" ? "btn btn-primary" : "btn btn-secondary";
+      document.getElementById("bracket-type-double").className =
+        type === "double" ? "btn btn-primary" : "btn btn-secondary";
+    }
+
+    async function createBracket() {
+      const name = document.getElementById("bracket-name").value.trim();
+
+      if (!name) {
+        showNotification("Error", "Please enter a tournament name", "error");
+        return;
+      }
+
+      // Collect selected templates
+      let selectedTemplates = [];
+
+      // Respect the manual selection sequence
+      if (selectionSequence.length > 0) {
+        // Use the selection order
+        selectedTemplates = selectionSequence
+          .map((name) => {
+            const template = bracketTemplates.find((t) => t.name === name);
+            if (template) {
+              return {
+                name: template.name,
+                logo: template.logo || "",
+                color: template.color || "#3b82f6",
+              };
             }
+            return null;
+          })
+          .filter((t) => t !== null);
+      } else {
+        // Fallback to DOM order (should rarely happen if selectionSequence logic is working)
+        const checkboxes = document.querySelectorAll(
+          '#bracket-template-list input[type="checkbox"]:checked',
+        );
+        checkboxes.forEach((cb) => {
+          const templateData = JSON.parse(cb.dataset.template);
+          selectedTemplates.push({
+            name: templateData.name,
+            logo: templateData.logo || "",
+            color: templateData.color || "#3b82f6",
+          });
+        });
+      }
+      console.log("🔢 Teams ordered by selection sequence");
+
+      // Only templates allowed
+      const allTeams = selectedTemplates.map((t) => t.name);
+
+      if (allTeams.length < 2) {
+        showNotification(
+          "Error",
+          "Please select at least 2 teams from templates",
+          "error",
+        );
+        return;
+      }
+
+      if (allTeams.length > 16) {
+        showNotification("Error", "Maximum 16 teams allowed", "error");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/bracket/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            type: currentBracketType,
+            teams: allTeams,
+            teamData: selectedTemplates,
+          }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          currentBracket = result.bracket;
+          showNotification(
+            "Success",
+            `Bracket created with ${allTeams.length} teams`,
+            "success",
+          );
+          renderBracket(result.bracket);
+          refreshBracketMatches(); // Update scoreboard dropdown
+        } else {
+          showNotification("Error", "Failed to create bracket", "error");
         }
+      } catch (err) {
+        console.error("Create bracket error:", err);
+        showNotification("Error", "Failed to create bracket", "error");
+      }
+    }
 
-        window.unlinkMatch = unlinkMatch;
+    // Load templates for bracket selection
+    let bracketTemplates = [];
 
-        // Load bracket matches on page load
-        setTimeout(refreshBracketMatches, 500);
+    async function loadBracketTemplates() {
+      try {
+        const response = await fetch("/api/templates");
+        bracketTemplates = await response.json();
+        renderBracketTemplateList();
+      } catch (err) {
+        console.error("Failed to load templates:", err);
+      }
+    }
 
-        // Expose globally for main.ts to use
-        window.showNotification = showNotification;
-        window.hideNotification = hideNotification;
-        window.refreshBracketMatches = refreshBracketMatches;
-        window.loadMatchFromBracket = loadMatchFromBracket;
+    // WebSocket listener for real-time template updates
+    function setupBracketWebSocket() {
+      const ws = new WebSocket(`ws://localhost:3000/ws`);
 
-        // ===========================================
-        // LOGO UPLOAD HANDLER
-        // ===========================================
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
 
-        function handleLogoSelect(side, input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            // Validate file size (2MB max)
-            if (file.size > 2 * 1024 * 1024) {
-                showNotification('File too large', 'Maximum size is 2MB', 'error');
-                input.value = '';
-                return;
-            }
-
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                showNotification('Invalid file', 'Please select an image file', 'error');
-                input.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const previewId = `team${side}-logo-preview`;
-                const dropzoneId = `team${side}-dropzone`;
-                const preview = document.getElementById(previewId);
-                const dropzone = document.getElementById(dropzoneId);
-
-                if (preview && dropzone) {
-                    // Add has-logo class to dropzone
-                    dropzone.classList.add('has-logo');
-
-                    // Replace preview content with image
-                    preview.innerHTML = `<img src="${e.target.result}" class="logo-dropzone__image" alt="Team ${side} Logo">`;
-
-                    // Show success notification
-                    showNotification('Logo uploaded', `Team ${side} logo updated`, 'success');
-                }
-            };
-            reader.readAsDataURL(file);
+          if (message.type === "TEMPLATES_UPDATE") {
+            console.log("📦 Templates updated via WebSocket");
+            bracketTemplates = message.data;
+            renderBracketTemplateList();
+            showNotification(
+              "Templates Updated",
+              `${bracketTemplates.length} templates available`,
+              "info",
+            );
+          } else if (message.type === "BRACKET_UPDATE") {
+            console.log("🏆 Bracket updated via WebSocket");
+            currentBracket = message.data;
+            renderBracket(currentBracket);
+            refreshBracketMatches();
+            // Optional: showNotification('Bracket Updated', 'Syncing changes...', 'info');
+          }
+        } catch (err) {
+          console.error("WebSocket message error:", err);
         }
+      };
 
-        // Expose globally
-        window.handleLogoSelect = handleLogoSelect;
+      ws.onclose = () => {
+        console.log("🔌 Bracket WS disconnected, reconnecting...");
+        setTimeout(setupBracketWebSocket, 2000);
+      };
+    }
 
-        // ===========================================
-        // BRACKET MANAGEMENT
-        // ===========================================
+    // Start WebSocket connection for real-time updates
+    setupBracketWebSocket();
 
-        let currentBracketType = 'single';
-        let currentBracket = null;
+    // Track selection order
+    let selectionSequence = [];
 
-        function setBracketType(type) {
-            currentBracketType = type;
-            document.getElementById('bracket-type-single').className =
-                type === 'single' ? 'btn btn-primary' : 'btn btn-secondary';
-            document.getElementById('bracket-type-double').className =
-                type === 'double' ? 'btn btn-primary' : 'btn btn-secondary';
-        }
+    function renderBracketTemplateList() {
+      const container = document.getElementById("bracket-template-list");
+      if (!container) return;
 
-        async function createBracket() {
-            const name = document.getElementById('bracket-name').value.trim();
-
-            if (!name) {
-                showNotification('Error', 'Please enter a tournament name', 'error');
-                return;
-            }
-
-            // Collect selected templates
-            let selectedTemplates = [];
-
-            // Respect the manual selection sequence
-            if (selectionSequence.length > 0) {
-                // Use the selection order
-                selectedTemplates = selectionSequence.map(name => {
-                    const template = bracketTemplates.find(t => t.name === name);
-                    if (template) {
-                        return {
-                            name: template.name,
-                            logo: template.logo || '',
-                            color: template.color || '#3b82f6'
-                        };
-                    }
-                    return null;
-                }).filter(t => t !== null);
-            } else {
-                // Fallback to DOM order (should rarely happen if selectionSequence logic is working)
-                const checkboxes = document.querySelectorAll('#bracket-template-list input[type="checkbox"]:checked');
-                checkboxes.forEach(cb => {
-                    const templateData = JSON.parse(cb.dataset.template);
-                    selectedTemplates.push({
-                        name: templateData.name,
-                        logo: templateData.logo || '',
-                        color: templateData.color || '#3b82f6'
-                    });
-                });
-            }
-            console.log('🔢 Teams ordered by selection sequence');
-
-            // Only templates allowed
-            const allTeams = selectedTemplates.map(t => t.name);
-
-            if (allTeams.length < 2) {
-                showNotification('Error', 'Please select at least 2 teams from templates', 'error');
-                return;
-            }
-
-            if (allTeams.length > 16) {
-                showNotification('Error', 'Maximum 16 teams allowed', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/bracket/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name,
-                        type: currentBracketType,
-                        teams: allTeams,
-                        teamData: selectedTemplates
-                    })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    currentBracket = result.bracket;
-                    showNotification('Success', `Bracket created with ${allTeams.length} teams`, 'success');
-                    renderBracket(result.bracket);
-                    refreshBracketMatches(); // Update scoreboard dropdown
-                } else {
-                    showNotification('Error', 'Failed to create bracket', 'error');
-                }
-            } catch (err) {
-                console.error('Create bracket error:', err);
-                showNotification('Error', 'Failed to create bracket', 'error');
-            }
-        }
-
-        // Load templates for bracket selection
-        let bracketTemplates = [];
-
-        async function loadBracketTemplates() {
-            try {
-                const response = await fetch('/api/templates');
-                bracketTemplates = await response.json();
-                renderBracketTemplateList();
-            } catch (err) {
-                console.error('Failed to load templates:', err);
-            }
-        }
-
-        // WebSocket listener for real-time template updates
-        function setupBracketWebSocket() {
-            const ws = new WebSocket(`ws://${window.location.host}`);
-
-            ws.onmessage = (event) => {
-                try {
-                    const message = JSON.parse(event.data);
-
-                    if (message.type === 'TEMPLATES_UPDATE') {
-                        console.log('📦 Templates updated via WebSocket');
-                        bracketTemplates = message.data;
-                        renderBracketTemplateList();
-                        showNotification('Templates Updated', `${bracketTemplates.length} templates available`, 'info');
-                    } else if (message.type === 'BRACKET_UPDATE') {
-                        console.log('🏆 Bracket updated via WebSocket');
-                        currentBracket = message.data;
-                        renderBracket(currentBracket);
-                        refreshBracketMatches();
-                        // Optional: showNotification('Bracket Updated', 'Syncing changes...', 'info');
-                    }
-                } catch (err) {
-                    console.error('WebSocket message error:', err);
-                }
-            };
-
-            ws.onclose = () => {
-                console.log('🔌 Bracket WS disconnected, reconnecting...');
-                setTimeout(setupBracketWebSocket, 2000);
-            };
-        }
-
-        // Start WebSocket connection for real-time updates
-        setupBracketWebSocket();
-
-        // Track selection order
-        let selectionSequence = [];
-
-        function renderBracketTemplateList() {
-            const container = document.getElementById('bracket-template-list');
-            if (!container) return;
-
-            if (bracketTemplates.length === 0) {
-                container.innerHTML = `
+      if (bracketTemplates.length === 0) {
+        container.innerHTML = `
                     <div style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); grid-column: 1 / -1; text-align: center; padding: var(--space-4);">
                         <i class="ph-duotone ph-folder-open" style="font-size: 24px; display: block; margin-bottom: var(--space-2);"></i>
                         No templates found. Create templates first in the Template Manager.
                     </div>
                 `;
-                return;
-            }
+        return;
+      }
 
-            container.innerHTML = bracketTemplates.map(template => `
+      container.innerHTML = bracketTemplates
+        .map(
+          (template) => `
                 <label style="
                     display: flex;
                     align-items: center;
@@ -1628,8 +2517,10 @@
                         onchange="handleTeamSelection(this, '${template.name}')"
                         style="width: 18px; height: 18px; accent-color: var(--color-primary);">
                     
-                    ${template.logo ? `<img src="${template.logo}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;">` :
-                    `<div style="width: 24px; height: 24px; border-radius: 4px; background: ${template.color || '#3b82f6'}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white;">${template.name.substring(0, 2).toUpperCase()}</div>`}
+                    ${template.logo
+              ? `<img src="${template.logo}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;">`
+              : `<div style="width: 24px; height: 24px; border-radius: 4px; background: ${template.color || "#3b82f6"}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white;">${template.name.substring(0, 2).toUpperCase()}</div>`
+            }
                     <span style="flex: 1; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${template.name}</span>
                     
                     <!-- Sequence Badge Inline -->
@@ -1644,205 +2535,247 @@
                         margin-left: var(--space-2);
                     "></span>
                 </label>
-            `).join('');
+            `,
+        )
+        .join("");
 
-            // Re-apply states based on current selection sequence
-            refreshSelectionBadges();
+      // Re-apply states based on current selection sequence
+      refreshSelectionBadges();
+    }
+
+    function handleTeamSelection(checkbox, teamName) {
+      if (checkbox.checked) {
+        if (!selectionSequence.includes(teamName)) {
+          selectionSequence.push(teamName);
         }
+      } else {
+        selectionSequence = selectionSequence.filter(
+          (name) => name !== teamName,
+        );
+      }
+      refreshSelectionBadges();
+      updateSelectedCount();
+    }
 
-        function handleTeamSelection(checkbox, teamName) {
-            if (checkbox.checked) {
-                if (!selectionSequence.includes(teamName)) {
-                    selectionSequence.push(teamName);
-                }
-            } else {
-                selectionSequence = selectionSequence.filter(name => name !== teamName);
-            }
-            refreshSelectionBadges();
-            updateSelectedCount();
+    function refreshSelectionBadges() {
+      document.querySelectorAll(".bracket-team-card").forEach((card) => {
+        const name = card.dataset.name;
+        const index = selectionSequence.indexOf(name);
+        const badge = card.querySelector(".sequence-badge");
+        const checkbox = card.querySelector("input");
+
+        if (index !== -1) {
+          // Selected
+          card.style.borderColor = "var(--color-primary)";
+          card.style.background = "var(--color-bg-secondary)";
+          badge.style.display = "flex";
+          badge.textContent = index + 1;
+          if (checkbox) checkbox.checked = true;
+        } else {
+          // Not selected
+          card.style.borderColor = "transparent";
+          card.style.background = "var(--color-bg-tertiary)";
+          badge.style.display = "none";
+          if (checkbox) checkbox.checked = false;
         }
+      });
+    }
 
-        function refreshSelectionBadges() {
-            document.querySelectorAll('.bracket-team-card').forEach(card => {
-                const name = card.dataset.name;
-                const index = selectionSequence.indexOf(name);
-                const badge = card.querySelector('.sequence-badge');
-                const checkbox = card.querySelector('input');
+    function updateSelectedCount() {
+      const count = document.querySelectorAll(
+        '#bracket-template-list input[type="checkbox"]:checked',
+      ).length;
+      const countEl = document.getElementById("bracket-selected-count");
+      if (countEl) {
+        countEl.textContent = `${count} selected`;
+        countEl.style.color =
+          count >= 2 ? "var(--color-success)" : "var(--color-text-secondary)";
+      }
+    }
 
-                if (index !== -1) {
-                    // Selected
-                    card.style.borderColor = 'var(--color-primary)';
-                    card.style.background = 'var(--color-bg-secondary)';
-                    badge.style.display = 'flex';
-                    badge.textContent = index + 1;
-                    if (checkbox) checkbox.checked = true;
-                } else {
-                    // Not selected
-                    card.style.borderColor = 'transparent';
-                    card.style.background = 'var(--color-bg-tertiary)';
-                    badge.style.display = 'none';
-                    if (checkbox) checkbox.checked = false;
-                }
-            });
+    // Shuffle selected teams using Fisher-Yates algorithm
+    function shuffleSelectedTeams() {
+      const container = document.getElementById("bracket-template-list");
+      const labels = Array.from(container.querySelectorAll("label"));
+
+      // Check if we have selected teams
+      const selectedCount = labels.filter((l) =>
+        l.querySelector("input:checked"),
+      ).length;
+      if (selectedCount < 2) {
+        showNotification(
+          "Shuffle",
+          "Please select at least 2 teams to shuffle",
+          "warning",
+        );
+        return;
+      }
+
+      // Fisher-Yates shuffle
+      for (let i = labels.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        container.insertBefore(labels[j], labels[i]);
+      }
+
+      showNotification(
+        "Shuffled!",
+        "Team order has been randomized",
+        "success",
+      );
+    }
+
+    // Load templates when page loads
+    loadBracketTemplates();
+
+    // Shuffle bracket teams (only works before scoring starts)
+    async function shuffleBracketTeams() {
+      try {
+        const response = await fetch("/api/bracket/shuffle", {
+          method: "POST",
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          currentBracket = result.bracket;
+          renderBracket(result.bracket);
+          refreshBracketMatches(); // Update scoreboard dropdown
+          showNotification(
+            "Shuffled!",
+            "Team matchups have been randomized",
+            "success",
+          );
+        } else if (result.locked) {
+          showNotification(
+            "Locked",
+            "Cannot shuffle after scoring has started",
+            "warning",
+          );
+          updateShuffleButtonState(true);
+        } else {
+          showNotification(
+            "Error",
+            result.message || "Shuffle failed",
+            "error",
+          );
         }
+      } catch (err) {
+        console.error("Shuffle bracket error:", err);
+        showNotification("Error", "Failed to shuffle bracket", "error");
+      }
+    }
 
-        function updateSelectedCount() {
-            const count = document.querySelectorAll('#bracket-template-list input[type="checkbox"]:checked').length;
-            const countEl = document.getElementById('bracket-selected-count');
-            if (countEl) {
-                countEl.textContent = `${count} selected`;
-                countEl.style.color = count >= 2 ? 'var(--color-success)' : 'var(--color-text-secondary)';
-            }
-        }
+    // Update shuffle button state based on scoring
+    function updateShuffleButtonState(locked) {
+      const btn = document.getElementById("bracket-shuffle-btn");
+      if (!btn) return;
 
-        // Shuffle selected teams using Fisher-Yates algorithm
-        function shuffleSelectedTeams() {
-            const container = document.getElementById('bracket-template-list');
-            const labels = Array.from(container.querySelectorAll('label'));
+      if (locked) {
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+        btn.title = "Shuffle locked - scoring has started";
+        btn.innerHTML = '<i class="ph-bold ph-lock"></i> Locked';
+      } else {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        btn.title = "Re-shuffle team matchups";
+        btn.innerHTML = '<i class="ph-bold ph-shuffle"></i> Shuffle';
+      }
+    }
 
-            // Check if we have selected teams
-            const selectedCount = labels.filter(l => l.querySelector('input:checked')).length;
-            if (selectedCount < 2) {
-                showNotification('Shuffle', 'Please select at least 2 teams to shuffle', 'warning');
-                return;
-            }
+    async function resetBracket() {
+      // Direct reset without confirm (works better in Electron)
+      console.log("🗑️ Resetting bracket...");
 
-            // Fisher-Yates shuffle
-            for (let i = labels.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                container.insertBefore(labels[j], labels[i]);
-            }
+      try {
+        const response = await fetch("/api/bracket", { method: "DELETE" });
+        console.log("Reset response:", response.status);
 
-            showNotification('Shuffled!', 'Team order has been randomized', 'success');
-        }
+        currentBracket = null;
+        document.getElementById("bracket-create-section").style.display =
+          "block";
+        document.getElementById("bracket-display").style.display = "none";
 
-        // Load templates when page loads
-        loadBracketTemplates();
+        // Clear tournament name
+        const nameInput = document.getElementById("bracket-name");
+        if (nameInput) nameInput.value = "";
 
-        // Shuffle bracket teams (only works before scoring starts)
-        async function shuffleBracketTeams() {
-            try {
-                const response = await fetch('/api/bracket/shuffle', { method: 'POST' });
-                const result = await response.json();
+        // Clear all checkboxes
+        document
+          .querySelectorAll('#bracket-template-list input[type="checkbox"]')
+          .forEach((cb) => {
+            cb.checked = false;
+          });
 
-                if (result.success) {
-                    currentBracket = result.bracket;
-                    renderBracket(result.bracket);
-                    refreshBracketMatches(); // Update scoreboard dropdown
-                    showNotification('Shuffled!', 'Team matchups have been randomized', 'success');
-                } else if (result.locked) {
-                    showNotification('Locked', 'Cannot shuffle after scoring has started', 'warning');
-                    updateShuffleButtonState(true);
-                } else {
-                    showNotification('Error', result.message || 'Shuffle failed', 'error');
-                }
-            } catch (err) {
-                console.error('Shuffle bracket error:', err);
-                showNotification('Error', 'Failed to shuffle bracket', 'error');
-            }
-        }
+        // Clear selection sequence
+        selectionSequence = [];
+        refreshSelectionBadges();
+        updateSelectedCount();
+        refreshBracketMatches(); // Clear scoreboard dropdown
 
-        // Update shuffle button state based on scoring
-        function updateShuffleButtonState(locked) {
-            const btn = document.getElementById('bracket-shuffle-btn');
-            if (!btn) return;
+        showNotification("Reset", "Bracket has been reset", "info");
+      } catch (err) {
+        console.error("Reset bracket error:", err);
+        showNotification("Error", "Failed to reset bracket", "error");
+      }
+    }
 
-            if (locked) {
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-                btn.style.cursor = 'not-allowed';
-                btn.title = 'Shuffle locked - scoring has started';
-                btn.innerHTML = '<i class="ph-bold ph-lock"></i> Locked';
-            } else {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-                btn.title = 'Re-shuffle team matchups';
-                btn.innerHTML = '<i class="ph-bold ph-shuffle"></i> Shuffle';
-            }
-        }
+    function renderBracket(bracket) {
+      if (!bracket) {
+        document.getElementById("bracket-create-section").style.display =
+          "block";
+        document.getElementById("bracket-display").style.display = "none";
+        return;
+      }
 
-        async function resetBracket() {
-            // Direct reset without confirm (works better in Electron)
-            console.log('🗑️ Resetting bracket...');
+      document.getElementById("bracket-create-section").style.display =
+        "none";
+      document.getElementById("bracket-display").style.display = "block";
+      document.getElementById("bracket-title").textContent = bracket.name;
+      document.getElementById("bracket-info").textContent =
+        `${bracket.teams.length} Teams • ${bracket.type === "single" ? "Single" : "Double"} Elimination`;
 
-            try {
-                const response = await fetch('/api/bracket', { method: 'DELETE' });
-                console.log('Reset response:', response.status);
+      const container = document.getElementById("bracket-container");
+      container.innerHTML = "";
 
-                currentBracket = null;
-                document.getElementById('bracket-create-section').style.display = 'block';
-                document.getElementById('bracket-display').style.display = 'none';
+      // Group matches by round
+      const rounds = {};
+      bracket.matches.forEach((match) => {
+        if (!rounds[match.round]) rounds[match.round] = [];
+        rounds[match.round].push(match);
+      });
 
-                // Clear tournament name
-                const nameInput = document.getElementById('bracket-name');
-                if (nameInput) nameInput.value = '';
+      // Render each round
+      Object.keys(rounds)
+        .sort((a, b) => a - b)
+        .forEach((roundNum) => {
+          const roundEl = document.createElement("div");
+          roundEl.className = "bracket-round";
+          roundEl.style.cssText =
+            "display: flex; flex-direction: column; gap: var(--space-4); min-width: 280px;";
 
-                // Clear all checkboxes
-                document.querySelectorAll('#bracket-template-list input[type="checkbox"]').forEach(cb => {
-                    cb.checked = false;
-                });
+          const roundHeader = document.createElement("div");
+          roundHeader.style.cssText =
+            "font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2);";
+          roundHeader.textContent =
+            rounds[roundNum][0].roundName.split(" ").slice(0, -1).join(" ") ||
+            `Round ${roundNum}`;
+          roundEl.appendChild(roundHeader);
 
-                // Clear selection sequence
-                selectionSequence = [];
-                refreshSelectionBadges();
-                updateSelectedCount();
-                refreshBracketMatches(); // Clear scoreboard dropdown
+          rounds[roundNum].forEach((match) => {
+            const matchEl = createMatchElement(match);
+            roundEl.appendChild(matchEl);
+          });
 
-                showNotification('Reset', 'Bracket has been reset', 'info');
-            } catch (err) {
-                console.error('Reset bracket error:', err);
-                showNotification('Error', 'Failed to reset bracket', 'error');
-            }
-        }
+          container.appendChild(roundEl);
+        });
+    }
 
-        function renderBracket(bracket) {
-            if (!bracket) {
-                document.getElementById('bracket-create-section').style.display = 'block';
-                document.getElementById('bracket-display').style.display = 'none';
-                return;
-            }
-
-            document.getElementById('bracket-create-section').style.display = 'none';
-            document.getElementById('bracket-display').style.display = 'block';
-            document.getElementById('bracket-title').textContent = bracket.name;
-            document.getElementById('bracket-info').textContent =
-                `${bracket.teams.length} Teams • ${bracket.type === 'single' ? 'Single' : 'Double'} Elimination`;
-
-            const container = document.getElementById('bracket-container');
-            container.innerHTML = '';
-
-            // Group matches by round
-            const rounds = {};
-            bracket.matches.forEach(match => {
-                if (!rounds[match.round]) rounds[match.round] = [];
-                rounds[match.round].push(match);
-            });
-
-            // Render each round
-            Object.keys(rounds).sort((a, b) => a - b).forEach(roundNum => {
-                const roundEl = document.createElement('div');
-                roundEl.className = 'bracket-round';
-                roundEl.style.cssText = 'display: flex; flex-direction: column; gap: var(--space-4); min-width: 280px;';
-
-                const roundHeader = document.createElement('div');
-                roundHeader.style.cssText = 'font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2);';
-                roundHeader.textContent = rounds[roundNum][0].roundName.split(' ').slice(0, -1).join(' ') || `Round ${roundNum}`;
-                roundEl.appendChild(roundHeader);
-
-                rounds[roundNum].forEach(match => {
-                    const matchEl = createMatchElement(match);
-                    roundEl.appendChild(matchEl);
-                });
-
-                container.appendChild(roundEl);
-            });
-        }
-
-        function createMatchElement(match) {
-            const matchEl = document.createElement('div');
-            matchEl.className = 'bracket-match';
-            matchEl.style.cssText = `
+    function createMatchElement(match) {
+      const matchEl = document.createElement("div");
+      matchEl.className = "bracket-match";
+      matchEl.style.cssText = `
                 background: var(--color-bg-secondary);
                 border: 1px solid var(--color-border-light);
                 border-radius: var(--radius-md);
@@ -1850,48 +2783,49 @@
                 margin-bottom: var(--space-2);
             `;
 
-            // Round title
-            const titleRow = document.createElement('div');
-            titleRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);';
-            titleRow.innerHTML = `
+      // Round title
+      const titleRow = document.createElement("div");
+      titleRow.style.cssText =
+        "display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);";
+      titleRow.innerHTML = `
                 <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">${match.roundName}</span>
-                ${match.isBye ? '<span style="font-size: var(--font-size-xs); color: var(--color-warning); font-weight: var(--font-weight-semibold);">BYE</span>' : ''}
+                ${match.isBye ? '<span style="font-size: var(--font-size-xs); color: var(--color-warning); font-weight: var(--font-weight-semibold);">BYE</span>' : ""}
             `;
-            matchEl.appendChild(titleRow);
+      matchEl.appendChild(titleRow);
 
-            // Team A
-            const teamAEl = createTeamRow(match, 'A', match.teamA);
-            matchEl.appendChild(teamAEl);
+      // Team A
+      const teamAEl = createTeamRow(match, "A", match.teamA);
+      matchEl.appendChild(teamAEl);
 
-            // Team B
-            const teamBEl = createTeamRow(match, 'B', match.teamB);
-            matchEl.appendChild(teamBEl);
+      // Team B
+      const teamBEl = createTeamRow(match, "B", match.teamB);
+      matchEl.appendChild(teamBEl);
 
-            return matchEl;
-        }
+      return matchEl;
+    }
 
-        function createTeamRow(match, side, team) {
-            const isWinner = match.winner === side;
-            const teamEl = document.createElement('div');
-            teamEl.style.cssText = `
+    function createTeamRow(match, side, team) {
+      const isWinner = match.winner === side;
+      const teamEl = document.createElement("div");
+      teamEl.style.cssText = `
                 display: flex;
                 align-items: center;
                 gap: var(--space-2);
                 padding: var(--space-2);
                 border-radius: var(--radius-sm);
-                background: ${isWinner ? 'var(--color-success-bg, rgba(34, 197, 94, 0.1))' : 'transparent'};
-                border: 1px solid ${isWinner ? 'var(--color-success, #22c55e)' : 'var(--color-border-light)'};
+                background: ${isWinner ? "var(--color-success-bg, rgba(34, 197, 94, 0.1))" : "transparent"};
+                border: 1px solid ${isWinner ? "var(--color-success, #22c55e)" : "var(--color-border-light)"};
                 margin-bottom: var(--space-1);
             `;
 
-            // Winner checkbox
-            const checkbox = document.createElement('button');
-            checkbox.style.cssText = `
+      // Winner checkbox
+      const checkbox = document.createElement("button");
+      checkbox.style.cssText = `
                 width: 24px;
                 height: 24px;
                 border-radius: var(--radius-sm);
-                border: 2px solid ${isWinner ? 'var(--color-success, #22c55e)' : 'var(--color-border)'};
-                background: ${isWinner ? 'var(--color-success, #22c55e)' : 'transparent'};
+                border: 2px solid ${isWinner ? "var(--color-success, #22c55e)" : "var(--color-border)"};
+                background: ${isWinner ? "var(--color-success, #22c55e)" : "transparent"};
                 cursor: pointer;
                 display: flex;
                 align-items: center;
@@ -1900,27 +2834,27 @@
                 font-size: 14px;
                 transition: all 0.2s;
             `;
-            checkbox.innerHTML = isWinner ? '<i class="ph-bold ph-check"></i>' : '';
-            checkbox.disabled = !team || match.isBye;
-            checkbox.onclick = () => setMatchWinner(match.id, side);
-            teamEl.appendChild(checkbox);
+      checkbox.innerHTML = isWinner ? '<i class="ph-bold ph-check"></i>' : "";
+      checkbox.disabled = !team || match.isBye;
+      checkbox.onclick = () => setMatchWinner(match.id, side);
+      teamEl.appendChild(checkbox);
 
-            // Team name
-            const nameEl = document.createElement('span');
-            nameEl.style.cssText = `
+      // Team name
+      const nameEl = document.createElement("span");
+      nameEl.style.cssText = `
                 flex: 1;
-                font-weight: ${isWinner ? 'var(--font-weight-semibold)' : 'var(--font-weight-normal)'};
-                color: ${team ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)'};
+                font-weight: ${isWinner ? "var(--font-weight-semibold)" : "var(--font-weight-normal)"};
+                color: ${team ? "var(--color-text-primary)" : "var(--color-text-tertiary)"};
             `;
-            nameEl.textContent = team ? team.name : 'TBA';
-            teamEl.appendChild(nameEl);
+      nameEl.textContent = team ? team.name : "TBA";
+      teamEl.appendChild(nameEl);
 
-            // Score input
-            const scoreInput = document.createElement('input');
-            scoreInput.type = 'number';
-            scoreInput.min = '0';
-            scoreInput.value = side === 'A' ? match.scoreA : match.scoreB;
-            scoreInput.style.cssText = `
+      // Score input
+      const scoreInput = document.createElement("input");
+      scoreInput.type = "number";
+      scoreInput.min = "0";
+      scoreInput.value = side === "A" ? match.scoreA : match.scoreB;
+      scoreInput.style.cssText = `
                 width: 50px;
                 padding: var(--space-1) var(--space-2);
                 text-align: center;
@@ -1929,117 +2863,130 @@
                 background: var(--color-bg-primary);
                 color: var(--color-text-primary);
             `;
-            scoreInput.disabled = !team;
-            scoreInput.onchange = (e) => updateMatchScore(match.id, side, parseInt(e.target.value) || 0);
-            teamEl.appendChild(scoreInput);
+      scoreInput.disabled = !team;
+      scoreInput.onchange = (e) =>
+        updateMatchScore(match.id, side, parseInt(e.target.value) || 0);
+      teamEl.appendChild(scoreInput);
 
-            return teamEl;
+      return teamEl;
+    }
+
+    async function setMatchWinner(matchId, winner) {
+      try {
+        const response = await fetch("/api/bracket/match/winner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matchId, winner }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          currentBracket = result.bracket;
+          renderBracket(result.bracket);
+          showNotification(
+            "Winner Set",
+            "Match updated successfully",
+            "success",
+          );
         }
+      } catch (err) {
+        console.error("Set winner error:", err);
+      }
+    }
 
-        async function setMatchWinner(matchId, winner) {
-            try {
-                const response = await fetch('/api/bracket/match/winner', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ matchId, winner })
-                });
+    async function updateMatchScore(matchId, side, score) {
+      try {
+        const body = { matchId };
+        if (side === "A") body.scoreA = score;
+        else body.scoreB = score;
 
-                const result = await response.json();
-                if (result.success) {
-                    currentBracket = result.bracket;
-                    renderBracket(result.bracket);
-                    showNotification('Winner Set', 'Match updated successfully', 'success');
-                }
-            } catch (err) {
-                console.error('Set winner error:', err);
-            }
+        const response = await fetch("/api/bracket/match/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          currentBracket = result.bracket;
         }
+      } catch (err) {
+        console.error("Update score error:", err);
+      }
+    }
 
-        async function updateMatchScore(matchId, side, score) {
-            try {
-                const body = { matchId };
-                if (side === 'A') body.scoreA = score;
-                else body.scoreB = score;
-
-                const response = await fetch('/api/bracket/match/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    currentBracket = result.bracket;
-                }
-            } catch (err) {
-                console.error('Update score error:', err);
-            }
+    async function loadBracket() {
+      try {
+        const response = await fetch("/api/bracket");
+        const bracket = await response.json();
+        if (bracket) {
+          currentBracket = bracket;
+          renderBracket(bracket);
+          refreshBracketMatches(); // Update scoreboard dropdown
         }
+      } catch (err) {
+        console.error("Load bracket error:", err);
+      }
+    }
 
-        async function loadBracket() {
-            try {
-                const response = await fetch('/api/bracket');
-                const bracket = await response.json();
-                if (bracket) {
-                    currentBracket = bracket;
-                    renderBracket(bracket);
-                    refreshBracketMatches(); // Update scoreboard dropdown
-                }
-            } catch (err) {
-                console.error('Load bracket error:', err);
-            }
-        }
+    function copyBracketOverlayUrl() {
+      const url = `${window.location.origin}/bracket.html`;
+      navigator.clipboard.writeText(url);
+      showNotification(
+        "Copied!",
+        "Bracket overlay URL copied to clipboard",
+        "success",
+      );
+    }
 
-        function copyBracketOverlayUrl() {
-            const url = `${window.location.origin}/bracket.html`;
-            navigator.clipboard.writeText(url);
-            showNotification('Copied!', 'Bracket overlay URL copied to clipboard', 'success');
-        }
+    // Load bracket on page load
+    loadBracket();
 
-        // Load bracket on page load
-        loadBracket();
+    // Expose globally
+    window.createBracket = createBracket;
+    window.resetBracket = resetBracket;
+    window.setBracketType = setBracketType;
+    window.setMatchWinner = setMatchWinner;
+    window.updateMatchScore = updateMatchScore;
+    window.copyBracketOverlayUrl = copyBracketOverlayUrl;
+    window.shuffleBracketTeams = shuffleBracketTeams;
+    window.updateShuffleButtonState = updateShuffleButtonState;
+  </script>
 
-        // Expose globally
-        window.createBracket = createBracket;
-        window.resetBracket = resetBracket;
-        window.setBracketType = setBracketType;
-        window.setMatchWinner = setMatchWinner;
-        window.updateMatchScore = updateMatchScore;
-        window.copyBracketOverlayUrl = copyBracketOverlayUrl;
-        window.shuffleBracketTeams = shuffleBracketTeams;
-        window.updateShuffleButtonState = updateShuffleButtonState;
-    </script>
-
-    <!-- Crop Modal -->
-    <div id="crop-modal" class="modal-overlay hidden">
-        <div class="modal crop-modal">
-            <div class="modal-header">
-                <h3>Adjust Logo</h3>
-                <button onclick="closeCropModal()" class="close-btn"><i class="ph-bold ph-x"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="crop-area">
-                    <canvas id="crop-canvas"></canvas>
-                </div>
-                <div class="crop-controls">
-                    <i class="ph-bold ph-minus-circle"></i>
-                    <input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1" oninput="updateCropZoom()">
-                    <i class="ph-bold ph-plus-circle"></i>
-                </div>
-                <div class="crop-hint">Drag to Pan • Scale to Zoom</div>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeCropModal()" class="btn btn-secondary">Cancel</button>
-                <button onclick="confirmCrop()" class="btn btn-primary">
-                    <i class="ph-bold ph-check"></i>
-                    Confirm & Upload
-                </button>
-            </div>
+  <!-- Crop Modal -->
+  <div id="crop-modal" class="modal-overlay hidden">
+    <div class="modal crop-modal">
+      <div class="modal-header">
+        <h3>Adjust Logo</h3>
+        <button onclick="closeCropModal()" class="close-btn">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="crop-area">
+          <canvas id="crop-canvas"></canvas>
         </div>
+        <div class="crop-controls">
+          <i class="ph-bold ph-minus-circle"></i>
+          <input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1" oninput="updateCropZoom()" />
+          <i class="ph-bold ph-plus-circle"></i>
+        </div>
+        <div class="crop-hint">Drag to Pan • Scale to Zoom</div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeCropModal()" class="btn btn-secondary">
+          Cancel
+        </button>
+        <button onclick="confirmCrop()" class="btn btn-primary">
+          <i class="ph-bold ph-check"></i>
+          Confirm & Upload
+        </button>
+      </div>
     </div>
+  </div>
 
-    <!-- Load main application logic -->
-    <script type="module" src="/src/main.ts"></script>
+  <!-- Load main application logic (compiled from TypeScript) -->
+  <script type="module" src="/dist/main.js"></script>
 </body>
 
 </html>

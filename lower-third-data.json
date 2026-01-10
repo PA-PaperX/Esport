@@ -1,13 +1,13 @@
 {
   "enabled": true,
-  "title": "วิทยาลัย",
+  "title": "ewpoijg",
   "backgroundColor": "#1a1a2e",
   "textColor": "#ffffff",
   "slots": [
     {
       "id": 1,
       "enabled": true,
-      "type": "text",
+      "type": "logo",
       "logoPath": "",
       "text": "Facebook",
       "label": "Facebook"

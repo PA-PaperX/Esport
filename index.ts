@@ -1,6 +1,7 @@
 import { stateManager } from "./src/state";
 import { lowerThirdManager } from "./src/lower-third-state";
 import { bracketManager } from "./src/bracket-state";
+import { fontManager } from "./src/font-state";
 
 const PORT = 3000;
 
@@ -694,6 +695,179 @@ const server = Bun.serve({
       } catch (err) {
         console.error("Apply template error:", err);
         return new Response("Apply template failed", { status: 500 });
+      }
+    }
+
+    // ==========================================
+    // Font API Endpoints
+    // ==========================================
+
+    // GET /api/fonts - List all fonts
+    if (url.pathname === "/api/fonts" && req.method === "GET") {
+      // Rescan directory to pick up any new fonts
+      fontManager.scanFontsDirectory();
+      return Response.json(fontManager.getState(), { headers });
+    }
+
+    // GET /api/fonts/css - Get CSS for all custom fonts
+    if (url.pathname === "/api/fonts/css" && req.method === "GET") {
+      const css = fontManager.generateCSS();
+      return new Response(css, {
+        headers: {
+          ...headers,
+          "Content-Type": "text/css"
+        }
+      });
+    }
+
+    // POST /api/fonts/upload - Upload a new font
+    if (url.pathname === "/api/fonts/upload" && req.method === "POST") {
+      try {
+        const formData = await req.formData();
+        const fontFile = formData.get("font") as File | null;
+        const fontName = formData.get("name") as string | null;
+        const fontWeight = formData.get("weight") as string | null;
+        const fontStyle = formData.get("style") as string | null;
+
+        if (!fontFile) {
+          return new Response("No font file provided", { status: 400 });
+        }
+
+        // Validate file type
+        const allowedExtensions = [".ttf", ".otf", ".woff", ".woff2"];
+        const ext = fontFile.name.substring(fontFile.name.lastIndexOf('.')).toLowerCase();
+        if (!allowedExtensions.includes(ext)) {
+          return new Response("Invalid file type. Allowed: TTF, OTF, WOFF, WOFF2", { status: 400 });
+        }
+
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024;
+        if (fontFile.size > maxSize) {
+          return new Response("File too large. Max 5MB", { status: 400 });
+        }
+
+        // Save file
+        const filename = fontFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filepath = `public/fonts/custom/${filename}`;
+        const buffer = await fontFile.arrayBuffer();
+        await Bun.write(filepath, buffer);
+
+        // Get format from extension
+        const formatMap: Record<string, string> = {
+          '.ttf': 'truetype',
+          '.otf': 'opentype',
+          '.woff': 'woff',
+          '.woff2': 'woff2'
+        };
+
+        // Add to font manager
+        const font = fontManager.addFont({
+          name: fontName || fontFile.name.substring(0, fontFile.name.lastIndexOf('.')),
+          filename: filename,
+          format: formatMap[ext] || 'truetype',
+          path: `/fonts/custom/${filename}`,
+          weight: fontWeight || '400',
+          style: fontStyle || 'normal'
+        });
+
+        // Broadcast font update
+        server.publish("overlay", JSON.stringify({
+          type: "FONT_UPDATE",
+          data: fontManager.getState()
+        }));
+
+        console.log(`🔤 Font uploaded: ${font.name}`);
+        return Response.json({ success: true, font }, { headers });
+      } catch (err) {
+        console.error("Font upload error:", err);
+        return new Response("Font upload failed", { status: 500 });
+      }
+    }
+
+    // PUT /api/fonts/:id - Update font info
+    if (url.pathname.startsWith("/api/fonts/") && !url.pathname.includes("/css") && !url.pathname.includes("/upload") && !url.pathname.includes("/settings") && req.method === "PUT") {
+      try {
+        const id = url.pathname.split("/").pop();
+        const body = await req.json();
+
+        const font = fontManager.updateFont(id!, body);
+        if (!font) {
+          return new Response("Font not found", { status: 404 });
+        }
+
+        // Broadcast font update
+        server.publish("overlay", JSON.stringify({
+          type: "FONT_UPDATE",
+          data: fontManager.getState()
+        }));
+
+        console.log(`📝 Font updated: ${font.name}`);
+        return Response.json({ success: true, font }, { headers });
+      } catch (err) {
+        console.error("Font update error:", err);
+        return new Response("Font update failed", { status: 500 });
+      }
+    }
+
+    // DELETE /api/fonts/:id - Delete a font
+    if (url.pathname.startsWith("/api/fonts/") && !url.pathname.includes("/css") && !url.pathname.includes("/upload") && !url.pathname.includes("/settings") && req.method === "DELETE") {
+      try {
+        const id = url.pathname.split("/").pop();
+        const font = fontManager.getFont(id!);
+
+        if (!font) {
+          return new Response("Font not found", { status: 404 });
+        }
+
+        // Delete file
+        const filepath = `public${font.path}`;
+        const file = Bun.file(filepath);
+        if (await file.exists()) {
+          await Bun.write(filepath, ''); // Clear file
+          // Note: Bun doesn't have direct unlink, but we can leave empty file
+          // or use node:fs
+          const { unlinkSync } = await import('fs');
+          unlinkSync(filepath);
+        }
+
+        fontManager.deleteFont(id!);
+
+        // Broadcast font update
+        server.publish("overlay", JSON.stringify({
+          type: "FONT_UPDATE",
+          data: fontManager.getState()
+        }));
+
+        console.log(`🗑️ Font deleted: ${font.name}`);
+        return Response.json({ success: true }, { headers });
+      } catch (err) {
+        console.error("Font delete error:", err);
+        return new Response("Font delete failed", { status: 500 });
+      }
+    }
+
+    // GET /api/fonts/settings - Get font assignments
+    if (url.pathname === "/api/fonts/settings" && req.method === "GET") {
+      return Response.json(fontManager.getAssignments(), { headers });
+    }
+
+    // POST /api/fonts/settings - Update font assignments
+    if (url.pathname === "/api/fonts/settings" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const assignments = fontManager.updateAssignments(body);
+
+        // Broadcast font update
+        server.publish("overlay", JSON.stringify({
+          type: "FONT_UPDATE",
+          data: fontManager.getState()
+        }));
+
+        console.log(`⚙️ Font assignments updated`);
+        return Response.json({ success: true, assignments }, { headers });
+      } catch (err) {
+        console.error("Font settings update error:", err);
+        return new Response("Font settings update failed", { status: 500 });
       }
     }
 
