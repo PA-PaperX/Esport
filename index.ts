@@ -130,6 +130,56 @@ const server = Bun.serve({
       }
     }
 
+    // POST /api/match/update - อัปเดตข้อมูล Match (BestOf, BanCount)
+    if (url.pathname === "/api/match/update" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        stateManager.updateMatch(body);
+
+        // Broadcast
+        const newState = stateManager.getState();
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
+
+        return Response.json({ success: true }, { headers });
+      } catch (err) {
+        return new Response("Update Match failed", { status: 500 });
+      }
+    }
+
+    // POST /api/ban/update - อัปเดต Ban Hero
+    if (url.pathname === "/api/ban/update" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { side, slot, hero } = body;
+
+        if (!side || slot === undefined) {
+          return new Response("Side and slot required", { status: 400 });
+        }
+
+        stateManager.updateBan(side, slot, hero);
+
+        // Broadcast
+        const newState = stateManager.getState();
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: newState,
+          }),
+        );
+
+        return Response.json({ success: true }, { headers });
+      } catch (err) {
+        return new Response("Update Ban failed", { status: 500 });
+      }
+    }
+
     // POST /api/match/link - Link/Unlink bracket match for score sync
     if (url.pathname === "/api/match/link" && req.method === "POST") {
       try {
@@ -378,9 +428,10 @@ const server = Bun.serve({
 
         console.log(`🏆 Bracket created: ${name} with ${teams.length} teams`);
         return Response.json({ success: true, bracket }, { headers });
-      } catch (err) {
+      } catch (err: any) {
         console.error("Create bracket error:", err);
-        return new Response("Create bracket failed", { status: 500 });
+        const message = err?.message || "Create bracket failed";
+        return Response.json({ success: false, message }, { status: 400, headers });
       }
     }
 
@@ -519,12 +570,13 @@ const server = Bun.serve({
           return new Response("No bracket to shuffle", { status: 400 });
         }
 
-        // Check if any scoring has started (any score > 0)
+        // Check if any REAL scoring has started (ignore BYE matches)
+        // BYE matches have auto-winner, but we still allow shuffle until a non-BYE match has winner
         const scoringStarted = bracket.matches.some(
           (m: any) =>
             (m.scoreA && m.scoreA > 0) ||
             (m.scoreB && m.scoreB > 0) ||
-            m.winner,
+            (m.winner && !m.isBye), // Only lock if winner is set on a non-BYE match
         );
 
         if (scoringStarted) {

@@ -25,7 +25,6 @@ interface FontAssignments {
   scoreboardScore: string | null;
   versusTeamName: string | null;
   bracketTeamName: string | null;
-  transitionTitle: string | null;
 }
 
 interface FontSettings {
@@ -43,7 +42,6 @@ const defaultState: FontSettings = {
     scoreboardScore: null,
     versusTeamName: null,
     bracketTeamName: null,
-    transitionTitle: null,
   },
 };
 

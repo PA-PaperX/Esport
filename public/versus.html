@@ -1,641 +1,1177 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Versus Screen - ESPORT LAYOUT</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* --- RESET & BASE --- */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Versus Screen - ESPORT LAYOUT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Custom Fonts (injected dynamically) -->
+  <style id="custom-fonts"></style>
+  <style>
+    /* --- RESET & BASE --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body,
+    html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: "Rajdhani", sans-serif;
+      color: white;
+    }
+
+    /* --- CSS VARIABLES --- */
+    :root {
+      --color-a: #4a9fd4;
+      --color-b: #c75b39;
+      --bg-dark: #0a0e1a;
+      --bg-card: rgba(10, 15, 25, 0.95);
+      --custom-font-teamname: "Rajdhani";
+    }
+
+    /* --- BACKGROUND --- */
+    #bg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      z-index: 0;
+      display: none;
+    }
+
+    /* --- MAIN CONTAINER --- */
+    #main-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 10;
+    }
+
+    /* --- PLAYERS BAR --- */
+    .players-bar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0;
+    }
+
+    /* --- TEAM SECTION (Players) --- */
+    .team-players {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* --- PLAYER CARD (TALLER FOR HERO FACES) --- */
+    .player-card {
+      width: 165px;
+      height: 220px;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Hero/Champion Area - Full card */
+    .hero-area {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* LeagueBroadcast Inspired: Breathing Gradient Overlay on Hero */
+    .hero-area::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      /* Gradient will be dynamically colored by parent .player-card */
+      background: linear-gradient(to top, var(--team-color-alpha, rgba(0, 0, 0, 0.5)) 0%, transparent 60%);
+      z-index: 5;
+    }
+
+    .player-card:hover .hero-area::after {
+      opacity: 1;
+      animation: pulsate-pick 2s infinite;
+    }
+
+    @keyframes pulsate-pick {
+      0% {
+        opacity: 0.3;
       }
 
-      body,
-      html {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #0a0e1a;
-        font-family: "Rajdhani", sans-serif;
-        color: white;
+      50% {
+        opacity: 0.7;
       }
 
-      /* --- CSS VARIABLES --- */
-      :root {
-        --color-a: #4a9fd4;
-        --color-b: #c75b39;
-        --bg-dark: #0a0e1a;
-        --bg-card: rgba(10, 15, 25, 0.95);
+      100% {
+        opacity: 0.3;
+      }
+    }
+
+    .hero-img {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130%;
+      height: auto;
+      min-height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      animation: heroRise 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes heroRise {
+      from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
       }
 
-      /* --- BACKGROUND --- */
-      #bg-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(180deg, #0a0e1a 0%, #0d1220 100%);
-        z-index: 0;
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
       }
+    }
 
-      /* --- MAIN CONTAINER --- */
-      #main-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        z-index: 10;
-      }
+    .hero-placeholder {
+      width: 50px;
+      height: 50px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      /* --- PLAYERS BAR --- */
-      .players-bar {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        gap: 0;
-      }
+    .hero-placeholder::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
 
-      /* --- TEAM SECTION (Players) --- */
-      .team-players {
-        display: flex;
-        gap: 4px;
-      }
+    /* --- PLAYER NAME BAR --- */
+    .player-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 8px 5px;
+      background: rgba(0, 0, 0, 0.85);
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      z-index: 10;
+    }
 
-      /* --- PLAYER CARD (TALLER FOR HERO FACES) --- */
-      .player-card {
-        width: 165px;
-        height: 220px;
-        position: relative;
-        overflow: hidden;
-        background: var(--bg-card);
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    /* --- CENTER SECTION (Logo) --- */
+    .center-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      margin: 0 15px;
+    }
 
-      /* Hero/Champion Area - Full card */
-      .hero-area {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        background: rgba(0, 0, 0, 0.4);
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    .center-logo {
+      width: 165px;
+      height: 220px;
+      background: linear-gradient(180deg, #4dd9e5 0%, #36a8b0 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
 
-      .hero-img {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 130%;
-        height: auto;
-        min-height: 100%;
-        object-fit: cover;
-        object-position: center 15%;
-        animation: heroRise 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      }
+    .league-icon {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 10px;
+    }
 
-      @keyframes heroRise {
-        from {
-          transform: translateX(-50%) translateY(100%);
-          opacity: 0;
-        }
+    .patch-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0a0e1a;
+      text-transform: uppercase;
+    }
 
-        to {
-          transform: translateX(-50%) translateY(0);
-          opacity: 1;
-        }
-      }
+    /* --- TEAM INFO BAR (BOTTOM) --- */
+    .team-info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      height: 60px;
+      margin-top: 0;
+    }
 
-      .hero-placeholder {
-        width: 50px;
-        height: 50px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    .team-info {
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
 
-      .hero-placeholder::after {
-        content: "";
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-      }
+    .team-info::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg,
+          rgba(255, 255, 255, 0.05) 0%,
+          rgba(255, 255, 255, 0) 100%);
+      pointer-events: none;
+    }
 
-      /* --- PLAYER NAME BAR --- */
-      .player-name {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 8px 5px;
-        background: rgba(0, 0, 0, 0.85);
-        text-align: center;
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: white;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        z-index: 10;
-      }
-
-      /* --- CENTER SECTION (Logo) --- */
-      .center-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-end;
-        margin: 0 15px;
-      }
-
-      .center-logo {
-        width: 165px;
-        height: 220px;
-        background: linear-gradient(180deg, #4dd9e5 0%, #36a8b0 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .league-icon {
-        width: 70px;
-        height: 70px;
-        margin-bottom: 10px;
-      }
-
-      .patch-text {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #0a0e1a;
-        text-transform: uppercase;
-      }
-
-      /* --- TEAM INFO BAR (BOTTOM) --- */
-      .team-info-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: stretch;
-        height: 60px;
-        margin-top: 0;
-      }
-
-      .team-info {
-        display: flex;
-        align-items: center;
-        padding: 0 20px;
-        gap: 15px;
-      }
-
-      #team-a-info {
-        background: linear-gradient(
-          90deg,
+    #team-a-info {
+      background: linear-gradient(90deg,
           var(--color-a) 0%,
-          rgba(74, 159, 212, 0.3) 100%
-        );
-        flex: 1;
+          rgba(74, 159, 212, 0.4) 60%,
+          rgba(74, 159, 212, 0.15) 100%);
+      flex: 1;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 40px rgba(74, 159, 212, 0.3);
+    }
+
+    #team-b-info {
+      background: linear-gradient(90deg,
+          rgba(199, 91, 57, 0.15) 0%,
+          rgba(199, 91, 57, 0.4) 40%,
+          var(--color-b) 100%);
+      flex: 1;
+      justify-content: flex-end;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 40px rgba(199, 91, 57, 0.3);
+    }
+
+    .team-score {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1;
+      color: white;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .team-score:hover {
+      transform: scale(1.05);
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    .team-name {
+      font-family: var(--custom-font-teamname), "Rajdhani", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .team-coach {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .team-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #team-b-info .team-text {
+      text-align: right;
+    }
+
+    /* Center Score in Bar */
+    .center-score-bar {
+      width: 160px;
+      background: linear-gradient(180deg,
+          rgba(0, 0, 0, 0.9) 0%,
+          rgba(20, 20, 30, 0.95) 100%);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .center-score-bar .team-score {
+      font-size: 2.2rem;
+    }
+
+    /* --- ANIMATIONS --- */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
       }
 
-      #team-b-info {
-        background: linear-gradient(
-          90deg,
-          rgba(199, 91, 57, 0.3) 0%,
-          var(--color-b) 100%
-        );
-        flex: 1;
-        justify-content: flex-end;
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes cardGlow {
+
+      0%,
+      100% {
+        box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
       }
 
-      .team-score {
-        font-size: 2.5rem;
-        font-weight: 800;
-        line-height: 1;
-        color: white;
+      50% {
+        box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .player-card {
+      animation: fadeInUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0;
+    }
+
+    .player-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    #team-a-players .player-card {
+      border-color: rgba(74, 159, 212, 0.3);
+      --team-color-alpha: rgba(74, 159, 212, 0.6);
+    }
+
+    #team-a-players .player-card:hover {
+      border-color: rgba(74, 159, 212, 0.6);
+      box-shadow: 0 10px 30px rgba(74, 159, 212, 0.2);
+    }
+
+    #team-b-players .player-card {
+      border-color: rgba(199, 91, 57, 0.3);
+      --team-color-alpha: rgba(199, 91, 57, 0.6);
+    }
+
+    #team-b-players .player-card:hover {
+      border-color: rgba(199, 91, 57, 0.6);
+      box-shadow: 0 10px 30px rgba(199, 91, 57, 0.2);
+    }
+
+    /* LeagueBroadcast Staggered Animation Timing - 1s base delay for transition */
+    #team-a-players .player-card:nth-child(1) {
+      animation-delay: 1.1s;
+    }
+
+    #team-a-players .player-card:nth-child(2) {
+      animation-delay: 1.2s;
+    }
+
+    #team-a-players .player-card:nth-child(3) {
+      animation-delay: 1.3s;
+    }
+
+    #team-a-players .player-card:nth-child(4) {
+      animation-delay: 1.4s;
+    }
+
+    #team-a-players .player-card:nth-child(5) {
+      animation-delay: 1.5s;
+    }
+
+    #team-b-players .player-card:nth-child(1) {
+      animation-delay: 1.1s;
+    }
+
+    #team-b-players .player-card:nth-child(2) {
+      animation-delay: 1.2s;
+    }
+
+    #team-b-players .player-card:nth-child(3) {
+      animation-delay: 1.3s;
+    }
+
+    #team-b-players .player-card:nth-child(4) {
+      animation-delay: 1.4s;
+    }
+
+    #team-b-players .player-card:nth-child(5) {
+      animation-delay: 1.5s;
+    }
+
+    .team-info-bar {
+      animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation-delay: 1.3s;
+      opacity: 0;
+    }
+
+    .center-section {
+      animation: fadeInUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation-delay: 1.1s;
+      opacity: 0;
+    }
+
+    /* Enhanced player name bar */
+    .player-name {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: background 0.3s ease;
+    }
+
+    .player-card:hover .player-name {
+      background: rgba(0, 0, 0, 0.95);
+    }
+
+    /* Center logo enhanced */
+    .center-logo {
+      box-shadow:
+        0 0 40px rgba(77, 217, 229, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .center-logo:hover {
+      transform: scale(1.02);
+      transition: transform 0.3s ease;
+    }
+
+    /* --- BANS BAR --- */
+    /* Remove old global container styles, now inside team-text */
+
+    .team-bans {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 0;
+    }
+
+    .team-bans-a {
+      order: 1;
+      /* Bans on Right of Score if we use flex container */
+    }
+
+    .team-bans-b {
+      justify-content: flex-start;
+    }
+
+    /* Wait, let's check existing team-text alignment */
+    /* Original CSS says: #team-b-info .team-text { text-align: right; } */
+    /* Flex alignment needs to match */
+
+    #team-a-info .team-text {
+      align-items: flex-start;
+    }
+
+    #team-b-info .team-text {
+      align-items: flex-end;
+    }
+
+    /* Redefine team-info to be a flex row for alignment */
+    .team-info {
+      display: flex;
+      align-items: center;
+      /* Width constraint? */
+    }
+
+    #team-a-info {
+      justify-content: flex-end;
+      /* Score is on Right, Text is on Right... wait */
+      /* Origin: 
+           #team-a-info: score (left), text (right) ? 
+           Check HTML structure below
+           Structure: <div id="team-a-info"> <score> <text> </div>
+        */
+    }
+
+    #team-b-info {
+      justify-content: flex-start;
+    }
+
+    /* Adjust order for Team A: Score [Right], Bans [Middle], Name [Far Right]?
+       User said: "close to the score, towards the center"
+       Visual: [Name] [Score] [Center] [Score] [Name]
+       Target: [Name] [Bans] [Score] [Center] [Score] [Bans] [Name]
+    */
+
+    /* Let's look at Team A HTML again:
+       <div id="team-a-info">
+          <score>
+          <text>
+       </div>
+       Original CSS for team-info? We might need to see it.
+       If it's flex row (default div is block), we need to check.
+       Assuming team-info-bar is flex row.
+    */
+
+    /* Let's implicitly trust the user wants it BETWEEN score and center?
+       "ชิดระหว่างกลางใกล้ตัวตัวสกอ" -> Near Score, Between Middle?
+       No, "Between Middle AND Near Score"
+       So: [Name] [Score] [Bans] ... [Bans] [Score] [Name] ??
+       Or: [Name] [Bans] [Score] ... [Score] [Bans] [Name] ??
+    */
+
+    /* Let's try to fit nicely.
+       Team A: [Text] [Bans] [Score] (Score is usually closest to center in Versus)
+       Wait, in this layout:
+       <div class="team-info-bar">
+         <info-A> (Left)
+         <center-score> (Middle)
+         <info-B> (Right)
+       </div>
+       
+       Inside Info-A: <score> <text>
+       
+       We want bans near score.
+       If Score is Leftmost of Info-A (and Info-A is Left side of screen? No.)
+       
+       Usually Versus:
+       [Team A Name] [Score A] - [Score B] [Team B Name]
+       
+       Let's check HTML lines 597+
+       <div class="team-info" id="team-a-info">
+         <span class="team-score" id="score-a">0</span>
+         <div class="team-text">...</div>
+       </div>
+       
+       If team-info is flex, order matters.
+       
+       My Plan:
+       Info A: <Text> <Bans> <Score>
+       Info B: <Score> <Bans> <Text>
+       
+       This puts bans next to score, towards "outside"? 
+       Or "Close to score, towards middle"?
+       "ชิดระหว่างกลาง" = align towards center.
+       
+       If I put bans NEXT to score, effectively sandwiching score?
+       No, user said "Close to score, near center".
+       
+       Maybe:
+       [Name] [Score] [Bans] - [Bans] [Score] [Name] 
+       This puts bans closest to the absolute center of screen.
+
+       Let's try this.
+    */
+
+    .ban-circle {
+      width: 50px;
+      /* Restored size */
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      display: flex;
+    }
+
+    /* Neon Glow Animation for Newly Filled Slots */
+    .ban-circle.new-ban {
+      border-color: transparent;
+    }
+
+    .ban-circle.new-ban::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      padding: 2px;
+      background: conic-gradient(from 0deg, transparent, var(--team-color, cyan));
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: rotateGlow 2s linear forwards;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .team-bans-a .ban-circle.new-ban::before {
+      --team-color: var(--color-a);
+    }
+
+    .team-bans-b .ban-circle.new-ban::before {
+      --team-color: var(--color-b);
+    }
+
+    @keyframes rotateGlow {
+      from {
+        transform: rotate(0deg);
       }
 
-      .team-name {
-        font-size: 1.3rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: white;
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Ban Image Rise Animation */
+    @keyframes banHeroRise {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
       }
 
-      .team-coach {
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.7);
+      to {
+        transform: translateY(0);
+        opacity: 0.8;
       }
+    }
 
-      .team-text {
-        display: flex;
-        flex-direction: column;
-      }
+    /* Hide X symbol if empty */
+    .ban-circle.empty .ban-symbol {
+      display: none;
+    }
 
-      #team-b-info .team-text {
-        text-align: right;
-      }
+    .ban-circle.empty {
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      /* Faint border */
+      background: rgba(0, 0, 0, 0.3);
+    }
 
-      /* Center Score in Bar */
-      .center-score-bar {
-        width: 140px;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-      }
+    .team-bans-a .ban-circle {
+      /* border-color: var(--color-a); Remove static colored border */
+    }
 
-      .center-score-bar .team-score {
-        font-size: 2rem;
-      }
+    .team-bans-b .ban-circle {
+      /* border-color: var(--color-b); Remove static colored border */
+    }
 
-      /* --- ANIMATIONS --- */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(40px);
-        }
+    .ban-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%);
+      opacity: 0.8;
+    }
 
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
+    .ban-symbol {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #ef4444;
+      text-shadow: 0 0 4px black;
+      z-index: 2;
+    }
+  </style>
+</head>
 
-      .player-card {
-        animation: fadeInUp 0.5s ease-out backwards;
-      }
+<body>
+  <div id="bg-layer"></div>
 
-      #team-a-players .player-card:nth-child(1) {
-        animation-delay: 0.05s;
-      }
+  <div id="main-container">
+    <!-- Players Bar -->
+    <div class="players-bar">
+      <!-- Team A Players -->
+      <div class="team-players" id="team-a-players">
+        <!-- Players injected here -->
+      </div>
 
-      #team-a-players .player-card:nth-child(2) {
-        animation-delay: 0.1s;
-      }
-
-      #team-a-players .player-card:nth-child(3) {
-        animation-delay: 0.15s;
-      }
-
-      #team-a-players .player-card:nth-child(4) {
-        animation-delay: 0.2s;
-      }
-
-      #team-a-players .player-card:nth-child(5) {
-        animation-delay: 0.25s;
-      }
-
-      #team-b-players .player-card:nth-child(1) {
-        animation-delay: 0.05s;
-      }
-
-      #team-b-players .player-card:nth-child(2) {
-        animation-delay: 0.1s;
-      }
-
-      #team-b-players .player-card:nth-child(3) {
-        animation-delay: 0.15s;
-      }
-
-      #team-b-players .player-card:nth-child(4) {
-        animation-delay: 0.2s;
-      }
-
-      #team-b-players .player-card:nth-child(5) {
-        animation-delay: 0.25s;
-      }
-
-      .team-info-bar {
-        animation: fadeInUp 0.6s ease-out backwards;
-        animation-delay: 0.3s;
-      }
-
-      .center-section {
-        animation: fadeInUp 0.5s ease-out backwards;
-        animation-delay: 0.1s;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="bg-layer"></div>
-
-    <div id="main-container">
-      <!-- Players Bar -->
-      <div class="players-bar">
-        <!-- Team A Players -->
-        <div class="team-players" id="team-a-players">
-          <!-- Players injected here -->
-        </div>
-
-        <!-- Center Section (Logo) -->
-        <div class="center-section">
-          <div class="center-logo">
-            <svg class="league-icon" viewBox="0 0 100 100" fill="#0a0e1a">
-              <path
-                d="M50 5 L60 35 L95 35 L68 55 L78 90 L50 70 L22 90 L32 55 L5 35 L40 35 Z"
-              />
-            </svg>
-            <span class="patch-text" id="patch-text">Patch 9.19</span>
-          </div>
-        </div>
-
-        <!-- Team B Players -->
-        <div class="team-players" id="team-b-players">
-          <!-- Players injected here -->
+      <!-- Center Section (Logo) -->
+      <div class="center-section">
+        <div class="center-logo">
+          <svg class="league-icon" viewBox="0 0 100 100" fill="#0a0e1a">
+            <path d="M50 5 L60 35 L95 35 L68 55 L78 90 L50 70 L22 90 L32 55 L5 35 L40 35 Z" />
+          </svg>
+          <span class="patch-text" id="patch-text">Patch 9.19</span>
         </div>
       </div>
 
-      <!-- Team Info Bar (Bottom) -->
-      <div class="team-info-bar">
-        <div class="team-info" id="team-a-info">
-          <span class="team-score" id="score-a">0</span>
-          <div class="team-text">
-            <span class="team-name" id="team-a-name">TEAM A</span>
-          </div>
+      <!-- Team B Players -->
+      <div class="team-players" id="team-b-players">
+        <!-- Players injected here -->
+      </div>
+    </div>
+
+
+
+    <!-- Team Info Bar (Bottom) -->
+    <div class="team-info-bar">
+      <div class="team-info" id="team-a-info"
+        style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+        <div class="team-text">
+          <span class="team-name" id="team-a-name">TEAM A</span>
         </div>
-        <div class="center-score-bar">
-          <span class="team-score" id="center-score-a">0</span>
-          <span style="color: rgba(255, 255, 255, 0.4)">-</span>
-          <span class="team-score" id="center-score-b">0</span>
+        <div class="score-bans-group" style="display: flex; align-items: center; gap: 15px;">
+          <div id="bans-a" class="team-bans team-bans-a"></div>
         </div>
-        <div class="team-info" id="team-b-info">
-          <div class="team-text">
-            <span class="team-name" id="team-b-name">TEAM B</span>
-          </div>
-          <span class="team-score" id="score-b">0</span>
+      </div>
+      <div class="center-score-bar">
+        <span class="team-score" id="center-score-a">0</span>
+        <span style="color: rgba(255, 255, 255, 0.4)">-</span>
+        <span class="team-score" id="center-score-b">0</span>
+      </div>
+      <div class="team-info" id="team-b-info"
+        style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
+        <div class="score-bans-group" style="display: flex; align-items: center; gap: 15px;">
+          <div id="bans-b" class="team-bans team-bans-b"></div>
+        </div>
+        <div class="team-text">
+          <span class="team-name" id="team-b-name">TEAM B</span>
         </div>
       </div>
     </div>
 
-    <script>
-      const WS_URL = `ws://localhost:3000/ws`;
-      let ws = null;
-      let currentState = null;
+  </div>
+  </div>
+  </div>
 
-      // --- HELPERS ---
-      function getHeroImage(heroName) {
-        if (!heroName) return null;
-        let formatted = heroName.trim();
-        formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
-        formatted = formatted.replace(/\s+/g, "_");
-        return `/src/rov/${formatted}.png`;
-      }
+  <script>
+    const WS_URL = `ws://${window.location.host}/ws`;
+    let ws = null;
+    let currentState = null;
+    let fontSettings = null;
 
-      // --- HERO POSITION MAPPING ---
-      const HERO_POSITION_MAP = {
-        // Right-positioned heroes (face/model on right side of splash art)
-        aleister: "75% 15%",
-        "d'arcy": "75% 15%",
-        darcy: "75% 15%",
-        florentino: "55% 15%",
-        "lu bu": "70% 15%",
-        lu_bu: "70% 15%",
-        lubu: "70% 15%",
-        zephys: "65% 15%",
-        kriknak: "25% 15%",
-        butterfly: "70% 15%",
-        quillen: "65% 15%",
-        nakroth: "70% 15%",
-        murad: "65% 15%",
-        raz: "70% 15%",
-        hayate: "65% 15%",
-        laville: "65% 15%",
-        fennik: "65% 15%",
-        keera: "55% 15%",
-        paine: "70% 15%",
-        ryoma: "65% 15%",
-        omen: "65% 15%",
-        "eland'or": "65% 15%",
-        elandor: "65% 15%",
-        airi: "65% 15%",
-        dextra: "85% 15%",
-        liliana: "70% 15%",
-        zanis: "85% 15%",
-        kaine: "75% 15%",
-        alice: "70% 15%",
-        allain: "75% 15%",
-        astrid: "70% 15%",
-        capheny: "70% 15%",
-        charlotte: "65% 15%",
-        dirak: "75% 15%",
-        errol: "70% 15%",
-        ishar: "70% 15%",
-        lorion: "75% 15%",
-        riktor: "70% 15%",
-        sinestrea: "55% 15%",
-        sephera: "70% 15%",
-        tachi: "75% 15%",
-        "tel'annas": "65% 15%",
-        telannas: "65% 15%",
-        yena: "70% 15%",
-        veres: "70% 15%",
-        volkath: "75% 15%",
-        superman: "70% 15%",
-        "the flash": "65% 15%",
-        the_flash: "65% 15%",
-        "wonder woman": "65% 15%",
-        wonder_woman: "65% 15%",
-        ignis: "75% 15%",
-        wukong: "75% 15%",
-        arduin: "85% 15%",
-        kahlii: "70% 15%",
-        lauriel: "80% 15%",
+    // --- HELPERS ---
+    function getHeroImage(heroName) {
+      if (!heroName) return null;
+      let formatted = heroName.trim();
+      formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      formatted = formatted.replace(/\s+/g, "_");
+      return `/src/rov/${formatted}.png`;
+    }
 
-        // Left-positioned heroes (face/model on left side of splash art)
-        violet: "30% 15%",
-        yorn: "30% 15%",
-        thane: "35% 15%",
-        veera: "35% 15%",
-        elsu: "30% 15%",
-        lindis: "15% 15%",
-        zuka: "35% 15%",
-        annette: "35% 15%",
-        arum: "30% 15%",
-        krixi: "55% 15%",
-        mina: "30% 15%",
-        natalya: "35% 15%",
-        wiro: "30% 15%",
-        qi: "35% 15%",
-        preyta: "35% 15%",
-        aya: "25% 15%",
-        ilumia: "30% 15%",
+    // --- HERO POSITION MAPPING ---
+    const HERO_POSITION_MAP = {
+      // Right-positioned heroes (face/model on right side of splash art)
+      aleister: "75% 15%",
+      "d'arcy": "75% 15%",
+      darcy: "75% 15%",
+      florentino: "55% 15%",
+      "lu bu": "70% 15%",
+      lu_bu: "70% 15%",
+      lubu: "70% 15%",
+      zephys: "65% 15%",
+      kriknak: "25% 15%",
+      butterfly: "70% 15%",
+      quillen: "65% 15%",
+      nakroth: "70% 15%",
+      murad: "65% 15%",
+      raz: "70% 15%",
+      hayate: "65% 15%",
+      laville: "65% 15%",
+      fennik: "65% 15%",
+      keera: "55% 15%",
+      paine: "70% 15%",
+      ryoma: "65% 15%",
+      omen: "65% 15%",
+      "eland'or": "65% 15%",
+      elandor: "65% 15%",
+      airi: "65% 15%",
+      dextra: "85% 15%",
+      liliana: "70% 15%",
+      zanis: "85% 15%",
+      kaine: "75% 15%",
+      alice: "70% 15%",
+      allain: "75% 15%",
+      astrid: "70% 15%",
+      capheny: "70% 15%",
+      charlotte: "65% 15%",
+      dirak: "75% 15%",
+      errol: "70% 15%",
+      ishar: "70% 15%",
+      lorion: "75% 15%",
+      riktor: "70% 15%",
+      sinestrea: "55% 15%",
+      sephera: "70% 15%",
+      tachi: "75% 15%",
+      "tel'annas": "65% 15%",
+      telannas: "65% 15%",
+      yena: "70% 15%",
+      veres: "70% 15%",
+      volkath: "75% 15%",
+      superman: "70% 15%",
+      "the flash": "65% 15%",
+      the_flash: "65% 15%",
+      "wonder woman": "65% 15%",
+      wonder_woman: "65% 15%",
+      ignis: "75% 15%",
+      wukong: "75% 15%",
+      arduin: "85% 15%",
+      kahlii: "70% 15%",
+      lauriel: "80% 15%",
 
-        // Default center is 'center 15%' (handled by getHeroPosition)
-      };
+      // Left-positioned heroes (face/model on left side of splash art)
+      violet: "30% 15%",
+      yorn: "30% 15%",
+      thane: "35% 15%",
+      veera: "35% 15%",
+      elsu: "30% 15%",
+      lindis: "15% 15%",
+      zuka: "35% 15%",
+      annette: "35% 15%",
+      arum: "30% 15%",
+      krixi: "55% 15%",
+      mina: "30% 15%",
+      natalya: "35% 15%",
+      wiro: "30% 15%",
+      qi: "35% 15%",
+      preyta: "35% 15%",
+      aya: "25% 15%",
+      ilumia: "30% 15%",
 
-      function getHeroPosition(heroName) {
-        if (!heroName) return "center 15%";
-        const key = heroName.toLowerCase().trim();
-        return HERO_POSITION_MAP[key] || "center 15%";
-      }
+      // Default center is 'center 15%' (handled by getHeroPosition)
+    };
 
-      // --- WEB SOCKET ---
-      function connectWebSocket() {
-        ws = new WebSocket(WS_URL);
-        ws.onopen = () => console.log("✅ Connected");
-        ws.onmessage = (event) => {
-          try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === "STATE_UPDATE" && msg.data) {
-              currentState = msg.data;
-              render();
-            }
-          } catch (e) {}
-        };
-        ws.onclose = () => setTimeout(connectWebSocket, 3000);
-      }
+    function getHeroPosition(heroName) {
+      if (!heroName) return "center 15%";
+      const key = heroName.toLowerCase().trim();
+      return HERO_POSITION_MAP[key] || "center 15%";
+    }
 
-      // --- RENDER ---
-      function render() {
-        if (!currentState) return;
-
-        const TeamA = currentState.teams.A;
-        const TeamB = currentState.teams.B;
-
-        // Update CSS Variables
-        document.documentElement.style.setProperty(
-          "--color-a",
-          TeamA.color || "#4a9fd4",
-        );
-        document.documentElement.style.setProperty(
-          "--color-b",
-          TeamB.color || "#c75b39",
-        );
-
-        // Team Names
-        document.getElementById("team-a-name").textContent =
-          TeamA.name || "TEAM A";
-        document.getElementById("team-b-name").textContent =
-          TeamB.name || "TEAM B";
-
-        // Scores
-        const scoreA = TeamA.score || "0";
-        const scoreB = TeamB.score || "0";
-        document.getElementById("score-a").textContent = scoreA;
-        document.getElementById("score-b").textContent = scoreB;
-        document.getElementById("center-score-a").textContent = scoreA;
-        document.getElementById("center-score-b").textContent = scoreB;
-
-        // Players
-        renderPlayers("team-a-players", TeamA.players);
-        renderPlayers("team-b-players", TeamB.players);
-      }
-
-      function renderPlayers(containerId, players) {
-        const container = document.getElementById(containerId);
-
-        // Build map of current slots
-        const currentMap = new Map();
-        Array.from(container.children).forEach((el) => {
-          currentMap.set(parseInt(el.dataset.slot), el);
-        });
-
-        players.forEach((player, index) => {
-          let card = currentMap.get(player.slot);
-          if (!card) {
-            card = createCard(player, index);
-            container.appendChild(card);
-          } else {
-            updateCard(card, player);
+    // --- WEB SOCKET ---
+    function connectWebSocket() {
+      ws = new WebSocket(WS_URL);
+      ws.onopen = () => console.log("✅ Connected");
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "STATE_UPDATE" && msg.data) {
+            currentState = msg.data;
+            render();
           }
-        });
+          // Handle font updates in real-time
+          if (msg.type === "FONT_UPDATE" && msg.data) {
+            fontSettings = msg.data;
+            applyCustomFonts();
+          }
+        } catch (e) { }
+      };
+      ws.onclose = () => setTimeout(connectWebSocket, 3000);
+    }
+
+    // --- RENDER ---
+    function render() {
+      if (!currentState) return;
+
+      const swapped = currentState.swapped || false;
+
+      // Colors ALWAYS stay fixed (left = Team A color, right = Team B color)
+      // Only data (names, players, scores, bans) swaps
+      const OriginalTeamA = currentState.teams.A;
+      const OriginalTeamB = currentState.teams.B;
+
+      // Swap team DATA if swapped flag is true (but not colors)
+      const DataForLeftSide = swapped ? OriginalTeamB : OriginalTeamA;
+      const DataForRightSide = swapped ? OriginalTeamA : OriginalTeamB;
+
+      // Update CSS Variables - ALWAYS use original team colors (no swap)
+      document.documentElement.style.setProperty(
+        "--color-a",
+        OriginalTeamA.color || "#4a9fd4",
+      );
+      document.documentElement.style.setProperty(
+        "--color-b",
+        OriginalTeamB.color || "#c75b39",
+      );
+
+      // Team Names (swapped data)
+      document.getElementById("team-a-name").textContent =
+        DataForLeftSide.name || "TEAM A";
+      document.getElementById("team-b-name").textContent =
+        DataForRightSide.name || "TEAM B";
+
+      // Scores (swapped data)
+      const scoreA = DataForLeftSide.score || "0";
+      const scoreB = DataForRightSide.score || "0";
+      document.getElementById("center-score-a").textContent = scoreA;
+      document.getElementById("center-score-b").textContent = scoreB;
+
+      // Players (swapped data)
+      renderPlayers("team-a-players", DataForLeftSide.players);
+      renderPlayers("team-b-players", DataForRightSide.players);
+
+      // Bans (swapped data)
+      renderBans("a", DataForLeftSide.bans, currentState.banCount || 3);
+      renderBans("b", DataForRightSide.bans, currentState.banCount || 3);
+    }
+
+    function renderBans(teamSide, bans, banCount) {
+      const container = document.getElementById(
+        `bans-${teamSide.toLowerCase()}`,
+      );
+      if (!container) return;
+
+      const totalBans = banCount || 3;
+      const displayCount = Math.min(totalBans, 8);
+
+      // Get current slots
+      const currentSlots = Array.from(container.children);
+
+      // 1. Remove excess slots (if count decreased)
+      if (currentSlots.length > displayCount) {
+        for (let i = currentSlots.length - 1; i >= displayCount; i--) {
+          const slot = currentSlots[i];
+          slot.style.transition = "transform 0.3s, opacity 0.3s";
+          slot.style.transform = "scale(0)";
+          slot.style.opacity = "0";
+          setTimeout(() => slot.remove(), 300);
+        }
       }
 
-      function createCard(player, index) {
-        const el = document.createElement("div");
-        el.className = "player-card";
-        el.dataset.slot = player.slot;
+      // 2. Update existing or add new slots
+      for (let i = 0; i < displayCount; i++) {
+        const hero = bans && bans[i] ? bans[i] : null;
+        let slot = currentSlots[i];
 
-        el.innerHTML = `
+        // If slot doesn't exist, create it
+        if (!slot) {
+          slot = document.createElement("div");
+          slot.className = "ban-circle";
+          // Entrance animation
+          slot.style.animation = "fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards";
+          slot.style.animationDelay = `${i * 0.05}s`;
+
+          // Create inner elements
+          const img = document.createElement("img");
+          slot.appendChild(img);
+
+          const symbol = document.createElement("div");
+          symbol.className = "ban-symbol";
+          symbol.textContent = "✕";
+          slot.appendChild(symbol);
+
+          container.appendChild(slot);
+        }
+
+        // Update content
+        const img = slot.querySelector("img");
+        const currentHero = slot.getAttribute("data-hero");
+
+        if (hero) {
+          const src = getHeroImage(hero);
+          if (currentHero !== hero) { // Only update if changed
+            slot.setAttribute("data-hero", hero);
+            img.src = src;
+            img.style.display = "block";
+
+            // Reset Animation
+            img.style.animation = "none";
+            void img.offsetWidth; // Force reflow
+            img.style.animation = "banHeroRise 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards";
+
+            // Trigger Glow Animation
+            slot.classList.remove("new-ban"); // Reset if re-triggered quickly
+            void slot.offsetWidth; // Force reflow
+            slot.classList.add("new-ban");
+
+            // Remove glow class after animation (2s)
+            if (slot.timeout) clearTimeout(slot.timeout);
+            slot.timeout = setTimeout(() => {
+              slot.classList.remove("new-ban");
+            }, 2000);
+          }
+          slot.classList.remove("empty");
+        } else {
+          slot.removeAttribute("data-hero");
+          img.style.display = "none";
+          slot.classList.remove("new-ban");
+          slot.classList.add("empty");
+        }
+      }
+    }
+
+    function renderPlayers(containerId, players) {
+      const container = document.getElementById(containerId);
+
+      // Build map of current slots
+      const currentMap = new Map();
+      Array.from(container.children).forEach((el) => {
+        currentMap.set(parseInt(el.dataset.slot), el);
+      });
+
+      players.forEach((player, index) => {
+        let card = currentMap.get(player.slot);
+        if (!card) {
+          card = createCard(player, index);
+          container.appendChild(card);
+        } else {
+          updateCard(card, player);
+        }
+      });
+    }
+
+    function createCard(player, index) {
+      const el = document.createElement("div");
+      el.className = "player-card";
+      el.dataset.slot = player.slot;
+
+      el.innerHTML = `
                 <div class="hero-area">
                     ${getHeroContent(player.hero)}
                 </div>
                 <div class="player-name">${player.name || "Player"}</div>
             `;
 
-        updateCard(el, player);
-        return el;
-      }
+      updateCard(el, player);
+      return el;
+    }
 
-      function getHeroContent(heroName) {
-        const src = getHeroImage(heroName);
-        if (!src) {
-          return `<div class="hero-placeholder"></div>`;
-        }
-        const position = getHeroPosition(heroName);
-        return `<img class="hero-img" 
+    function getHeroContent(heroName) {
+      const src = getHeroImage(heroName);
+      if (!src) {
+        return `<div class="hero-placeholder"></div>`;
+      }
+      const position = getHeroPosition(heroName);
+      return `<img class="hero-img" 
                          src="${src}" 
                          style="object-position: ${position}"
                          onerror="if(this.src.endsWith('.png')){this.src=this.src.replace('.png','.webp')}else{this.parentElement.innerHTML='<div class=\\'hero-placeholder\\'></div>'}"
                     >`;
+    }
+
+    function updateCard(el, player) {
+      // Update player name
+      const nameEl = el.querySelector(".player-name");
+      if (nameEl) {
+        nameEl.textContent = player.name || "Player";
       }
 
-      function updateCard(el, player) {
-        // Update player name
-        const nameEl = el.querySelector(".player-name");
-        if (nameEl) {
-          nameEl.textContent = player.name || "Player";
+      // Update hero image
+      const heroArea = el.querySelector(".hero-area");
+      const currentImg = heroArea.querySelector("img.hero-img");
+      const newSrc = getHeroImage(player.hero);
+
+      if (newSrc) {
+        if (
+          currentImg &&
+          !currentImg.src.includes(newSrc.replace(".png", ""))
+        ) {
+          currentImg.src = newSrc;
+          currentImg.style.objectPosition = getHeroPosition(player.hero);
+        } else if (!currentImg) {
+          const placeholder = heroArea.querySelector(".hero-placeholder");
+          if (placeholder) placeholder.remove();
+          heroArea.insertAdjacentHTML(
+            "beforeend",
+            getHeroContent(player.hero),
+          );
+        } else if (currentImg) {
+          currentImg.style.objectPosition = getHeroPosition(player.hero);
         }
+      }
+    }
 
-        // Update hero image
-        const heroArea = el.querySelector(".hero-area");
-        const currentImg = heroArea.querySelector("img.hero-img");
-        const newSrc = getHeroImage(player.hero);
-
-        if (newSrc) {
-          if (
-            currentImg &&
-            !currentImg.src.includes(newSrc.replace(".png", ""))
-          ) {
-            currentImg.src = newSrc;
-            currentImg.style.objectPosition = getHeroPosition(player.hero);
-          } else if (!currentImg) {
-            const placeholder = heroArea.querySelector(".hero-placeholder");
-            if (placeholder) placeholder.remove();
-            heroArea.insertAdjacentHTML(
-              "beforeend",
-              getHeroContent(player.hero),
-            );
-          } else if (currentImg) {
-            currentImg.style.objectPosition = getHeroPosition(player.hero);
-          }
+    // Init
+    connectWebSocket();
+    async function init() {
+      try {
+        const res = await fetch("/api/state");
+        if (res.ok) {
+          currentState = await res.json();
+          render();
         }
-      }
+      } catch (e) { }
 
-      // Init
-      connectWebSocket();
-      async function init() {
-        try {
-          const res = await fetch("/api/state");
-          if (res.ok) {
-            currentState = await res.json();
-            render();
-          }
-        } catch (e) {}
+      // Load font settings
+      loadFontSettings();
+    }
+    init();
+
+    // Load font settings from API
+    async function loadFontSettings() {
+      try {
+        const response = await fetch("/api/fonts");
+        if (response.ok) {
+          fontSettings = await response.json();
+          applyCustomFonts();
+        }
+      } catch (e) {
+        console.log("Failed to load font settings");
       }
-      init();
-    </script>
-  </body>
+    }
+
+    // Apply custom fonts to the overlay
+    function applyCustomFonts() {
+      if (!fontSettings) return;
+
+      // Inject @font-face rules
+      const styleEl = document.getElementById("custom-fonts");
+      let css = "";
+      for (const font of fontSettings.fonts || []) {
+        css += `
+          @font-face {
+            font-family: '${font.name}';
+            src: url('${font.path}') format('${font.format}');
+            font-weight: ${font.weight || "normal"};
+            font-style: ${font.style || "normal"};
+            font-display: swap;
+          }
+        `;
+      }
+      styleEl.textContent = css;
+
+      // Apply font assignments
+      const assignments = fontSettings.assignments || {};
+
+      // Get font name by ID
+      const getFontName = (fontId) => {
+        if (!fontId) return null;
+        const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
+        return font ? font.name : null;
+      };
+
+      // Apply to team name
+      const teamNameFont = getFontName(assignments.versusTeamName);
+      document.documentElement.style.setProperty(
+        "--custom-font-teamname",
+        teamNameFont ? `'${teamNameFont}'` : '"Rajdhani"',
+      );
+
+      console.log("🔤 Versus fonts applied");
+    }
+  </script>
+</body>
+
 </html>

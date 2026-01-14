@@ -21,6 +21,7 @@ interface Team {
   logoFit?: "contain" | "cover";
   score: number;
   players: Player[];
+  bans?: string[]; // Banned hero names
 }
 
 interface MatchState {
@@ -28,6 +29,7 @@ interface MatchState {
   bestOf: number;
   currentGame: number;
   swapped?: boolean;
+  banCount?: number; // 1-6, number of ban slots per team
   teams: {
     A: Team;
     B: Team;
@@ -203,29 +205,29 @@ function renderUI(): void {
 
   const swapped = currentState.swapped || false;
 
-  // When swapped: Left panel shows Team B, Right panel shows Team A
-  // But we keep the original team identity (colors, borders) from the panel
+  // Option B: Control Panel swaps data to match overlay display
+  // When swapped: Left panel shows Team B data, Right panel shows Team A data
+  // This helps users see what will appear on each side of the broadcast
   if (swapped) {
-    renderTeamData("A", currentState.teams.B); // Left panel shows Team B data
-    renderTeamData("B", currentState.teams.A); // Right panel shows Team A data
+    renderTeamData("A", currentState.teams.B); // Left panel shows Team B
+    renderTeamData("B", currentState.teams.A); // Right panel shows Team A  
   } else {
     renderTeamData("A", currentState.teams.A); // Normal: Left = Team A
     renderTeamData("B", currentState.teams.B); // Normal: Right = Team B
   }
 
-  // Update swap status
+  // Render bans (also needs to respect swap)
+  renderBanSlots();
+
+  // Update swap status indicator
   const swapStatus = document.getElementById("swap-status");
   if (swapStatus) {
     swapStatus.textContent = swapped ? "🔀 สลับฝั่ง" : "ปกติ";
   }
 
   // Update panel titles based on swap state
-  const teamATitle = document.querySelector(
-    "#teamA-section .team-panel__title",
-  );
-  const teamBTitle = document.querySelector(
-    "#teamB-section .team-panel__title",
-  );
+  const teamATitle = document.querySelector("#teamA-section .team-panel__title");
+  const teamBTitle = document.querySelector("#teamB-section .team-panel__title");
 
   if (teamATitle) {
     teamATitle.textContent = swapped ? "Team B" : "Team A";
@@ -234,45 +236,15 @@ function renderUI(): void {
     teamBTitle.textContent = swapped ? "Team A" : "Team B";
   }
 
-  // Update button labels and colors based on swap state
-  const teamABtn = document.querySelector(
-    '#teamA-section button[onclick*="saveTeam"]',
-  ) as HTMLButtonElement;
-  const teamBBtn = document.querySelector(
-    '#teamB-section button[onclick*="saveTeam"]',
-  ) as HTMLButtonElement;
+  // Update button labels based on swap state
+  const teamABtn = document.querySelector('#teamA-section button[onclick*="saveTeam"]') as HTMLButtonElement;
+  const teamBBtn = document.querySelector('#teamB-section button[onclick*="saveTeam"]') as HTMLButtonElement;
 
   if (teamABtn) {
-    teamABtn.textContent = swapped ? "UPDATE TEAM B" : "UPDATE TEAM A";
-    // Set button color dynamically based on the team it represents
-    // If swapped, Team A panel (Left) controls Team B. Team B color is currentState.teams.B.color
-    // Wait, renderTeamData updates colorInput. The color passed to applyThemeColor is the source of truth for "current color".
-    // But here we need to read it from state or DOM.
-    // Easiest is to set it in applyThemeColor? No, that applies to section/card.
-    // Let's set it here based on state.
-
-    let btnColor = "#007AFF"; // Default Blue
-    if (swapped) {
-      btnColor = currentState.teams.B.color;
-    } else {
-      btnColor = currentState.teams.A.color;
-    }
-
-    // Remove old classes that force color
-    teamABtn.classList.remove(
-      "bg-blue-600",
-      "hover:bg-blue-500",
-      "bg-red-600",
-      "hover:bg-red-500",
-    );
+    teamABtn.textContent = swapped ? "Update Team B" : "Update Team A";
+    // Update button color to match displayed team
+    const btnColor = swapped ? currentState.teams.B.color : currentState.teams.A.color;
     teamABtn.style.backgroundColor = btnColor;
-
-    // Add hover effect via JS or assume simple CSS transition.
-    // Since we can't easily add hover pseudo-state via inline style,
-    // we might leave it or use a utility class that darkens on hover if available, or just set background.
-    // For now, setting background is better than wrong color.
-
-    // Also update shadow if possible
     const rgb = hexToRgb(btnColor);
     if (rgb) {
       teamABtn.style.boxShadow = `0 4px 6px -1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
@@ -280,23 +252,9 @@ function renderUI(): void {
   }
 
   if (teamBBtn) {
-    teamBBtn.textContent = swapped ? "UPDATE TEAM A" : "UPDATE TEAM B";
-
-    let btnColor = "#FF3B30"; // Default Red
-    if (swapped) {
-      btnColor = currentState.teams.A.color; // Right panel controls Team A
-    } else {
-      btnColor = currentState.teams.B.color;
-    }
-
-    teamBBtn.classList.remove(
-      "bg-blue-600",
-      "hover:bg-blue-500",
-      "bg-red-600",
-      "hover:bg-red-500",
-    );
+    teamBBtn.textContent = swapped ? "Update Team A" : "Update Team B";
+    const btnColor = swapped ? currentState.teams.A.color : currentState.teams.B.color;
     teamBBtn.style.backgroundColor = btnColor;
-
     const rgb = hexToRgb(btnColor);
     if (rgb) {
       teamBBtn.style.boxShadow = `0 4px 6px -1px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
@@ -321,15 +279,10 @@ function renderTeamData(side: "A" | "B", team: Team): void {
   if (colorHex) colorHex.textContent = team.color;
   if (scoreInput) scoreInput.value = String(team.score);
 
-  // Render players - pass the ACTUAL team identifier (A or B) based on which team's data this is
+  // Render players - Control Panel always shows actual team data
+  // Left panel = Team A, Right panel = Team B (no swap adjustment)
   if (playersContainer) {
-    // Determine which team this data belongs to
-    let dataTeamSide: "A" | "B" = side;
-    if (currentState) {
-      if (team === currentState.teams.A) dataTeamSide = "A";
-      else if (team === currentState.teams.B) dataTeamSide = "B";
-    }
-    renderPlayers(dataTeamSide, team.players, playersContainer);
+    renderPlayers(side, side, team.players, playersContainer);
   }
 
   // Render logo preview
@@ -433,11 +386,14 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 }
 
 function renderPlayers(
-  side: "A" | "B",
+  panelSide: "A" | "B",
+  teamSide: "A" | "B",
   players: Player[],
   container: HTMLDivElement,
 ): void {
-  const sideClass = side === "A" ? "player-card--a" : "player-card--b";
+  // panelSide = for styling (player-card--a or --b)
+  // teamSide = for API calls (updatePlayer, openHeroPicker, etc.)
+  const sideClass = panelSide === "A" ? "player-card--a" : "player-card--b";
 
   container.innerHTML = players
     .map((player) => {
@@ -450,7 +406,7 @@ function renderPlayers(
       return `
     <div class="player-card ${sideClass}" 
          draggable="true" 
-         data-side="${side}" 
+         data-side="${teamSide}" 
          data-slot="${player.slot}"
          ondragstart="handleDragStart(event)"
          ondragend="handleDragEnd(event)"
@@ -464,7 +420,7 @@ function renderPlayers(
       
       <!-- Lane/Role -->
       <div class="player-card__role ${player.hero ? "" : "disabled"}" 
-           onclick="handleLaneClick('${side}', ${player.slot}, ${player.hero ? "true" : "false"
+           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${player.hero ? "true" : "false"
         })"
            title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")
         }">
@@ -481,14 +437,14 @@ function renderPlayers(
         <input 
           type="text" 
           value="${escapeHtml(player.name)}" 
-          onchange="updatePlayer('${side}', ${player.slot}, this.value)"
+          onchange="updatePlayer('${teamSide}', ${player.slot}, this.value)"
           placeholder="Player ${player.slot}"
         />
       </div>
       
       <!-- Hero Avatar -->
       <div class="player-card__hero ${player.hero ? "has-hero" : ""}" 
-           onclick="openHeroPicker('${side}', ${player.slot})"
+           onclick="openHeroPicker('${teamSide}', ${player.slot})"
            title="${player.hero || "Select Hero"}">
         ${heroImgPath
           ? `<img src="${heroImgPath}" alt="${escapeHtml(
@@ -500,7 +456,7 @@ function renderPlayers(
       
       <!-- Captain Toggle -->
       <button class="player-card__captain ${player.isCaptain ? "active" : ""}" 
-              onclick="toggleCaptain('${side}', ${player.slot})"
+              onclick="toggleCaptain('${teamSide}', ${player.slot})"
               title="${player.isCaptain ? "Captain" : "Set as Captain"}">
         <i class="ph-${player.isCaptain ? "fill" : "duotone"} ph-crown"></i>
       </button>
@@ -527,7 +483,8 @@ async function saveTeam(side: "A" | "B"): Promise<void> {
 
   if (!nameInput || !colorInput) return;
 
-  // When swapped, left panel (A) contains Team B data, right panel (B) contains Team A data
+  // Option B: When swapped, panel A shows Team B data, panel B shows Team A data
+  // So we need to send the update to the ACTUAL team the panel is displaying
   const swapped = currentState?.swapped || false;
   const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
 
@@ -538,7 +495,7 @@ async function saveTeam(side: "A" | "B"): Promise<void> {
   });
 
   if (success) {
-    console.log(`✅ Team ${actualSide} saved (panel ${side})`);
+    console.log(`✅ Team ${actualSide} saved (from panel ${side})`);
     // Sync changes back to loaded template if exists
     await syncTemplateAfterUpdate(actualSide);
   } else {
@@ -1293,16 +1250,49 @@ async function handleLogoSelect(
     input.value = "";
     return;
   }
-
-  // When swapped, panel A contains Team B data, panel B contains Team A data
-  const swapped = currentState?.swapped || false;
-  const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
+  // Control Panel always references actual team identity (no swap adjustment)
+  // Left panel = Team A, Right panel = Team B
 
   // Open Crop Modal instead of direct upload
-  openCropModal(file, actualSide);
+  openCropModal(file, side);
   input.value = "";
 }
 
+// ==========================================
+// Match Settings
+// ==========================================
+
+async function updateMatchSettings(): Promise<void> {
+  const bestOfInput = document.getElementById("best-of") as HTMLInputElement;
+  if (!bestOfInput) return;
+
+  const bestOf = parseInt(bestOfInput.value, 10);
+  const success = await postAPI("/api/match/update", { bestOf });
+
+  if (success) {
+    if (currentState) currentState.bestOf = bestOf;
+    console.log(`✅ Best Of updated to ${bestOf}`);
+  }
+}
+
+async function updateBanCount(): Promise<void> {
+  const select = document.getElementById("ban-count") as HTMLSelectElement;
+  if (!select) return;
+
+  const count = parseInt(select.value, 10);
+  const success = await postAPI("/api/match/update", { banCount: count });
+
+  if (success) {
+    if (currentState) currentState.banCount = count;
+    renderBanSlots();
+    console.log(`✅ Ban Count updated to ${count}`);
+  }
+}
+
+(window as any).updateMatchSettings = updateMatchSettings;
+(window as any).updateBanCount = updateBanCount;
+
+// ==========================================
 // Crop State
 let cropImage: HTMLImageElement | null = null;
 let cropCanvas: HTMLCanvasElement | null = null;
@@ -1313,9 +1303,9 @@ let cropOffsetY = 0;
 let isDragging = false;
 let lastX = 0;
 let lastY = 0;
-let currentCropSide: "A" | "B" | null = null;
+let currentCropSide: "A" | "B" | "TEMPLATE" | null = null;
 
-function openCropModal(file: File, side: "A" | "B"): void {
+function openCropModal(file: File, side: "A" | "B" | "TEMPLATE"): void {
   const modal = document.getElementById("crop-modal");
   cropCanvas = document.getElementById("crop-canvas") as HTMLCanvasElement;
   const zoomInput = document.getElementById("crop-zoom") as HTMLInputElement;
@@ -1512,10 +1502,25 @@ function confirmCrop(): void {
   if (!cropCanvas || !currentCropSide) return;
 
   cropCanvas.toBlob(async (blob) => {
-    if (blob && currentCropSide) {
-      const file = new File([blob], "logo_cropped.png", { type: "image/png" });
-      await uploadLogo(currentCropSide, file);
-      closeCropModal();
+    if (blob) {
+      if (currentCropSide === "TEMPLATE") {
+        // Handle Template Manager Crop
+        const file = new File([blob], "template_logo.png", { type: "image/png" });
+        templateLogoFile = file; // Store for later upload
+
+        // Update Preview
+        const previewEl = document.getElementById("tpl-logo-preview");
+        if (previewEl) {
+          previewEl.innerHTML = `<img src="${URL.createObjectURL(blob)}" style="width: 100%; height: 100%; object-fit: contain;">`;
+        }
+
+        closeCropModal();
+      } else {
+        // Handle Team A/B Upload
+        const file = new File([blob], "logo_cropped.png", { type: "image/png" });
+        await uploadLogo(currentCropSide as "A" | "B", file);
+        closeCropModal();
+      }
     }
   }, "image/png");
 }
@@ -1572,10 +1577,8 @@ async function pickScreenColor(side: "A" | "B"): Promise<void> {
       // @ts-ignore - EyeDropper is not in TypeScript types yet
       const eyeDropper = new EyeDropper();
       const result = await eyeDropper.open();
-      // When swapped, panel A contains Team B data
-      const swapped = currentState?.swapped || false;
-      const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
-      applyColor(actualSide, result.sRGBHex, side);
+      // Control Panel always references actual team identity (no swap adjustment)
+      applyColor(side, result.sRGBHex, side);
     } catch (err) {
       console.log("Color picking cancelled");
     }
@@ -1596,12 +1599,11 @@ async function pickLogoColor(side: "A" | "B"): Promise<void> {
     return;
   }
 
-  // When swapped, panel A contains Team B data
-  const swapped = currentState?.swapped || false;
-  const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
+  // Control Panel always references actual team identity (no swap adjustment)
+  // Left panel = Team A, Right panel = Team B
 
   // Open pixel picker modal with both actual and panel side
-  openPixelPickerModal(actualSide, side, logoImg.src);
+  openPixelPickerModal(side, side, logoImg.src);
 }
 
 function openPixelPickerModal(
@@ -2256,6 +2258,275 @@ function closeHeroPicker(): void {
   heroPickerSlot = null;
 }
 
+// ==========================================
+// Ban Picker Modal
+// ==========================================
+
+let banPickerOverlay: HTMLDivElement | null = null;
+let banPickerSide: "A" | "B" | null = null;
+let banPickerSlot: number | null = null;
+
+function openBanPicker(side: "A" | "B", slot: number): void {
+  banPickerSide = side;
+  banPickerSlot = slot;
+
+  banPickerOverlay = document.createElement("div");
+  banPickerOverlay.id = "ban-picker-overlay";
+  banPickerOverlay.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  `;
+
+  const modal = document.createElement("div");
+  modal.style.cssText = `
+    background: var(--color-bg-elevated, #1c1c1e);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  `;
+
+  const header = document.createElement("div");
+  header.style.cssText = `
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), transparent);
+  `;
+  header.innerHTML = `
+    <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.25rem; font-weight: 600; margin: 0;">
+      <i class="ph-duotone ph-prohibit" style="color: #ef4444; margin-right: 8px;"></i>
+      Ban Hero - Team ${side} Slot ${slot}
+    </h2>
+    <button id="ban-picker-close" style="
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1); border: none;
+      color: var(--color-text-secondary, #a1a1a6); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+    ">
+      <i class="ph-bold ph-x"></i>
+    </button>
+  `;
+
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.placeholder = "Search hero to ban...";
+  searchInput.style.cssText = `
+    margin: 16px 24px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    color: var(--color-text-primary, #f5f5f7);
+    background: var(--color-bg-tertiary, #2c2c2e);
+    border: 1px solid var(--color-border, #38383a);
+    border-radius: 12px;
+    outline: none;
+  `;
+
+  const gridContainer = document.createElement("div");
+  gridContainer.id = "ban-hero-grid";
+  gridContainer.style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 12px;
+    padding: 0 24px 24px;
+    overflow-y: auto;
+    max-height: 50vh;
+  `;
+
+  const renderHeroes = (filter: string = "") => {
+    const filteredHeroes = filter
+      ? HEROES.filter((h) => h.toLowerCase().includes(filter.toLowerCase()))
+      : HEROES;
+
+    gridContainer.innerHTML = filteredHeroes
+      .map(
+        (hero) => `
+        <button 
+          data-hero-name="${hero.replace(/"/g, "&quot;")}"
+          onclick="selectBan(this.dataset.heroName)"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 8px;
+            background: var(--color-bg-tertiary, #2c2c2e);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+          "
+          onmouseover="this.style.borderColor='#ef4444'; this.style.transform='scale(1.05)';"
+          onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)';"
+          title="Ban ${hero.replace(/"/g, "&quot;")}"
+        >
+          <img 
+            src="${getHeroImagePath(hero)}" 
+            alt="${hero.replace(/"/g, "&quot;")}"
+            style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #1a1a1a;"
+            onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); } else { this.style.display='none'; this.nextElementSibling.style.display='flex'; }"
+          >
+          <div style="display: none; width: 60px; height: 60px; border-radius: 8px; background: var(--color-bg-secondary, #1c1c1e); align-items: center; justify-content: center;">
+            <i class="ph-duotone ph-game-controller" style="font-size: 1.5rem; color: var(--color-text-tertiary, #636366);"></i>
+          </div>
+          <span style="
+            font-size: 0.7rem;
+            color: var(--color-text-secondary, #a1a1a6);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+          ">${hero}</span>
+        </button>
+      `,
+      )
+      .join("");
+
+    if (filteredHeroes.length === 0) {
+      gridContainer.innerHTML =
+        '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary, #636366);">No heroes found</div>';
+    }
+  };
+
+  renderHeroes();
+
+  searchInput.addEventListener("input", (e) => {
+    renderHeroes((e.target as HTMLInputElement).value);
+  });
+
+  setTimeout(() => {
+    const closeBtn = document.getElementById("ban-picker-close");
+    if (closeBtn) closeBtn.onclick = closeBanPicker;
+  }, 0);
+
+  banPickerOverlay.addEventListener("click", (e) => {
+    if (e.target === banPickerOverlay) closeBanPicker();
+  });
+
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      closeBanPicker();
+      document.removeEventListener("keydown", handleEsc);
+    }
+  };
+  document.addEventListener("keydown", handleEsc);
+
+  modal.appendChild(header);
+  modal.appendChild(searchInput);
+  modal.appendChild(gridContainer);
+  banPickerOverlay.appendChild(modal);
+  document.body.appendChild(banPickerOverlay);
+  searchInput.focus();
+}
+
+function closeBanPicker(): void {
+  if (banPickerOverlay) {
+    banPickerOverlay.remove();
+    banPickerOverlay = null;
+  }
+  banPickerSide = null;
+  banPickerSlot = null;
+}
+
+async function selectBan(heroName: string): Promise<void> {
+  if (!banPickerSide || banPickerSlot === null) return;
+
+  const success = await postAPI("/api/ban/update", {
+    side: banPickerSide,
+    slot: banPickerSlot,
+    hero: heroName,
+  });
+
+  if (success) {
+    console.log(`🚫 Banned ${heroName} for Team ${banPickerSide} Slot ${banPickerSlot}`);
+    renderBanSlots(); // Refresh UI
+  } else {
+    console.error("❌ Failed to update ban");
+  }
+
+  closeBanPicker();
+}
+
+async function clearBan(side: "A" | "B", slot: number): Promise<void> {
+  const success = await postAPI("/api/ban/update", {
+    side: side,
+    slot: slot,
+    hero: "",
+  });
+
+  if (success) {
+    console.log(`✅ Cleared ban for Team ${side} Slot ${slot}`);
+    renderBanSlots();
+  }
+}
+
+function renderBanSlots(): void {
+  const banCount = currentState?.banCount || 3;
+  const swapped = currentState?.swapped || false;
+
+  // Option B: When swapped, panel A shows Team B data, panel B shows Team A data
+  ["A", "B"].forEach((panelSide) => {
+    const container = document.getElementById(`team${panelSide}-bans`);
+    if (!container) return;
+
+    // Determine which team's bans to show based on swap state
+    const actualTeam = swapped ? (panelSide === "A" ? "B" : "A") : panelSide;
+    const bans = currentState?.teams[actualTeam as "A" | "B"]?.bans || [];
+
+    let html = "";
+    for (let i = 0; i < banCount; i++) {
+      const heroName = bans[i] || "";
+      const hasHero = !!heroName;
+
+      // Use actualTeam for API calls (actual team identity)
+      if (hasHero) {
+        html += `
+          <div class="ban-slot filled" onclick="openBanPicker('${actualTeam}', ${i})" title="${heroName}">
+            <img src="${getHeroImagePath(heroName)}" alt="${heroName}" 
+                 onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); }">
+            <div class="ban-x">✕</div>
+            <button class="ban-clear" onclick="event.stopPropagation(); clearBan('${actualTeam}', ${i})" title="Clear">
+              <i class="ph-bold ph-x"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="ban-slot empty" onclick="openBanPicker('${actualTeam}', ${i})" title="Click to ban">
+            <i class="ph-duotone ph-prohibit"></i>
+          </div>
+        `;
+      }
+    }
+
+    container.innerHTML = html;
+  });
+}
+
+// Expose ban functions to window
+(window as any).openBanPicker = openBanPicker;
+(window as any).closeBanPicker = closeBanPicker;
+(window as any).selectBan = selectBan;
+(window as any).clearBan = clearBan;
+(window as any).renderBanSlots = renderBanSlots;
+
 async function selectHero(heroName: string): Promise<void> {
   if (!heroPickerSide || !heroPickerSlot) return;
 
@@ -2629,6 +2900,14 @@ async function syncTemplateAfterUpdate(side: "A" | "B"): Promise<void> {
 // Template Manager Modal
 // ==========================================
 
+function handleTemplateLogoSelect(input: HTMLInputElement): void {
+  if (input.files && input.files[0]) {
+    openCropModal(input.files[0], "TEMPLATE");
+    input.value = "";
+  }
+}
+(window as any).handleTemplateLogoSelect = handleTemplateLogoSelect;
+
 let templateManagerOverlay: HTMLDivElement | null = null;
 let templateLogoFile: File | null = null;
 let editingTemplateId: string | null = null;
@@ -2639,161 +2918,187 @@ function openTemplateManager(): void {
   templateManagerOverlay.classList.add("modal-overlay");
 
   const modal = document.createElement("div");
-  modal.classList.add("modal");
-  modal.style.cssText = `
-        max-width: 800px;
-        width: 95%;
-        max-height: 90vh;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    `;
+  modal.classList.add("modal", "template-modal"); // Use new class
 
   // Header
   const header = document.createElement("div");
-  header.classList.add("modal-header");
+  header.classList.add("template-modal__header");
   header.innerHTML = `
-        <h3>Template Manager</h3>
+        <div class="template-modal__title">
+            <i class="ph-duotone ph-folders" style="color: var(--color-primary);"></i>
+            Template Manager
+        </div>
         <button id="close-template-manager" class="close-btn">
             <i class="ph-bold ph-x"></i>
         </button>
     `;
 
-  // Content container
-  const content = document.createElement("div");
-  content.style.cssText = `
-        display: flex;
-        gap: 20px;
-        flex: 1;
-        overflow: hidden;
-    `;
-  content.classList.add("modal-body");
+  // Body Container
+  const body = document.createElement("div");
+  body.classList.add("template-modal__body");
 
-  // Left: Create New Template Form
-  const createSection = document.createElement("div");
-  createSection.classList.add("list-selection");
-  createSection.style.cssText = `
-        flex: 1;
-        padding: 16px;
-        overflow-y: auto;
-    `;
-  createSection.innerHTML = `
-        <h3>Create New Template</h3>
-        <div style="margin-bottom: 12px;">
-            <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">TEAM NAME *</label>
-            <input type="text" id="tpl-name" placeholder="e.g. T1, LOUD, Gen.G" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white;">
-        </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-            <div style="flex: 1;">
-                <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">COLOR</label>
-                <input type="color" id="tpl-color" value="#3b82f6" style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer;">
+  // Left Panel: Create Form
+  const formPanel = document.createElement("div");
+  formPanel.classList.add("template-form-panel");
+  formPanel.innerHTML = `
+        <div class="template-form__section">
+            <div class="template-form__header">
+                <i class="ph-duotone ph-plus-circle"></i>
+                Create New Template
             </div>
-            <div style="flex: 2;">
-                <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">COLOR CODE</label>
-                <input type="text" id="tpl-color-text" value="#3b82f6" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white; font-family: monospace;">
+            
+            <div class="template-input-group">
+                <label class="template-input-label">Team Name *</label>
+                <input type="text" id="tpl-name" class="template-input" placeholder="e.g. T1, LOUD, Gen.G">
             </div>
-        </div>
-        <div style="margin-bottom: 12px;">
-            <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">LOGO</label>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div id="tpl-logo-preview" style="width: 48px; height: 48px; background: #1f2937; border-radius: 8px; border: 1px dashed #374151; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <span style="color: #6b7280; font-size: 10px;">No Logo</span>
+
+            <div class="template-input-group">
+                <label class="template-input-label">Theme Color</label>
+                <div class="template-color-picker">
+                    <div class="template-color-preview">
+                        <input type="color" id="tpl-color" value="#3b82f6">
+                    </div>
+                    <input type="text" id="tpl-color-text" class="template-input" value="#3b82f6" style="font-family: monospace; width: 100px;">
                 </div>
-                <div style="flex: 1;">
-                    <input type="file" id="tpl-logo-input" accept="image/*" style="display: none;" onchange="handleTemplateLogoSelect(this)">
-                    <button type="button" onclick="document.getElementById('tpl-logo-input').click()" style="width: 100%; padding: 8px; background: #374151; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                        📁 Choose Logo
+            </div>
+
+            <div class="template-input-group">
+                <label class="template-input-label">Team Logo</label>
+                <div class="template-logo-upload" onclick="document.getElementById('tpl-logo-input').click()">
+                    <div id="tpl-logo-preview" class="template-logo-preview">
+                        <i class="ph-duotone ph-image" style="color: var(--color-text-tertiary);"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="file" id="tpl-logo-input" accept="image/*" style="display: none;" onchange="handleTemplateLogoSelect(this)">
+                        <div style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);">Upload Logo</div>
+                        <div style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">PNG, JPG, SVG (Max 2MB)</div>
+                    </div>
+                    <i class="ph-bold ph-upload-simple" style="color: var(--color-text-secondary);"></i>
+                </div>
+            </div>
+
+            <div class="template-input-group">
+                <label class="template-input-label">Roster</label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <input type="text" id="tpl-p1" class="template-input" placeholder="Player 1">
+                    <input type="text" id="tpl-p2" class="template-input" placeholder="Player 2">
+                    <input type="text" id="tpl-p3" class="template-input" placeholder="Player 3">
+                    <input type="text" id="tpl-p4" class="template-input" placeholder="Player 4">
+                    <input type="text" id="tpl-p5" class="template-input" placeholder="Player 5">
+                </div>
+            </div>
+
+            <button id="create-template-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                <i class="ph-bold ph-floppy-disk"></i>
+                Save Template
+            </button>
+        </div>
+    `;
+
+  // Right Panel: Template List
+  const listPanel = document.createElement("div");
+  listPanel.classList.add("template-list-panel");
+
+  // Header for List
+  const listHeader = document.createElement("div");
+  listHeader.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);";
+  listHeader.innerHTML = `
+    <div style="display: flex; align-items: center; gap: var(--space-2);">
+        <span class="status-indicator">
+            <span class="status-dot connected"></span>
+            Saved Templates
+        </span>
+        <span style="background: var(--color-bg-tertiary); padding: 2px 8px; border-radius: 10px; font-size: 11px; color: var(--color-text-secondary);">${templates.length}</span>
+    </div>
+  `;
+
+  const grid = document.createElement("div");
+  grid.id = "template-list"; // Build grid content dynamically
+  grid.className = "template-grid"; // Use grid class
+
+  if (templates.length === 0) {
+    grid.innerHTML = `
+        <div style="grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: var(--color-text-tertiary); gap: 10px;">
+            <i class="ph-duotone ph-ghost" style="font-size: 32px; opacity: 0.5;"></i>
+            <span>No templates found</span>
+        </div>
+      `;
+  } else {
+    grid.innerHTML = templates.map(t => {
+      const initials = t.name.substring(0, 2).toUpperCase();
+      const logoHtml = t.logo
+        ? `<img src="${t.logo}" alt="${t.name}">`
+        : `<span style="font-weight: bold; font-size: 12px; color: ${t.color}">${initials}</span>`;
+
+      return `
+            <div class="template-card" onclick="loadTemplateToForm('${t.id}')">
+                <div class="template-card__header">
+                    <div class="template-card__logo">
+                        ${logoHtml}
+                    </div>
+                    <div class="template-card__info">
+                        <div class="template-card__name">${escapeHtml(t.name)}</div>
+                        <div class="template-card__details">${t.players?.length || 0} Players</div>
+                    </div>
+                    <div class="template-card__color" style="color: ${t.color}; background: ${t.color};"></div>
+                </div>
+                
+                <div class="template-card__actions">
+                    <button class="card-btn" onclick="event.stopPropagation(); loadTemplateToForm('${t.id}')" title="Edit">
+                        <i class="ph-bold ph-pencil-simple"></i>
+                    </button>
+                    <button class="card-btn delete" onclick="event.stopPropagation(); deleteTemplate('${t.id}')" title="Delete">
+                        <i class="ph-bold ph-trash"></i>
                     </button>
                 </div>
             </div>
-        </div>
-        <div style="margin-bottom: 12px;">
-            <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">PLAYERS</label>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-                <input type="text" id="tpl-p1" placeholder="Player 1" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
-                <input type="text" id="tpl-p2" placeholder="Player 2" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
-                <input type="text" id="tpl-p3" placeholder="Player 3" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
-                <input type="text" id="tpl-p4" placeholder="Player 4" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
-                <input type="text" id="tpl-p5" placeholder="Player 5" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
-            </div>
-        </div>
-        <button id="create-template-btn" style="width: 100%; padding: 12px; background: #a855f7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;">
-            💾 Create Template
-        </button>
-    `;
+          `;
+    }).join('');
+  }
 
-  // Right: Template List
-  const listSection = document.createElement("div");
-  listSection.classList.add("list-selection");
-  listSection.innerHTML = `
-        <div class="flex items-center gap-2">
-        <i class="ph ph-airplay" style="font-size: 24px; color: var(--color-primary);"></i>
-        <h3> Saved Templates (${templates.length})</h3>
-        </div>
+  listPanel.appendChild(listHeader);
+  listPanel.appendChild(grid);
 
-        <div id="template-list" style="display: flex; flex-direction: column; gap: 8px;">
-            ${templates.length === 0
-      ? '<p style="color: #6b7280; text-align: center; padding: 20px;">No templates yet</p>'
-      : templates
-        .map(
-          (t) => `
-                <div class="team-select">
-                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;" onclick="loadTemplateToForm('${t.id
-            }')">
-                        <div style="width: 16px; height: 16px; border-radius: 4px; background: ${t.color
-            };"></div>
-                        <div>
-                            <div>${escapeHtml(t.name)}</div>
-                            <div style="color: #6b7280; font-size: 11px;">${t.players?.length || 0
-            } players</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <button onclick="event.stopPropagation(); loadTemplateToForm('${t.id
-            }')"</button>
-                        <button class="del-btn" onclick="event.stopPropagation(); deleteTemplate('${t.id
-            }')"><i class="ph ph-backspace"></i></button>
-                    </div>
-                </div>
-            `,
-        )
-        .join("")
-    }
-        </div>
-    `;
-
-  // Append all
-  content.appendChild(createSection);
-  content.appendChild(listSection);
+  // Assemble
+  body.appendChild(formPanel);
+  body.appendChild(listPanel);
   modal.appendChild(header);
-  modal.appendChild(content);
+  modal.appendChild(body);
   templateManagerOverlay.appendChild(modal);
   document.body.appendChild(templateManagerOverlay);
 
   // Event listeners
-  document.getElementById("close-template-manager")!.onclick =
-    closeTemplateManager;
+  const closeBtn = document.getElementById("close-template-manager");
+  if (closeBtn) closeBtn.onclick = closeTemplateManager;
+
   templateManagerOverlay.onclick = (e) => {
     if (e.target === templateManagerOverlay) closeTemplateManager();
   };
 
   // Color sync
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
-  const colorText = document.getElementById(
-    "tpl-color-text",
-  ) as HTMLInputElement;
-  colorInput.oninput = () => {
-    colorText.value = colorInput.value;
-  };
-  colorText.oninput = () => {
-    if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) {
-      colorInput.value = colorText.value;
-    }
-  };
+  const colorText = document.getElementById("tpl-color-text") as HTMLInputElement;
+  const colorPreview = document.querySelector(".template-color-preview") as HTMLElement;
+
+  if (colorInput && colorText) {
+    // Update text on color pick
+    colorInput.oninput = () => {
+      colorText.value = colorInput.value;
+      if (colorPreview) colorPreview.style.borderColor = colorInput.value;
+    };
+
+    // Update picker on text input
+    colorText.oninput = () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) {
+        colorInput.value = colorText.value;
+        if (colorPreview) colorPreview.style.borderColor = colorText.value;
+      }
+    };
+  }
 
   // Create button
-  document.getElementById("create-template-btn")!.onclick =
-    createTemplateFromForm;
+  const createBtn = document.getElementById("create-template-btn");
+  if (createBtn) createBtn.onclick = createTemplateFromForm;
 }
 
 function closeTemplateManager(): void {
@@ -2968,28 +3273,11 @@ function loadTemplateToForm(id: string): void {
   tplName?.focus();
 }
 
-function handleTemplateLogoSelect(input: HTMLInputElement): void {
-  const file = input.files?.[0];
-  if (!file) return;
-
-  templateLogoFile = file;
-
-  const preview = document.getElementById("tpl-logo-preview");
-  if (preview) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      preview.innerHTML = `<img src="${e.target?.result}" style="width: 100%; height: 100%; object-fit: contain;">`;
-    };
-    reader.readAsDataURL(file);
-  }
-}
-
 // Expose template functions to window
 (window as any).loadTemplate = loadTemplate;
 (window as any).saveAsTemplate = saveAsTemplate;
 (window as any).openTemplateManager = openTemplateManager;
 (window as any).deleteTemplate = deleteTemplate;
-(window as any).handleTemplateLogoSelect = handleTemplateLogoSelect;
 (window as any).loadTemplateToForm = loadTemplateToForm;
 
 // ==========================================
