@@ -1,4 +1,4 @@
-export {};
+export { };
 
 // ==========================================
 // Interfaces (Strict Typing)
@@ -47,8 +47,8 @@ let currentState: MatchState | null = null;
 let ws: WebSocket | null = null;
 let reconnectInterval: number | null = null;
 const RECONNECT_DELAY = 3000;
-const WS_URL = `ws://${window.location.host}`;
-const API_BASE = `http://${window.location.host}`;
+const WS_URL = `ws://localhost:3000/ws`;
+const API_BASE = `http://localhost:3000`;
 
 // ==========================================
 // DOM Elements
@@ -124,12 +124,20 @@ function connectWebSocket(): void {
 
   ws.onmessage = (event: MessageEvent) => {
     try {
-      const message: WSMessage = JSON.parse(event.data);
+      const message = JSON.parse(event.data);
 
       if (message.type === "STATE_UPDATE" && message.data) {
         currentState = message.data;
         renderUI();
       }
+
+      // Real-time template sync
+      if (message.type === "TEMPLATES_UPDATE") {
+        console.log("📁 Templates updated via WebSocket");
+        fetchTemplates(); // Re-fetch and render templates
+      }
+
+      // BRACKET_UPDATE - will be implemented when bracket functions are available
     } catch (err) {
       console.error("❌ Failed to parse WebSocket message:", err);
     }
@@ -213,10 +221,10 @@ function renderUI(): void {
 
   // Update panel titles based on swap state
   const teamATitle = document.querySelector(
-    "#teamA-section .team-panel__title"
+    "#teamA-section .team-panel__title",
   );
   const teamBTitle = document.querySelector(
-    "#teamB-section .team-panel__title"
+    "#teamB-section .team-panel__title",
   );
 
   if (teamATitle) {
@@ -228,10 +236,10 @@ function renderUI(): void {
 
   // Update button labels and colors based on swap state
   const teamABtn = document.querySelector(
-    '#teamA-section button[onclick*="saveTeam"]'
+    '#teamA-section button[onclick*="saveTeam"]',
   ) as HTMLButtonElement;
   const teamBBtn = document.querySelector(
-    '#teamB-section button[onclick*="saveTeam"]'
+    '#teamB-section button[onclick*="saveTeam"]',
   ) as HTMLButtonElement;
 
   if (teamABtn) {
@@ -255,7 +263,7 @@ function renderUI(): void {
       "bg-blue-600",
       "hover:bg-blue-500",
       "bg-red-600",
-      "hover:bg-red-500"
+      "hover:bg-red-500",
     );
     teamABtn.style.backgroundColor = btnColor;
 
@@ -285,7 +293,7 @@ function renderUI(): void {
       "bg-blue-600",
       "hover:bg-blue-500",
       "bg-red-600",
-      "hover:bg-red-500"
+      "hover:bg-red-500",
     );
     teamBBtn.style.backgroundColor = btnColor;
 
@@ -313,9 +321,15 @@ function renderTeamData(side: "A" | "B", team: Team): void {
   if (colorHex) colorHex.textContent = team.color;
   if (scoreInput) scoreInput.value = String(team.score);
 
-  // Render players
+  // Render players - pass the ACTUAL team identifier (A or B) based on which team's data this is
   if (playersContainer) {
-    renderPlayers(side, team.players, playersContainer);
+    // Determine which team this data belongs to
+    let dataTeamSide: "A" | "B" = side;
+    if (currentState) {
+      if (team === currentState.teams.A) dataTeamSide = "A";
+      else if (team === currentState.teams.B) dataTeamSide = "B";
+    }
+    renderPlayers(dataTeamSide, team.players, playersContainer);
   }
 
   // Render logo preview
@@ -399,7 +413,7 @@ function applyThemeColor(side: "A" | "B", color: string): void {
   if (rosterList) {
     // renderPlayers generates elements with class 'player-card'
     const items = rosterList.querySelectorAll(
-      ".player-card"
+      ".player-card",
     ) as NodeListOf<HTMLElement>;
     items.forEach((item) => {
       item.style.borderLeftColor = color;
@@ -411,17 +425,17 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null;
 }
 
 function renderPlayers(
   side: "A" | "B",
   players: Player[],
-  container: HTMLDivElement
+  container: HTMLDivElement,
 ): void {
   const sideClass = side === "A" ? "player-card--a" : "player-card--b";
 
@@ -450,12 +464,15 @@ function renderPlayers(
       
       <!-- Lane/Role -->
       <div class="player-card__role ${player.hero ? "" : "disabled"}" 
-           onclick="handleLaneClick('${side}', ${player.slot}, ${player.hero ? "true" : "false"})"
-           title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")}">
-        ${
-          laneImgPath
-            ? `<img src="${laneImgPath}" alt="${escapeHtml(player.lane || "")}">`
-            : '<i class="ph-duotone ph-map-pin"></i>'
+           onclick="handleLaneClick('${side}', ${player.slot}, ${player.hero ? "true" : "false"
+        })"
+           title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")
+        }">
+        ${laneImgPath
+          ? `<img src="${laneImgPath}" alt="${escapeHtml(
+            player.lane || "",
+          )}">`
+          : '<i class="ph-duotone ph-map-pin"></i>'
         }
       </div>
       
@@ -473,10 +490,11 @@ function renderPlayers(
       <div class="player-card__hero ${player.hero ? "has-hero" : ""}" 
            onclick="openHeroPicker('${side}', ${player.slot})"
            title="${player.hero || "Select Hero"}">
-        ${
-          heroImgPath
-            ? `<img src="${heroImgPath}" alt="${escapeHtml(player.hero || "")}">`
-            : '<i class="ph-duotone ph-game-controller"></i>'
+        ${heroImgPath
+          ? `<img src="${heroImgPath}" alt="${escapeHtml(
+            player.hero || "",
+          )}">`
+          : '<i class="ph-duotone ph-game-controller"></i>'
         }
       </div>
       
@@ -531,22 +549,18 @@ async function saveTeam(side: "A" | "B"): Promise<void> {
 async function adjustScore(side: "A" | "B", delta: number): Promise<void> {
   if (!currentState) return;
 
-  // When swapped, left panel (A) contains Team B data, right panel (B) contains Team A data
-  const swapped = currentState.swapped || false;
-  const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
-
-  const team = currentState.teams[actualSide];
+  const team = currentState.teams[side];
   const newScore = Math.max(0, team.score + delta);
 
   const success = await postAPI("/api/team/update", {
-    side: actualSide,
+    side,
     score: newScore,
   });
 
   if (success) {
-    console.log(`✅ Score ${actualSide} updated: ${newScore} (panel ${side})`);
+    console.log(`✅ Score ${side} updated: ${newScore}`);
   } else {
-    console.error(`❌ Failed to update score for Team ${actualSide}`);
+    console.error(`❌ Failed to update score for Team ${side}`);
   }
 }
 
@@ -561,7 +575,8 @@ async function swapSides(): Promise<void> {
       const result = await response.json();
       updateSwapUI(result.swapped);
       console.log(
-        `✅ Sides swapped: ${result.swapped ? "Team A → Right, Team B → Left" : "Normal"}`
+        `✅ Sides swapped: ${result.swapped ? "Team A → Right, Team B → Left" : "Normal"
+        }`,
       );
     } else {
       console.error("❌ Swap failed");
@@ -602,7 +617,7 @@ function previewTransitionLogo(input: HTMLInputElement): void {
 
   transitionLogoFile = file;
   const img = document.getElementById(
-    "transition-logo-img"
+    "transition-logo-img",
   ) as HTMLImageElement;
   const placeholder = document.getElementById("transition-logo-placeholder");
   const status = document.getElementById("transition-logo-status");
@@ -676,13 +691,13 @@ async function uploadTransitionLogo(): Promise<void> {
 
 // Combined function: select and upload in one step
 async function uploadTransitionLogoFromInput(
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
 
   const img = document.getElementById(
-    "transition-logo-img"
+    "transition-logo-img",
   ) as HTMLImageElement;
   const placeholder = document.getElementById("transition-logo-placeholder");
   const status = document.getElementById("transition-logo-status");
@@ -732,10 +747,10 @@ async function loadTransitionLogo(): Promise<void> {
       const result = await response.json();
       if (result.path) {
         const img = document.getElementById(
-          "transition-logo-img"
+          "transition-logo-img",
         ) as HTMLImageElement;
         const placeholder = document.getElementById(
-          "transition-logo-placeholder"
+          "transition-logo-placeholder",
         );
         if (img && placeholder) {
           img.src = result.path;
@@ -753,39 +768,44 @@ async function loadTransitionLogo(): Promise<void> {
 // Lower Third Functions
 // ==========================================
 
-// Update Lower Third settings
+// Update Lower Third settings (simplified)
 async function updateLowerThird(): Promise<void> {
-  const enabled = (
-    document.getElementById("lower-third-enabled") as HTMLInputElement
-  )?.checked;
   const title =
     (document.getElementById("lower-third-title") as HTMLInputElement)?.value ||
     "";
 
-  const slots = [1, 2, 3].map((id) => ({
-    id,
-    enabled:
-      (document.getElementById(`slot-${id}-enabled`) as HTMLInputElement)
-        ?.checked ?? true,
-    type: "text" as const,
-    logoPath: "",
-    text:
-      (document.getElementById(`slot-${id}-text`) as HTMLInputElement)?.value ||
-      "",
-    label:
-      (document.getElementById(`slot-${id}-text`) as HTMLInputElement)?.value ||
-      "",
-  }));
+  const slots = [1, 2, 3].map((id) => {
+    const textInput = document.getElementById(
+      `slot-${id}-text`,
+    ) as HTMLInputElement;
+    const text = textInput?.value || "";
+
+    return {
+      id,
+      enabled: text.trim() !== "", // Enable if has text
+      type: "logo", // Always logo type now
+      logoPath: "", // Will be set by logo upload
+      text: text,
+      label: text,
+    };
+  });
 
   try {
     const response = await fetch(`${API_BASE}/api/lower-third`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled, title, slots }),
+      body: JSON.stringify({ enabled: true, title, slots }),
     });
 
     if (response.ok) {
       console.log("✅ Lower Third updated");
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Lower Third Saved",
+          "Settings updated successfully",
+          "success",
+        );
+      }
     } else {
       console.error("❌ Failed to update Lower Third");
     }
@@ -794,13 +814,44 @@ async function updateLowerThird(): Promise<void> {
   }
 }
 
-// Upload logo for specific slot
+// Alias for saveLowerThird
+const saveLowerThird = updateLowerThird;
+
+// Clear a specific slot
+function clearSlot(slotId: number): void {
+  const textInput = document.getElementById(
+    `slot-${slotId}-text`,
+  ) as HTMLInputElement;
+  const logoPreview = document.getElementById(`slot-${slotId}-logo-preview`);
+
+  if (textInput) textInput.value = "";
+  if (logoPreview) {
+    logoPreview.style.backgroundImage = "";
+    logoPreview.innerHTML =
+      '<i class="ph-duotone ph-image" style="font-size: 16px; color: var(--color-text-tertiary);"></i>';
+  }
+
+  console.log(`🗑️ Slot ${slotId} cleared`);
+}
+
+// Upload logo for specific slot (with preview)
 async function uploadSlotLogo(
   slotId: number,
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
+
+  // Show preview immediately
+  const logoPreview = document.getElementById(`slot-${slotId}-logo-preview`);
+  if (logoPreview) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      logoPreview.style.backgroundImage = `url('${e.target?.result}')`;
+      logoPreview.innerHTML = ""; // Remove placeholder icon
+    };
+    reader.readAsDataURL(file);
+  }
 
   const formData = new FormData();
   formData.append("logo", file);
@@ -811,11 +862,18 @@ async function uploadSlotLogo(
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
 
     if (response.ok) {
       console.log(`✅ Slot ${slotId} logo uploaded`);
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Logo Uploaded",
+          `Slot ${slotId} logo saved`,
+          "success",
+        );
+      }
     } else {
       console.error(`❌ Failed to upload slot ${slotId} logo`);
     }
@@ -824,36 +882,43 @@ async function uploadSlotLogo(
   }
 }
 
-// Load Lower Third state on page load
+// Load Lower Third state on page load (simplified)
 async function loadLowerThird(): Promise<void> {
   try {
     const response = await fetch(`${API_BASE}/api/lower-third`);
     if (response.ok) {
       const state = await response.json();
 
-      // Update UI from state
-      const enabledEl = document.getElementById(
-        "lower-third-enabled"
-      ) as HTMLInputElement;
+      // Update title
       const titleEl = document.getElementById(
-        "lower-third-title"
+        "lower-third-title",
       ) as HTMLInputElement;
-
-      if (enabledEl) enabledEl.checked = state.enabled;
       if (titleEl) titleEl.value = state.title || "";
 
+      // Update slots
       state.slots?.forEach(
-        (slot: { id: number; enabled: boolean; text: string }) => {
-          const slotEnabled = document.getElementById(
-            `slot-${slot.id}-enabled`
-          ) as HTMLInputElement;
+        (slot: {
+          id: number;
+          enabled: boolean;
+          type: string;
+          text: string;
+          logoPath?: string;
+        }) => {
           const slotText = document.getElementById(
-            `slot-${slot.id}-text`
+            `slot-${slot.id}-text`,
           ) as HTMLInputElement;
+          const logoPreview = document.getElementById(
+            `slot-${slot.id}-logo-preview`,
+          );
 
-          if (slotEnabled) slotEnabled.checked = slot.enabled;
           if (slotText) slotText.value = slot.text || "";
-        }
+
+          // Show logo preview if exists
+          if (logoPreview && slot.logoPath) {
+            logoPreview.style.backgroundImage = `url('${slot.logoPath}')`;
+            logoPreview.innerHTML = "";
+          }
+        },
       );
     }
   } catch (err) {
@@ -880,23 +945,27 @@ let currentPage: string = "scoreboard";
 function switchPage(page: string): void {
   currentPage = page;
 
-  // Hide all pages by removing 'active'
-  const pageScoreboard = document.getElementById("page-scoreboard");
-  const pageBroadcast = document.getElementById("page-broadcast");
+  // Hide ALL pages by removing 'active' class
+  const allPages = ["scoreboard", "broadcast", "showinfo", "bracket", "fonts"];
+  allPages.forEach((p) => {
+    const pageEl = document.getElementById(`page-${p}`);
+    const navEl = document.getElementById(`nav-${p}`);
+    if (pageEl) {
+      pageEl.classList.remove("active");
+      pageEl.style.display = "none"; // Force hide
+    }
+    if (navEl) navEl.classList.remove("active");
+  });
 
-  if (pageScoreboard) pageScoreboard.classList.remove("active");
-  if (pageBroadcast) pageBroadcast.classList.remove("active");
-
-  // Show selected page by adding 'active'
+  // Show selected page
   const targetPage = document.getElementById(`page-${page}`);
-  if (targetPage) targetPage.classList.add("active");
+  const targetNav = document.getElementById(`nav-${page}`);
 
-  // Update nav items active state
-  const navScoreboard = document.getElementById("nav-scoreboard");
-  const navBroadcast = document.getElementById("nav-broadcast");
-
-  navScoreboard?.classList.toggle("active", page === "scoreboard");
-  navBroadcast?.classList.toggle("active", page === "broadcast");
+  if (targetPage) {
+    targetPage.classList.add("active");
+    targetPage.style.display = ""; // Clear inline style to let CSS take over
+  }
+  if (targetNav) targetNav.classList.add("active");
 
   // Close the menu after switching
   const menu = document.getElementById("settings-menu");
@@ -1118,10 +1187,10 @@ function loadPanelData(panelType: string): void {
 
     setTimeout(() => {
       const eventInput = document.getElementById(
-        "event-name"
+        "event-name",
       ) as HTMLInputElement;
       const colorInput = document.getElementById(
-        "transition-color"
+        "transition-color",
       ) as HTMLInputElement;
       const colorHex = document.getElementById("transition-color-hex");
       const altInput = document.getElementById("alt-color") as HTMLInputElement;
@@ -1181,7 +1250,7 @@ function updateSwapUI(swapped: boolean): void {
 async function updatePlayer(
   side: "A" | "B",
   slot: number,
-  name: string
+  name: string,
 ): Promise<void> {
   const success = await postAPI("/api/player/update", {
     side,
@@ -1198,7 +1267,7 @@ async function updatePlayer(
 
 async function handleLogoSelect(
   side: "A" | "B",
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
@@ -1404,7 +1473,7 @@ function drawCrop(): void {
     cropOffsetX,
     cropOffsetY,
     cropImage.width * cropScale,
-    cropImage.height * cropScale
+    cropImage.height * cropScale,
   );
 
   // Draw Overlay: Semi-transparent dark outside the circle
@@ -1421,7 +1490,7 @@ function drawCrop(): void {
     cropCanvas.width / 2,
     0,
     Math.PI * 2,
-    true
+    true,
   );
   cropCtx.fill();
 
@@ -1434,7 +1503,7 @@ function drawCrop(): void {
     cropCanvas.height / 2,
     cropCanvas.width / 2 - 2,
     0,
-    Math.PI * 2
+    Math.PI * 2,
   );
   cropCtx.stroke();
 }
@@ -1512,7 +1581,7 @@ async function pickScreenColor(side: "A" | "B"): Promise<void> {
     }
   } else {
     alert(
-      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)"
+      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)",
     );
   }
 }
@@ -1538,7 +1607,7 @@ async function pickLogoColor(side: "A" | "B"): Promise<void> {
 function openPixelPickerModal(
   actualSide: "A" | "B",
   panelSide: "A" | "B",
-  imageSrc: string
+  imageSrc: string,
 ): void {
   activePickerSide = actualSide;
   activePickerPanelSide = panelSide;
@@ -1709,7 +1778,7 @@ function rgbToHex(r: number, g: number, b: number): string {
 function applyColor(
   actualSide: "A" | "B",
   color: string,
-  panelSide?: "A" | "B"
+  panelSide?: "A" | "B",
 ): void {
   // panelSide is the UI panel, actualSide is the real team (after swap adjustment)
   // If panelSide not provided, assume no swap adjustment needed for UI
@@ -1728,7 +1797,7 @@ function applyColor(
   }
 
   console.log(
-    `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`
+    `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`,
   );
 }
 
@@ -2126,7 +2195,7 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
                     width: 100%;
                 ">${hero}</span>
             </button>
-        `
+        `,
       )
       .join("");
 
@@ -2198,7 +2267,7 @@ async function selectHero(heroName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`
+      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`,
     );
   } else {
     console.error("❌ Failed to update hero");
@@ -2318,13 +2387,16 @@ function openLanePicker(side: "A" | "B", slot: number): void {
             <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
                  style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #1a1a1a;" 
                  alt="${lane.name}"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon}%3C/text%3E%3C/svg%3E';">
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon
+      }%3C/text%3E%3C/svg%3E';">
             <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--color-text-primary, #f5f5f7); font-size: 0.95rem;">${lane.label}</div>
-                <div style="font-size: 0.8rem; color: var(--color-text-tertiary, #636366);">${lane.thaiName}</div>
+                <div style="font-weight: 600; color: var(--color-text-primary, #f5f5f7); font-size: 0.95rem;">${lane.label
+      }</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-tertiary, #636366);">${lane.thaiName
+      }</div>
             </div>
         </button>
-    `
+    `,
   ).join("");
 
   // Close button event
@@ -2378,7 +2450,8 @@ async function selectLane(laneName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `✅ Lane ${laneName || "cleared"} for Team ${lanePickerSide} Player ${lanePickerSlot}`
+      `✅ Lane ${laneName || "cleared"
+      } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
     );
   } else {
     console.error("❌ Failed to update lane");
@@ -2396,7 +2469,7 @@ async function selectLane(laneName: string): Promise<void> {
 function handleLaneClick(
   side: "A" | "B",
   slot: number,
-  hasHero: boolean
+  hasHero: boolean,
 ): void {
   if (hasHero) {
     openLanePicker(side, slot);
@@ -2406,7 +2479,7 @@ function handleLaneClick(
       (window as any).showNotification(
         "กรุณาเลือกตัวละครก่อน",
         "เลือก Hero ก่อนถึงจะเลือกตำแหน่งเลนได้",
-        "warning"
+        "warning",
       );
     }
   }
@@ -2446,10 +2519,10 @@ async function fetchTemplates(): Promise<void> {
 
 function renderTemplateDropdowns(): void {
   const teamASelect = document.getElementById(
-    "teamA-template"
+    "teamA-template",
   ) as HTMLSelectElement;
   const teamBSelect = document.getElementById(
-    "teamB-template"
+    "teamB-template",
   ) as HTMLSelectElement;
 
   const optionsHtml = templates
@@ -2605,14 +2678,10 @@ function openTemplateManager(): void {
         overflow-y: auto;
     `;
   createSection.innerHTML = `
-        <div class="flex items-center gap-2">
-<i class="ph ph-grid-four" style="font-size: 22px; color: var(--color-primary);"></i>
         <h3>Create New Template</h3>
-  
-        </div>
         <div style="margin-bottom: 12px;">
-            <label style="font-size: 12px; display: block; margin-bottom: 4px;">TEAM NAME *</label>
-            <input type="text" id="tpl-name" placeholder="e.g. T1, LOUD, Gen.G">
+            <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">TEAM NAME *</label>
+            <input type="text" id="tpl-name" placeholder="e.g. T1, LOUD, Gen.G" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white;">
         </div>
         <div style="display: flex; gap: 10px; margin-bottom: 12px;">
             <div style="flex: 1;">
@@ -2621,19 +2690,19 @@ function openTemplateManager(): void {
             </div>
             <div style="flex: 2;">
                 <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">COLOR CODE</label>
-                <input type="text" id="tpl-color-text" value="#3b82f6">
+                <input type="text" id="tpl-color-text" value="#3b82f6" style="width: 100%; padding: 10px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white; font-family: monospace;">
             </div>
         </div>
         <div style="margin-bottom: 12px;">
             <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">LOGO</label>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div id="tpl-logo-preview" style="width: 48px; height: 48px; background: var(--color-bg-secondary); border-radius: 8px; border: 1px dashed #374151; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <div id="tpl-logo-preview" style="width: 48px; height: 48px; background: #1f2937; border-radius: 8px; border: 1px dashed #374151; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                     <span style="color: #6b7280; font-size: 10px;">No Logo</span>
                 </div>
                 <div style="flex: 1;">
                     <input type="file" id="tpl-logo-input" accept="image/*" style="display: none;" onchange="handleTemplateLogoSelect(this)">
-                    <button type="button" onclick="document.getElementById('tpl-logo-input').click()" class="choose-btn">
-                        <i class="ph ph-selection-all"></i> Choose Logo
+                    <button type="button" onclick="document.getElementById('tpl-logo-input').click()" style="width: 100%; padding: 8px; background: #374151; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        📁 Choose Logo
                     </button>
                 </div>
             </div>
@@ -2641,15 +2710,15 @@ function openTemplateManager(): void {
         <div style="margin-bottom: 12px;">
             <label style="color: #9ca3af; font-size: 12px; display: block; margin-bottom: 4px;">PLAYERS</label>
             <div style="display: flex; flex-direction: column; gap: 6px;">
-                <input type="text" id="tpl-p1" placeholder="Player 1" style="width: 100%; padding: 8px; ; border-radius: 6px; font-size: 13px;">
-                <input type="text" id="tpl-p3" placeholder="Player 3" style="width: 100%; padding: 8px; ; border-radius: 6px; font-size: 13px;">
-                <input type="text" id="tpl-p4" placeholder="Player 4" style="width: 100%; padding: 8px; ; border-radius: 6px; font-size: 13px;">
-                <input type="text" id="tpl-p5" placeholder="Player 5" style="width: 100%; padding: 8px; ; border-radius: 6px; font-size: 13px;">
-                <input type="text" id="tpl-p2" placeholder="Player 2" style="width: 100%; padding: 8px; ; border-radius: 6px; font-size: 13px;">
+                <input type="text" id="tpl-p1" placeholder="Player 1" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
+                <input type="text" id="tpl-p2" placeholder="Player 2" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
+                <input type="text" id="tpl-p3" placeholder="Player 3" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
+                <input type="text" id="tpl-p4" placeholder="Player 4" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
+                <input type="text" id="tpl-p5" placeholder="Player 5" style="width: 100%; padding: 8px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: white; font-size: 13px;">
             </div>
         </div>
-        <button id="create-template-btn">
-            Create Template
+        <button id="create-template-btn" style="width: 100%; padding: 12px; background: #a855f7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;">
+            💾 Create Template
         </button>
     `;
 
@@ -2663,39 +2732,33 @@ function openTemplateManager(): void {
         </div>
 
         <div id="template-list" style="display: flex; flex-direction: column; gap: 8px;">
-            ${
-              templates.length === 0
-                ? '<p style="color: #6b7280; text-align: center; padding: 20px;">No templates yet</p>'
-                : templates
-                    .map(
-                      (t) => `
+            ${templates.length === 0
+      ? '<p style="color: #6b7280; text-align: center; padding: 20px;">No templates yet</p>'
+      : templates
+        .map(
+          (t) => `
                 <div class="team-select">
-                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;" onclick="loadTemplateToForm('${
-                      t.id
-                    }')">
-                        <div style="width: 16px; height: 16px; border-radius: 4px; background: ${
-                          t.color
-                        };"></div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer;" onclick="loadTemplateToForm('${t.id
+            }')">
+                        <div style="width: 16px; height: 16px; border-radius: 4px; background: ${t.color
+            };"></div>
                         <div>
                             <div>${escapeHtml(t.name)}</div>
-                            <div style="color: #6b7280; font-size: 11px;">${
-                              t.players?.length || 0
-                            } players</div>
+                            <div style="color: #6b7280; font-size: 11px;">${t.players?.length || 0
+            } players</div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <button onclick="event.stopPropagation(); loadTemplateToForm('${
-                          t.id
-                        }')"</button>
-                        <button class="del-btn" onclick="event.stopPropagation(); deleteTemplate('${
-                          t.id
-                        }')"><i class="ph ph-backspace"></i></button>
+                        <button onclick="event.stopPropagation(); loadTemplateToForm('${t.id
+            }')"</button>
+                        <button class="del-btn" onclick="event.stopPropagation(); deleteTemplate('${t.id
+            }')"><i class="ph ph-backspace"></i></button>
                     </div>
                 </div>
-            `
-                    )
-                    .join("")
-            }
+            `,
+        )
+        .join("")
+    }
         </div>
     `;
 
@@ -2717,7 +2780,7 @@ function openTemplateManager(): void {
   // Color sync
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
   const colorText = document.getElementById(
-    "tpl-color-text"
+    "tpl-color-text",
   ) as HTMLInputElement;
   colorInput.oninput = () => {
     colorText.value = colorInput.value;
@@ -2803,15 +2866,26 @@ function deleteTemplate(id: string): void {
   // Create custom confirmation modal
   const confirmOverlay = document.createElement("div");
   confirmOverlay.id = "delete-confirm-overlay";
-  confirmOverlay.classList.add("modal-overlay");
+  confirmOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+    `;
 
   confirmOverlay.innerHTML = `
-        <div class="confirm-delete">
-            <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 16px;"> ยืนยันการลบ</h3>
+        <div style="background: #1f2937; border-radius: 12px; padding: 24px; max-width: 400px; text-align: center; box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);">
+            <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 16px;">⚠️ ยืนยันการลบ</h3>
             <p style="color: white; margin-bottom: 8px;">คุณต้องการลบ Template</p>
             <p style="color: #a855f7; font-weight: bold; font-size: 16px; margin-bottom: 16px;">"${templateName}"</p>
             <p style="color: #6b7280; font-size: 12px; margin-bottom: 24px;">การลบจะไม่สามารถกู้คืนได้</p>
-            <div style="display: flex; gap: 12px; justify-content: end;">
+            <div style="display: flex; gap: 12px; justify-content: center;">
                 <button id="confirm-delete-yes" style="padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🗑️ ลบเลย</button>
                 <button id="confirm-delete-no" style="padding: 10px 24px; background: #374151; color: white; border: none; border-radius: 8px; cursor: pointer;">ยกเลิก</button>
             </div>
@@ -2864,7 +2938,7 @@ function loadTemplateToForm(id: string): void {
   const nameInput = document.getElementById("tpl-name") as HTMLInputElement;
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
   const colorText = document.getElementById(
-    "tpl-color-text"
+    "tpl-color-text",
   ) as HTMLInputElement;
 
   if (nameInput) nameInput.value = template.name;
@@ -2874,7 +2948,7 @@ function loadTemplateToForm(id: string): void {
   // Populate players
   for (let i = 1; i <= 5; i++) {
     const playerInput = document.getElementById(
-      `tpl-p${i}`
+      `tpl-p${i}`,
     ) as HTMLInputElement;
     const player = template.players?.find((p) => p.slot === i);
     if (playerInput) {
@@ -2885,7 +2959,8 @@ function loadTemplateToForm(id: string): void {
   // Update button text to show "Update" instead of "Create"
   const createBtn = document.getElementById("create-template-btn");
   if (createBtn) {
-    createBtn.innerHTML = "Update Template";
+    createBtn.innerHTML = "✏️ Update Template";
+    createBtn.style.background = "#3b82f6";
   }
 
   // Scroll to form (visual feedback)
@@ -2930,28 +3005,34 @@ document.addEventListener("mousedown", (e) => {
 let draggedPlayer: {
   side: string;
   slot: number;
-  mode: "full" | "hero";
+  mode: "full" | "hero" | "lane";
 } | null = null;
 
 function handleDragStart(event: DragEvent): void {
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!card) return;
 
-  // Check if the initial click was within the hero section
+  // Check if the initial click was within the hero or lane section
   const heroSection = dragSourceElement?.closest(".player-card__hero");
+  const laneSection = dragSourceElement?.closest(".player-card__role");
+
+  // Determine drag mode
+  let dragMode: "full" | "hero" | "lane" = "full";
+  if (heroSection) dragMode = "hero";
+  else if (laneSection) dragMode = "lane";
 
   // Debug
   console.log("Drag Start Source:", {
     source: dragSourceElement?.className,
-    isHero: !!heroSection,
+    mode: dragMode,
   });
 
   draggedPlayer = {
     side: card.dataset.side || "A",
     slot: parseInt(card.dataset.slot || "1"),
-    mode: heroSection ? "hero" : "full",
+    mode: dragMode,
   };
 
   card.classList.add("dragging");
@@ -2963,7 +3044,7 @@ function handleDragStart(event: DragEvent): void {
 
 function handleDragEnd(event: DragEvent): void {
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (card) {
     card.classList.remove("dragging");
@@ -2977,7 +3058,7 @@ function handleDragEnd(event: DragEvent): void {
 function handleDragOver(event: DragEvent): void {
   event.preventDefault();
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!card || !draggedPlayer) return;
 
@@ -2990,7 +3071,7 @@ function handleDragOver(event: DragEvent): void {
 async function handleDrop(event: DragEvent): Promise<void> {
   event.preventDefault();
   const targetCard = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!targetCard || !draggedPlayer) return;
 
@@ -3012,7 +3093,7 @@ async function swapPlayers(
   side: "A" | "B",
   slot1: number,
   slot2: number,
-  mode: "full" | "hero" = "full"
+  mode: "full" | "hero" | "lane" = "full",
 ): Promise<void> {
   if (!currentState) return;
 
@@ -3039,7 +3120,27 @@ async function swapPlayers(
       (window as any).showNotification(
         "Heroes Swapped",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
+      );
+    }
+  } else if (mode === "lane") {
+    // Swap ONLY Lanes
+    await postAPI("/api/player/update", {
+      side,
+      slot: slot1,
+      lane: player2.lane || "",
+    });
+    await postAPI("/api/player/update", {
+      side,
+      slot: slot2,
+      lane: player1.lane || "",
+    });
+
+    if ((window as any).showNotification) {
+      (window as any).showNotification(
+        "Lanes Swapped",
+        `Slot ${slot1} ↔ Slot ${slot2}`,
+        "success",
       );
     }
   } else {
@@ -3079,7 +3180,7 @@ async function swapPlayers(
       (window as any).showNotification(
         "Players Reordered",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
       );
     }
   }
@@ -3119,7 +3220,7 @@ async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
       (window as any).showNotification(
         "Captain set",
         `Player ${slot} is now captain`,
-        "success"
+        "success",
       );
     } else {
       (window as any).showNotification("Captain removed", "", "info");
@@ -3164,6 +3265,11 @@ function toggleTheme(): void {
 (window as any).handleLogoSelect = handleLogoSelect;
 (window as any).pickScreenColor = pickScreenColor;
 (window as any).pickLogoColor = pickLogoColor;
+
+// Expose Lower Third / Show Info functions
+(window as any).saveLowerThird = saveLowerThird;
+(window as any).clearSlot = clearSlot;
+(window as any).uploadSlotLogo = uploadSlotLogo;
 
 // ==========================================
 // Initialization
@@ -3211,4 +3317,81 @@ document.addEventListener("DOMContentLoaded", () => {
       menu.classList.remove("active");
     }
   });
+
+  // ==========================================
+  // Show Info / Lower Third File Inputs
+  // ==========================================
+
+  // Transition Logo Upload
+  const transitionLogoInput = document.getElementById(
+    "transition-logo-input",
+  ) as HTMLInputElement;
+  if (transitionLogoInput) {
+    transitionLogoInput.addEventListener("change", async () => {
+      const file = transitionLogoInput.files?.[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      try {
+        const response = await fetch(`${API_BASE}/api/transition/logo`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Update preview
+          const preview = document.getElementById("transition-logo-preview");
+          if (preview && result.path) {
+            preview.style.backgroundImage = `url('${result.path}?t=${Date.now()}')`;
+            preview.innerHTML = ""; // Remove icon
+          }
+          console.log("✅ Transition logo uploaded");
+          if ((window as any).showNotification) {
+            (window as any).showNotification(
+              "Logo Uploaded",
+              "Transition logo updated",
+              "success",
+            );
+          }
+        }
+      } catch (err) {
+        console.error("❌ Transition logo upload error:", err);
+      }
+    });
+  }
+
+  // Slot Logo Uploads
+  [1, 2, 3].forEach((slotId) => {
+    const input = document.getElementById(
+      `slot-${slotId}-logo-input`,
+    ) as HTMLInputElement;
+    if (input) {
+      input.addEventListener("change", () => uploadSlotLogo(slotId, input));
+    }
+  });
+
+  // Load Lower Third state on init
+  loadLowerThird();
+
+  // Load Transition Logo preview
+  (async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/transition/logo`);
+      if (response.ok) {
+        const result = await response.json();
+        if (result.path) {
+          const preview = document.getElementById("transition-logo-preview");
+          if (preview) {
+            preview.style.backgroundImage = `url('${result.path}?t=${Date.now()}')`;
+            preview.innerHTML = "";
+          }
+        }
+      }
+    } catch (e) {
+      console.log("No transition logo found");
+    }
+  })();
 });

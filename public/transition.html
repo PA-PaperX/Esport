@@ -214,7 +214,7 @@
 
       // WebSocket connection (optional - for remote triggering)
       function connectWebSocket() {
-        ws = new WebSocket(`ws://${window.location.host}`);
+        ws = new WebSocket(`ws://localhost:3000/ws`);
 
         ws.onopen = () => {
           console.log("✅ Connected to server");
