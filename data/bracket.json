@@ -1,29 +1,29 @@
 {
-  "id": "bracket_1767961531533",
+  "id": "bracket_1768342026647",
   "name": "adadadad",
   "type": "single",
   "teams": [
     {
       "id": "team_1",
-      "name": "a",
+      "name": "kai",
       "logo": "",
       "seed": 1
     },
     {
       "id": "team_2",
-      "name": "fsafawf",
+      "name": "ez",
       "logo": "",
       "seed": 2
     },
     {
       "id": "team_3",
-      "name": "kai",
+      "name": "fsafawf",
       "logo": "",
       "seed": 3
     },
     {
       "id": "team_4",
-      "name": "ez",
+      "name": "a",
       "logo": "",
       "seed": 4
     }
@@ -36,19 +36,19 @@
       "position": 1,
       "teamA": {
         "id": "team_1",
-        "name": "a",
+        "name": "kai",
         "logo": "",
         "seed": 1
       },
       "teamB": {
         "id": "team_2",
-        "name": "fsafawf",
+        "name": "ez",
         "logo": "",
         "seed": 2
       },
-      "scoreA": 0,
-      "scoreB": 0,
-      "winner": null,
+      "scoreA": 2,
+      "scoreB": 1,
+      "winner": "A",
       "isBye": false,
       "nextMatchId": "match_r2_1",
       "nextSlot": "A"
@@ -60,19 +60,19 @@
       "position": 2,
       "teamA": {
         "id": "team_3",
-        "name": "kai",
+        "name": "fsafawf",
         "logo": "",
         "seed": 3
       },
       "teamB": {
         "id": "team_4",
-        "name": "ez",
+        "name": "a",
         "logo": "",
         "seed": 4
       },
-      "scoreA": 0,
+      "scoreA": 3,
       "scoreB": 0,
-      "winner": null,
+      "winner": "A",
       "isBye": false,
       "nextMatchId": "match_r2_1",
       "nextSlot": "B"
@@ -82,10 +82,20 @@
       "round": 2,
       "roundName": "Grand Final",
       "position": 1,
-      "teamA": null,
-      "teamB": null,
-      "scoreA": 0,
-      "scoreB": 0,
+      "teamA": {
+        "id": "team_1",
+        "name": "kai",
+        "logo": "",
+        "seed": 1
+      },
+      "teamB": {
+        "id": "team_3",
+        "name": "fsafawf",
+        "logo": "",
+        "seed": 3
+      },
+      "scoreA": 2,
+      "scoreB": 1,
       "winner": null,
       "isBye": false,
       "nextMatchId": null,
@@ -93,6 +103,6 @@
     }
   ],
   "rounds": 2,
-  "createdAt": "2026-01-09T12:25:31.533Z",
-  "updatedAt": "2026-01-09T12:25:31.533Z"
+  "createdAt": "2026-01-13T22:07:06.647Z",
+  "updatedAt": "2026-01-13T23:45:40.071Z"
 }

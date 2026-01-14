@@ -1,331 +1,412 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
-    <title>Transition Overlay - Esport Control</title>
-    <style>
-      :root {
-        --theme-color: #202224;
-        --alt-color: #ffffff;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080" />
+  <title>Transition Overlay - Esport Control</title>
+  <style>
+    :root {
+      --theme-color: #202224;
+      --alt-color: #ffffff;
+      --accent-color: #667eea;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0px auto;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    div {
+      -webkit-animation-timing-function: ease-out;
+      animation-timing-function: ease-out;
+    }
+
+    /* Enhanced Stinger wipe animation - faster */
+    @keyframes stingerwipe {
+      0% {
+        clip-path: polygon(0 0, 100% 0%, 100% 100%, 0% 100%);
+        transform: translateX(0) skewX(-15deg);
       }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      100% {
+        clip-path: polygon(0% 0, 50% 0, 50% 100%, 0% 100%);
+        transform: translateX(-50%) skewX(-15deg);
       }
+    }
 
-      body {
-        margin: 0px auto;
-        overflow: hidden;
-        background: transparent;
-      }
-
-      div {
-        -webkit-animation-timing-function: ease-out;
-      }
-
-      /* Stinger wipe animation */
-      @keyframes stingerwipe {
-        0% {
-          clip-path: polygon(0 0, 100% 0%, 100% 100%, 0% 100%);
-          transform: translateX(0) skewX(-15deg);
-        }
-
-        100% {
-          clip-path: polygon(0% 0, 50% 0, 50% 100%, 0% 100%);
-          transform: translateX(-50%) skewX(-15deg);
-        }
-      }
-
-      /* Logo animation: slide in, pause, slide out */
-      @keyframes slideease {
-        0% {
-          transform: translateX(1000px) skewX(15deg);
-          opacity: 0;
-        }
-
-        /* Slide in */
-        15% {
-          transform: translateX(0px) skewX(15deg);
-          opacity: 1;
-        }
-
-        /* Hold center - visible for about 1.5 seconds */
-        70% {
-          transform: translateX(0px) skewX(15deg);
-          opacity: 1;
-        }
-
-        /* Slide out */
-        100% {
-          transform: translateX(-1200px) skewX(15deg);
-          opacity: 0;
-        }
-      }
-
-      /* Main stinger with logo */
-      div.stingerlogo {
-        position: absolute;
-        top: 0px;
-        left: -150px;
-        width: 2220px;
-        height: 1080px;
-        vertical-align: middle;
-        background-color: var(--theme-color);
-        transform: skewX(-15deg);
+    /* Smoother slide animation with bounce */
+    @keyframes slideease {
+      0% {
+        transform: translateX(1000px) skewX(15deg);
         opacity: 0;
-        pointer-events: none;
       }
 
-      div.stingerlogo.active {
+      50% {
+        transform: translateX(20px) skewX(15deg);
         opacity: 1;
-        animation: stingerwipe 0.3s ease-out forwards;
-        animation-delay: 2s;
-        /* Start wipe after logo holds */
       }
 
-      div.stingerlogo span.logo {
-        width: 1120px;
-        height: 680px;
-        position: absolute;
-        top: 200px;
-        left: 550px;
-        background-position: center;
-        background-size: contain;
-        background-repeat: no-repeat;
-        transform: skewX(15deg) translateX(1000px);
-        -webkit-animation-timing-function: ease-out;
-        animation-timing-function: ease-out;
+      100% {
+        transform: translateX(0px) skewX(15deg);
+        opacity: 1;
+      }
+    }
+
+    /* Glow pulse effect */
+    @keyframes glowPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 60px rgba(102, 126, 234, 0.3);
       }
 
-      div.stingerlogo.active span.logo {
-        animation: slideease 2.5s ease-out forwards;
+      50% {
+        box-shadow: 0 0 120px rgba(102, 126, 234, 0.6);
+      }
+    }
+
+    /* Accent line animation */
+    @keyframes accentSlide {
+      0% {
+        transform: translateX(2200px) skewX(-15deg);
       }
 
-      /* Alt color bar */
-      div.altcolor {
-        position: absolute;
-        top: 0px;
-        left: -150px;
-        width: 2220px;
-        height: 1080px;
-        vertical-align: middle;
-        background-color: var(--alt-color);
-        transform: skewX(-15deg);
+      100% {
+        transform: translateX(-200px) skewX(-15deg);
+      }
+    }
+
+    /* Particle float */
+    @keyframes particleFloat {
+      0% {
+        transform: translateY(0) translateX(0);
         opacity: 0;
-        pointer-events: none;
       }
 
-      div.altcolor.active {
+      20% {
         opacity: 1;
-        animation: stingerwipe 0.35s ease-out forwards;
-        animation-delay: 1.05s;
       }
 
-      /* Status indicator */
-      .status {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 8px 16px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border-radius: 20px;
-        font-size: 12px;
-        z-index: 1000;
-        font-family: "Segoe UI", sans-serif;
+      100% {
+        transform: translateY(-100px) translateX(50px);
+        opacity: 0;
       }
+    }
 
-      .status .dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 8px;
-        animation: pulse 2s infinite;
-      }
+    /* Main stinger with logo */
+    div.stingerlogo {
+      position: absolute;
+      top: 0px;
+      left: -150px;
+      width: 2220px;
+      height: 1080px;
+      vertical-align: middle;
+      background: linear-gradient(135deg, var(--theme-color) 0%, #0a0a0a 50%, var(--theme-color) 100%);
+      transform: skewX(-15deg);
+      opacity: 0;
+      pointer-events: none;
+    }
 
-      .status .dot.connected {
-        background: #10b981;
-      }
+    div.stingerlogo.active {
+      opacity: 1;
+      animation: stingerwipe 0.3s ease-out forwards;
+      animation-delay: 1s;
+    }
 
-      .status .dot.disconnected {
-        background: #ef4444;
-      }
+    /* Gradient overlay for depth */
+    div.stingerlogo::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.5) 100%);
+      pointer-events: none;
+    }
 
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
+    div.stingerlogo span.logo {
+      width: 1120px;
+      height: 680px;
+      position: absolute;
+      top: 200px;
+      left: 550px;
+      background-position: center;
+      background-size: contain;
+      background-repeat: no-repeat;
+      transform: skewX(15deg) translateX(1000px);
+      -webkit-animation-timing-function: cubic-bezier(0, 0, 0, 1);
+      animation-timing-function: cubic-bezier(0, 0, 0, 1);
+      filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
+    }
 
-        50% {
-          opacity: 0.5;
-        }
-      }
+    div.stingerlogo.active span.logo {
+      animation: slideease 1s cubic-bezier(0, 0, 0, 1) forwards;
+    }
 
-      /* Debug controls */
-      .debug-controls {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1000;
-        display: flex;
-        gap: 10px;
-      }
+    /* Alt color bar with gradient */
+    div.altcolor {
+      position: absolute;
+      top: 0px;
+      left: -150px;
+      width: 2220px;
+      height: 1080px;
+      vertical-align: middle;
+      background: linear-gradient(135deg, var(--alt-color) 0%, #f0f0f0 50%, var(--alt-color) 100%);
+      transform: skewX(-15deg);
+      opacity: 0;
+      pointer-events: none;
+    }
 
-      .debug-btn {
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        transition: all 0.2s;
-        font-family: "Segoe UI", sans-serif;
-      }
+    div.altcolor.active {
+      opacity: 1;
+      animation: stingerwipe 0.35s ease-out forwards;
+      animation-delay: 1.05s;
+    }
 
-      .debug-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-      }
-    </style>
-  </head>
+    /* Particles container - visible */
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+    }
 
-  <body>
-    <div class="altcolor" id="altcolor"></div>
-    <div class="stingerlogo" id="stingerlogo">
-      <span class="logo" id="logo"></span>
-    </div>
+    .particles.active {
+      opacity: 1;
+    }
 
-    <script>
-      // Elements
-      const stingerlogo = document.getElementById("stingerlogo");
-      const altcolor = document.getElementById("altcolor");
-      const logo = document.getElementById("logo");
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      opacity: 0;
+    }
 
-      // State
-      let ws = null;
+    .particles.active .particle {
+      animation: particleFloat 1.5s ease-out forwards;
+    }
 
-      // WebSocket connection (optional - for remote triggering)
-      function connectWebSocket() {
-        ws = new WebSocket(`ws://localhost:3000/ws`);
+    .particle:nth-child(1) {
+      left: 20%;
+      top: 60%;
+      animation-delay: 0.1s;
+    }
 
-        ws.onopen = () => {
-          console.log("✅ Connected to server");
-        };
+    .particle:nth-child(2) {
+      left: 35%;
+      top: 70%;
+      animation-delay: 0.2s;
+    }
 
-        ws.onmessage = (event) => {
-          try {
-            const msg = JSON.parse(event.data);
+    .particle:nth-child(3) {
+      left: 50%;
+      top: 55%;
+      animation-delay: 0.15s;
+    }
 
-            if (msg.type === "TRANSITION_TRIGGER") {
-              playTransition(msg.data);
-            }
+    .particle:nth-child(4) {
+      left: 65%;
+      top: 65%;
+      animation-delay: 0.25s;
+    }
 
-            if (msg.type === "TRANSITION_CONFIG" && msg.data) {
-              if (msg.data.themeColor) {
-                document.documentElement.style.setProperty(
-                  "--theme-color",
-                  msg.data.themeColor,
-                );
-              }
-              if (msg.data.altColor) {
-                document.documentElement.style.setProperty(
-                  "--alt-color",
-                  msg.data.altColor,
-                );
-              }
-              if (msg.data.logoUrl) {
-                logo.style.backgroundImage = `url('${msg.data.logoUrl}')`;
-              }
-            }
-          } catch (e) {
-            console.error("Message parse error:", e);
-          }
-        };
+    .particle:nth-child(5) {
+      left: 80%;
+      top: 75%;
+      animation-delay: 0.3s;
+    }
 
-        ws.onclose = () => {
-          console.log("❌ Disconnected");
-          setTimeout(connectWebSocket, 5000);
-        };
+    .particle:nth-child(6) {
+      left: 25%;
+      top: 80%;
+      animation-delay: 0.35s;
+    }
 
-        ws.onerror = () => ws?.close();
-      }
+    .particle:nth-child(7) {
+      left: 45%;
+      top: 85%;
+      animation-delay: 0.4s;
+    }
 
-      // Play transition animation
-      function playTransition(config = {}) {
-        console.log("🎬 Playing transition...");
+    .particle:nth-child(8) {
+      left: 70%;
+      top: 50%;
+      animation-delay: 0.45s;
+    }
+  </style>
+</head>
 
-        // Apply config if provided
-        if (config.themeColor) {
-          document.documentElement.style.setProperty(
-            "--theme-color",
-            config.themeColor,
-          );
-        }
-        if (config.altColor) {
-          document.documentElement.style.setProperty(
-            "--alt-color",
-            config.altColor,
-          );
-        }
-        if (config.logoUrl) {
-          logo.style.backgroundImage = `url('${config.logoUrl}')`;
-        }
+<body>
+  <div class="altcolor" id="altcolor"></div>
+  <div class="stingerlogo" id="stingerlogo">
+    <span class="logo" id="logo"></span>
+  </div>
+  <div class="particles" id="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
 
-        // Reset animations
-        stingerlogo.classList.remove("active");
-        altcolor.classList.remove("active");
+  <script>
+    // Elements
+    const stingerlogo = document.getElementById("stingerlogo");
+    const altcolor = document.getElementById("altcolor");
+    const logo = document.getElementById("logo");
+    const particles = document.getElementById("particles");
 
-        // Force reflow
-        void stingerlogo.offsetWidth;
-        void altcolor.offsetWidth;
+    // State
+    let ws = null;
 
-        // Start animations
-        stingerlogo.classList.add("active");
-        altcolor.classList.add("active");
+    // WebSocket connection (optional - for remote triggering)
+    function connectWebSocket() {
+      ws = new WebSocket(`ws://${window.location.host}/ws`);
 
-        // Clean up after animation (2.5s logo + 0.3s wipe + buffer)
-        setTimeout(() => {
-          stingerlogo.classList.remove("active");
-          altcolor.classList.remove("active");
-        }, 3000);
-      }
+      ws.onopen = () => {
+        console.log("✅ Connected to server");
+      };
 
-      // Initialize - AUTO-PLAY animation for OBS Stinger Transition
-      document.addEventListener("DOMContentLoaded", async () => {
-        // Load uploaded logo from server
+      ws.onmessage = (event) => {
         try {
-          const response = await fetch("/api/transition/logo");
-          if (response.ok) {
-            const result = await response.json();
-            if (result.path) {
-              const logoElement = document.getElementById("logo");
-              if (logoElement) {
-                logoElement.style.backgroundImage = `url('${result.path}?t=${Date.now()}')`;
-                console.log("✅ Transition logo loaded:", result.path);
-              }
+          const msg = JSON.parse(event.data);
+
+          if (msg.type === "TRANSITION_TRIGGER") {
+            playTransition(msg.data);
+          }
+
+          if (msg.type === "TRANSITION_CONFIG" && msg.data) {
+            if (msg.data.themeColor) {
+              document.documentElement.style.setProperty(
+                "--theme-color",
+                msg.data.themeColor,
+              );
+            }
+            if (msg.data.altColor) {
+              document.documentElement.style.setProperty(
+                "--alt-color",
+                msg.data.altColor,
+              );
+            }
+            if (msg.data.accentColor) {
+              document.documentElement.style.setProperty(
+                "--accent-color",
+                msg.data.accentColor,
+              );
+            }
+            if (msg.data.logoUrl) {
+              logo.style.backgroundImage = `url('${msg.data.logoUrl}')`;
             }
           }
         } catch (e) {
-          console.log("Using default logo");
+          console.error("Message parse error:", e);
         }
+      };
 
-        // Auto-play transition immediately on page load
-        // This is for OBS Stinger Transition - animation starts when scene changes
-        setTimeout(() => {
-          playTransition();
-        }, 50); // Small delay to ensure CSS is ready
+      ws.onclose = () => {
+        console.log("❌ Disconnected");
+        setTimeout(connectWebSocket, 5000);
+      };
 
-        // Also connect WebSocket for optional remote triggering
-        connectWebSocket();
-      });
-    </script>
-  </body>
+      ws.onerror = () => ws?.close();
+    }
+
+    // Play transition animation
+    function playTransition(config = {}) {
+      console.log("🎬 Playing transition...");
+
+      // Apply config if provided
+      if (config.themeColor) {
+        document.documentElement.style.setProperty(
+          "--theme-color",
+          config.themeColor,
+        );
+      }
+      if (config.altColor) {
+        document.documentElement.style.setProperty(
+          "--alt-color",
+          config.altColor,
+        );
+      }
+      if (config.accentColor) {
+        document.documentElement.style.setProperty(
+          "--accent-color",
+          config.accentColor,
+        );
+      }
+      if (config.logoUrl) {
+        logo.style.backgroundImage = `url('${config.logoUrl}')`;
+      }
+
+      // Reset animations
+      stingerlogo.classList.remove("active");
+      altcolor.classList.remove("active");
+      particles.classList.remove("active");
+
+      // Force reflow
+      void stingerlogo.offsetWidth;
+      void altcolor.offsetWidth;
+
+      // Start animations
+      stingerlogo.classList.add("active");
+      altcolor.classList.add("active");
+      particles.classList.add("active");
+
+      // Clean up after animation (faster: 1.5s total)
+      setTimeout(() => {
+        stingerlogo.classList.remove("active");
+        altcolor.classList.remove("active");
+        particles.classList.remove("active");
+      }, 2000);
+    }
+
+    // Initialize - AUTO-PLAY animation for OBS Stinger Transition
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Load uploaded logo from server
+      try {
+        const response = await fetch("/api/transition/logo");
+        if (response.ok) {
+          const result = await response.json();
+          if (result.path) {
+            const logoElement = document.getElementById("logo");
+            if (logoElement) {
+              logoElement.style.backgroundImage = `url('${result.path}?t=${Date.now()}')`;
+              console.log("✅ Transition logo loaded:", result.path);
+            }
+          }
+        }
+      } catch (e) {
+        console.log("Using default logo");
+      }
+
+      // Auto-play transition immediately on page load
+      // This is for OBS Stinger Transition - animation starts when scene changes
+      setTimeout(() => {
+        playTransition();
+      }, 50); // Small delay to ensure CSS is ready
+
+      // Also connect WebSocket for optional remote triggering
+      connectWebSocket();
+    });
+  </script>
+</body>
+
 </html>

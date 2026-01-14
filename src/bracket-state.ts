@@ -30,6 +30,10 @@ export interface BracketMatch {
   isBye: boolean; // Auto-win if opponent is null
   nextMatchId: string | null; // ID of next match winner goes to
   nextSlot: "A" | "B" | null; // Slot in next match
+  // Double elimination fields
+  bracket?: "winners" | "losers" | "grand"; // Which bracket this match belongs to
+  loserNextMatchId?: string | null; // ID of match loser goes to (for double elim)
+  loserNextSlot?: "A" | "B" | null; // Slot in losers bracket
 }
 
 export interface BracketState {
@@ -111,8 +115,18 @@ export class BracketManager {
     const rounds = Math.ceil(Math.log2(numTeams));
     const bracketSize = Math.pow(2, rounds); // Next power of 2
 
-    // Generate matches
-    const matches = this.generateMatches(teams, rounds, bracketSize);
+    // Double Elimination: Only accept 4, 8, 16 teams
+    if (type === "double") {
+      const validTeamCounts = [4, 8, 16];
+      if (!validTeamCounts.includes(numTeams)) {
+        throw new Error(`Double Elimination requires exactly 4, 8, or 16 teams. Got ${numTeams} teams.`);
+      }
+    }
+
+    // Generate matches based on bracket type
+    const matches = type === "double"
+      ? this.generateDoubleEliminationMatches(teams, rounds, bracketSize)
+      : this.generateMatches(teams, rounds, bracketSize);
 
     this.state = {
       id: `bracket_${Date.now()}`,
@@ -228,6 +242,201 @@ export class BracketManager {
     return matches;
   }
 
+  // Generate Double Elimination bracket structure (Ranking Bracket style)
+  // Winners only face winners, Losers only face losers
+  // Results in clear 1st, 2nd, 3rd, 4th place rankings
+  private generateDoubleEliminationMatches(
+    teams: BracketTeam[],
+    rounds: number,
+    bracketSize: number,
+  ): BracketMatch[] {
+    const matches: BracketMatch[] = [];
+    const firstRoundMatches = bracketSize / 2;
+
+    // ========================================
+    // WINNERS BRACKET
+    // ========================================
+    const getWinnersRoundName = (
+      round: number,
+      totalRounds: number,
+      position: number,
+    ): string => {
+      const matchesInRound = Math.pow(2, totalRounds - round);
+      if (matchesInRound === 1) return "Winners Final";
+      if (matchesInRound === 2) return `Winners Semifinal ${position}`;
+      if (matchesInRound === 4) return `Winners Quarterfinal ${position}`;
+      return `Winners R${round} M${position}`;
+    };
+
+    // Create Winners bracket matches
+    for (let round = 1; round <= rounds; round++) {
+      const matchesInRound = Math.pow(2, rounds - round);
+
+      for (let pos = 1; pos <= matchesInRound; pos++) {
+        const matchId = `w_r${round}_${pos}`;
+
+        let nextMatchId: string | null = null;
+        let nextSlot: "A" | "B" | null = null;
+        let loserNextMatchId: string | null = null;
+        let loserNextSlot: "A" | "B" | null = null;
+
+        if (round < rounds) {
+          const nextPos = Math.ceil(pos / 2);
+          nextMatchId = `w_r${round + 1}_${nextPos}`;
+          nextSlot = pos % 2 === 1 ? "A" : "B";
+
+          // Loser goes to corresponding losers bracket round
+          // Losers bracket has same structure
+          const loserPos = Math.ceil(pos / 2);
+          loserNextMatchId = `l_r${round}_${loserPos}`;
+          loserNextSlot = pos % 2 === 1 ? "A" : "B";
+        }
+
+        const match: BracketMatch = {
+          id: matchId,
+          round,
+          roundName: getWinnersRoundName(round, rounds, pos),
+          position: pos,
+          teamA: null,
+          teamB: null,
+          scoreA: 0,
+          scoreB: 0,
+          winner: null,
+          isBye: false,
+          nextMatchId,
+          nextSlot,
+          bracket: "winners",
+          loserNextMatchId,
+          loserNextSlot,
+        };
+
+        matches.push(match);
+      }
+    }
+
+    // ========================================
+    // LOSERS BRACKET (Ranking Bracket)
+    // ========================================
+    const getLosersRoundName = (
+      round: number,
+      totalRounds: number,
+      position: number,
+    ): string => {
+      const matchesInRound = Math.pow(2, totalRounds - round);
+      if (matchesInRound === 1) return "Losers Final";
+      if (matchesInRound === 2) return `Losers Semifinal ${position}`;
+      return `Losers R${round} M${position}`;
+    };
+
+    // Losers bracket has rounds - 1 rounds (no need for first round losses)
+    for (let round = 1; round < rounds; round++) {
+      const matchesInRound = Math.pow(2, rounds - round - 1);
+
+      for (let pos = 1; pos <= matchesInRound; pos++) {
+        const matchId = `l_r${round}_${pos}`;
+
+        let nextMatchId: string | null = null;
+        let nextSlot: "A" | "B" | null = null;
+
+        if (round < rounds - 1) {
+          const nextPos = Math.ceil(pos / 2);
+          nextMatchId = `l_r${round + 1}_${nextPos}`;
+          nextSlot = pos % 2 === 1 ? "A" : "B";
+        }
+
+        const match: BracketMatch = {
+          id: matchId,
+          round,
+          roundName: getLosersRoundName(round, rounds - 1, pos),
+          position: pos,
+          teamA: null,
+          teamB: null,
+          scoreA: 0,
+          scoreB: 0,
+          winner: null,
+          isBye: false,
+          nextMatchId,
+          nextSlot,
+          bracket: "losers",
+        };
+
+        matches.push(match);
+      }
+    }
+
+    // ========================================
+    // SEED TEAMS INTO WINNERS BRACKET
+    // ========================================
+    const seedOrder = this.generateSeedOrder(firstRoundMatches * 2);
+    const winnersR1 = matches.filter((m) => m.bracket === "winners" && m.round === 1);
+
+    for (let i = 0; i < seedOrder.length; i++) {
+      const seedPosition = seedOrder[i] - 1;
+      const matchIndex = Math.floor(i / 2);
+      const slot = i % 2 === 0 ? "A" : "B";
+
+      if (seedPosition < teams.length && matchIndex < winnersR1.length) {
+        const team = teams[seedPosition];
+        if (slot === "A") {
+          winnersR1[matchIndex].teamA = team;
+        } else {
+          winnersR1[matchIndex].teamB = team;
+        }
+      }
+    }
+
+    // Handle byes for first round (winners bracket only)
+    for (const match of winnersR1) {
+      if (match.teamA && !match.teamB) {
+        match.isBye = true;
+        match.winner = "A";
+        this.advanceWinnerDouble(matches, match, match.teamA);
+      } else if (!match.teamA && match.teamB) {
+        match.isBye = true;
+        match.winner = "B";
+        this.advanceWinnerDouble(matches, match, match.teamB);
+      } else if (!match.teamA && !match.teamB) {
+        match.isBye = true;
+      }
+    }
+
+    return matches;
+  }
+
+  // Advance winner in double elimination (also sends loser to losers bracket)
+  private advanceWinnerDouble(
+    matches: BracketMatch[],
+    currentMatch: BracketMatch,
+    winner: BracketTeam,
+  ) {
+    // Advance winner
+    if (currentMatch.nextMatchId && currentMatch.nextSlot) {
+      const nextMatch = matches.find((m) => m.id === currentMatch.nextMatchId);
+      if (nextMatch) {
+        if (currentMatch.nextSlot === "A") {
+          nextMatch.teamA = winner;
+        } else {
+          nextMatch.teamB = winner;
+        }
+      }
+    }
+
+    // Send loser to losers bracket (only for winners bracket matches)
+    if (currentMatch.bracket === "winners" && currentMatch.loserNextMatchId && currentMatch.loserNextSlot && !currentMatch.isBye) {
+      const loser = currentMatch.winner === "A" ? currentMatch.teamB : currentMatch.teamA;
+      if (loser) {
+        const loserMatch = matches.find((m) => m.id === currentMatch.loserNextMatchId);
+        if (loserMatch) {
+          if (currentMatch.loserNextSlot === "A") {
+            loserMatch.teamA = loser;
+          } else {
+            loserMatch.teamB = loser;
+          }
+        }
+      }
+    }
+  }
+
   // Generate proper bracket seeding order
   // MODIFIED: User wants sequential pairing (1 vs 2, 3 vs 4) instead of standard 1 vs 8
   private generateSeedOrder(size: number): number[] {
@@ -295,7 +504,12 @@ export class BracketManager {
       if (data.winner) {
         const winnerTeam = data.winner === "A" ? match.teamA : match.teamB;
         if (winnerTeam) {
-          this.advanceWinner(this.state.matches, match, winnerTeam);
+          // Use appropriate advance function based on bracket type
+          if (this.state.type === "double") {
+            this.advanceWinnerDouble(this.state.matches, match, winnerTeam);
+          } else {
+            this.advanceWinner(this.state.matches, match, winnerTeam);
+          }
         }
       }
     }
