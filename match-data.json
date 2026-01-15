@@ -10,13 +10,13 @@
       "shortName": "HOME",
       "color": "#3b82f6",
       "logo": "",
-      "logoVersion": 1768351016633,
-      "score": 0,
+      "logoVersion": 1768409813188,
+      "score": 3,
       "players": [
         {
           "slot": 1,
           "name": "Home Player 1",
-          "hero": ""
+          "hero": "Aleister"
         },
         {
           "slot": 2,
@@ -39,15 +39,21 @@
           "hero": ""
         }
       ],
-      "bans": []
+      "bans": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
     },
     "B": {
       "name": "AWAY TEAM",
       "shortName": "AWAY",
       "color": "#ef4444",
       "logo": "",
-      "logoVersion": 1768351016633,
-      "score": 0,
+      "logoVersion": 1768409813188,
+      "score": 2,
       "players": [
         {
           "slot": 1,
@@ -75,7 +81,14 @@
           "hero": ""
         }
       ],
-      "bans": []
+      "bans": [
+        "",
+        "",
+        "",
+        "Astrid",
+        "Alice"
+      ]
     }
-  }
+  },
+  "banCount": 5
 }

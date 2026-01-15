@@ -60,32 +60,33 @@
   },
   {
     "id": "tpl_1767946653363",
-    "name": "fsafawf",
+    "name": "asdasdas",
     "color": "#3b82f6",
     "logo": "",
     "players": [
       {
         "slot": 1,
-        "name": "1"
+        "name": "dasd"
       },
       {
         "slot": 2,
-        "name": "2"
+        "name": "asdas"
       },
       {
         "slot": 3,
-        "name": "3"
+        "name": "dsad"
       },
       {
         "slot": 4,
-        "name": "4"
+        "name": "sadsa"
       },
       {
         "slot": 5,
-        "name": "5"
+        "name": "dasdsad"
       }
     ],
-    "createdAt": "2026-01-09T08:17:33.363Z"
+    "createdAt": "2026-01-09T08:17:33.363Z",
+    "updatedAt": "2026-01-14T16:59:19.906Z"
   },
   {
     "id": "tpl_1767946686886",
@@ -116,8 +117,30 @@
     "name": "dzczcz",
     "color": "#ff7300",
     "logo": "",
-    "players": [],
-    "createdAt": "2026-01-13T03:21:03.434Z"
+    "players": [
+      {
+        "slot": 1,
+        "name": "asd"
+      },
+      {
+        "slot": 2,
+        "name": "asd"
+      },
+      {
+        "slot": 3,
+        "name": "asd"
+      },
+      {
+        "slot": 4,
+        "name": "asd"
+      },
+      {
+        "slot": 5,
+        "name": "asd"
+      }
+    ],
+    "createdAt": "2026-01-13T03:21:03.434Z",
+    "updatedAt": "2026-01-14T17:26:11.928Z"
   },
   {
     "id": "tpl_1768274480585",
@@ -126,5 +149,179 @@
     "logo": "",
     "players": [],
     "createdAt": "2026-01-13T03:21:20.585Z"
+  },
+  {
+    "id": "tpl_1768409964558",
+    "name": "asdasdas",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "dasd"
+      },
+      {
+        "slot": 2,
+        "name": "sadsa"
+      },
+      {
+        "slot": 3,
+        "name": "dsa"
+      },
+      {
+        "slot": 4,
+        "name": "dasd"
+      },
+      {
+        "slot": 5,
+        "name": "sadsadas"
+      }
+    ],
+    "createdAt": "2026-01-14T16:59:24.558Z"
+  },
+  {
+    "id": "tpl_1768409969502",
+    "name": "asdasdasd",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "asd"
+      },
+      {
+        "slot": 2,
+        "name": "asdsa"
+      },
+      {
+        "slot": 3,
+        "name": "dasd"
+      },
+      {
+        "slot": 4,
+        "name": "sad"
+      },
+      {
+        "slot": 5,
+        "name": "sadasdas"
+      }
+    ],
+    "createdAt": "2026-01-14T16:59:29.502Z"
+  },
+  {
+    "id": "tpl_1768409975019",
+    "name": "assdasdasd",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "asdas"
+      },
+      {
+        "slot": 2,
+        "name": "dasdas"
+      },
+      {
+        "slot": 3,
+        "name": "das"
+      },
+      {
+        "slot": 4,
+        "name": "dasdsa"
+      },
+      {
+        "slot": 5,
+        "name": "dasdsad"
+      }
+    ],
+    "createdAt": "2026-01-14T16:59:35.019Z"
+  },
+  {
+    "id": "tpl_1768409992651",
+    "name": "asdasdasd",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "asd"
+      },
+      {
+        "slot": 2,
+        "name": "sadsa"
+      },
+      {
+        "slot": 3,
+        "name": "dasd"
+      },
+      {
+        "slot": 4,
+        "name": "sadasdsa"
+      },
+      {
+        "slot": 5,
+        "name": "dasd"
+      }
+    ],
+    "createdAt": "2026-01-14T16:59:52.651Z"
+  },
+  {
+    "id": "tpl_1768409999452",
+    "name": "asdasdasd",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "dads"
+      },
+      {
+        "slot": 2,
+        "name": "asdas"
+      },
+      {
+        "slot": 3,
+        "name": "dsad"
+      },
+      {
+        "slot": 4,
+        "name": "asd"
+      },
+      {
+        "slot": 5,
+        "name": "sada"
+      }
+    ],
+    "createdAt": "2026-01-14T16:59:59.452Z"
+  },
+  {
+    "id": "tpl_1768410004402",
+    "name": "dsadads",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [
+      {
+        "slot": 1,
+        "name": "asdasd"
+      },
+      {
+        "slot": 2,
+        "name": "asd"
+      },
+      {
+        "slot": 3,
+        "name": "dsad"
+      },
+      {
+        "slot": 4,
+        "name": "adsa"
+      },
+      {
+        "slot": 5,
+        "name": "dasdsaasd"
+      }
+    ],
+    "createdAt": "2026-01-14T17:00:04.402Z"
   }
 ]

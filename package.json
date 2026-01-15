@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.18",
+    "howler": "^2.2.4",
     "tailwindcss": "^4.1.18"
   }
 }

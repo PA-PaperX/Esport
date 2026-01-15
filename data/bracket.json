@@ -1,6 +1,6 @@
 {
-  "id": "bracket_1768342026647",
-  "name": "adadadad",
+  "id": "bracket_1768411871055",
+  "name": "hee yai 2026",
   "type": "single",
   "teams": [
     {
@@ -17,7 +17,7 @@
     },
     {
       "id": "team_3",
-      "name": "fsafawf",
+      "name": "asdasdas",
       "logo": "",
       "seed": 3
     },
@@ -26,13 +26,37 @@
       "name": "a",
       "logo": "",
       "seed": 4
+    },
+    {
+      "id": "team_5",
+      "name": "aef",
+      "logo": "",
+      "seed": 5
+    },
+    {
+      "id": "team_6",
+      "name": "adzz",
+      "logo": "",
+      "seed": 6
+    },
+    {
+      "id": "team_7",
+      "name": "dzczcz",
+      "logo": "",
+      "seed": 7
+    },
+    {
+      "id": "team_8",
+      "name": "agfesgseg",
+      "logo": "",
+      "seed": 8
     }
   ],
   "matches": [
     {
       "id": "match_r1_1",
       "round": 1,
-      "roundName": "Semifinal 1",
+      "roundName": "Quarterfinal 1",
       "position": 1,
       "teamA": {
         "id": "team_1",
@@ -46,8 +70,8 @@
         "logo": "",
         "seed": 2
       },
-      "scoreA": 2,
-      "scoreB": 1,
+      "scoreA": 0,
+      "scoreB": 0,
       "winner": "A",
       "isBye": false,
       "nextMatchId": "match_r2_1",
@@ -56,11 +80,11 @@
     {
       "id": "match_r1_2",
       "round": 1,
-      "roundName": "Semifinal 2",
+      "roundName": "Quarterfinal 2",
       "position": 2,
       "teamA": {
         "id": "team_3",
-        "name": "fsafawf",
+        "name": "asdasdas",
         "logo": "",
         "seed": 3
       },
@@ -70,7 +94,7 @@
         "logo": "",
         "seed": 4
       },
-      "scoreA": 3,
+      "scoreA": 0,
       "scoreB": 0,
       "winner": "A",
       "isBye": false,
@@ -78,9 +102,57 @@
       "nextSlot": "B"
     },
     {
+      "id": "match_r1_3",
+      "round": 1,
+      "roundName": "Quarterfinal 3",
+      "position": 3,
+      "teamA": {
+        "id": "team_5",
+        "name": "aef",
+        "logo": "",
+        "seed": 5
+      },
+      "teamB": {
+        "id": "team_6",
+        "name": "adzz",
+        "logo": "",
+        "seed": 6
+      },
+      "scoreA": 0,
+      "scoreB": 0,
+      "winner": null,
+      "isBye": false,
+      "nextMatchId": "match_r2_2",
+      "nextSlot": "A"
+    },
+    {
+      "id": "match_r1_4",
+      "round": 1,
+      "roundName": "Quarterfinal 4",
+      "position": 4,
+      "teamA": {
+        "id": "team_7",
+        "name": "dzczcz",
+        "logo": "",
+        "seed": 7
+      },
+      "teamB": {
+        "id": "team_8",
+        "name": "agfesgseg",
+        "logo": "",
+        "seed": 8
+      },
+      "scoreA": 0,
+      "scoreB": 0,
+      "winner": null,
+      "isBye": false,
+      "nextMatchId": "match_r2_2",
+      "nextSlot": "B"
+    },
+    {
       "id": "match_r2_1",
       "round": 2,
-      "roundName": "Grand Final",
+      "roundName": "Semifinal 1",
       "position": 1,
       "teamA": {
         "id": "team_1",
@@ -90,19 +162,52 @@
       },
       "teamB": {
         "id": "team_3",
-        "name": "fsafawf",
+        "name": "asdasdas",
         "logo": "",
         "seed": 3
       },
-      "scoreA": 2,
-      "scoreB": 1,
+      "scoreA": 0,
+      "scoreB": 0,
+      "winner": "B",
+      "isBye": false,
+      "nextMatchId": "match_r3_1",
+      "nextSlot": "A"
+    },
+    {
+      "id": "match_r2_2",
+      "round": 2,
+      "roundName": "Semifinal 2",
+      "position": 2,
+      "teamA": null,
+      "teamB": null,
+      "scoreA": 0,
+      "scoreB": 0,
       "winner": null,
+      "isBye": false,
+      "nextMatchId": "match_r3_1",
+      "nextSlot": "B"
+    },
+    {
+      "id": "match_r3_1",
+      "round": 3,
+      "roundName": "Grand Final",
+      "position": 1,
+      "teamA": {
+        "id": "team_3",
+        "name": "asdasdas",
+        "logo": "",
+        "seed": 3
+      },
+      "teamB": null,
+      "scoreA": 2,
+      "scoreB": 0,
+      "winner": "A",
       "isBye": false,
       "nextMatchId": null,
       "nextSlot": null
     }
   ],
-  "rounds": 2,
-  "createdAt": "2026-01-13T22:07:06.647Z",
-  "updatedAt": "2026-01-13T23:45:40.071Z"
+  "rounds": 3,
+  "createdAt": "2026-01-14T17:31:11.055Z",
+  "updatedAt": "2026-01-14T17:59:16.030Z"
 }
