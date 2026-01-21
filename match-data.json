@@ -1,79 +1,91 @@
 {
   "matchId": "match_init",
-  "linkedMatchId": "match_r1_2",
+  "linkedMatchId": null,
   "bestOf": 3,
   "currentGame": 1,
   "swapped": false,
   "teams": {
     "A": {
-      "name": "kai",
+      "name": "HOME TEAM",
       "shortName": "HOME",
-      "color": "#007AFF",
-      "logo": "",
-      "logoVersion": 1767983122812,
+      "color": "#3b82f6",
+      "logo": "/logos/team-a.png",
+      "logoVersion": 1768893950726,
       "score": 0,
       "players": [
         {
           "slot": 1,
           "name": "Home Player 1",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 2,
           "name": "Home Player 2",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 3,
           "name": "Home Player 3",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 4,
           "name": "Home Player 4",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 5,
           "name": "Home Player 5",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         }
-      ]
+      ],
+      "bans": []
     },
     "B": {
-      "name": "ez",
+      "name": "AWAY TEAM",
       "shortName": "AWAY",
-      "color": "#FF453A",
+      "color": "#ef4444",
       "logo": "",
-      "logoVersion": 1767983122812,
+      "logoVersion": 1768893647080,
       "score": 0,
       "players": [
         {
           "slot": 1,
           "name": "Away Player 1",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 2,
           "name": "Away Player 2",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 3,
           "name": "Away Player 3",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 4,
           "name": "Away Player 4",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 5,
           "name": "Away Player 5",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         }
-      ]
+      ],
+      "bans": []
     }
   }
 }

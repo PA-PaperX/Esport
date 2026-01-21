@@ -57,3 +57,6 @@ public/logos/
 public/fonts/custom/
 public/assets/transition-logo.png
 public/assets/lower-third-slot-*.png
+
+# Large Binaries
+src-tauri/binaries/
