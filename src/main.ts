@@ -1,4 +1,4 @@
-export { };
+export {};
 
 // ==========================================
 // Interfaces (Strict Typing)
@@ -210,7 +210,7 @@ function renderUI(): void {
   // This helps users see what will appear on each side of the broadcast
   if (swapped) {
     renderTeamData("A", currentState.teams.B); // Left panel shows Team B
-    renderTeamData("B", currentState.teams.A); // Right panel shows Team A  
+    renderTeamData("B", currentState.teams.A); // Right panel shows Team A
   } else {
     renderTeamData("A", currentState.teams.A); // Normal: Left = Team A
     renderTeamData("B", currentState.teams.B); // Normal: Right = Team B
@@ -226,8 +226,12 @@ function renderUI(): void {
   }
 
   // Update panel titles based on swap state
-  const teamATitle = document.querySelector("#teamA-section .team-panel__title");
-  const teamBTitle = document.querySelector("#teamB-section .team-panel__title");
+  const teamATitle = document.querySelector(
+    "#teamA-section .team-panel__title",
+  );
+  const teamBTitle = document.querySelector(
+    "#teamB-section .team-panel__title",
+  );
 
   if (teamATitle) {
     teamATitle.textContent = swapped ? "Team B" : "Team A";
@@ -237,13 +241,19 @@ function renderUI(): void {
   }
 
   // Update button labels based on swap state
-  const teamABtn = document.querySelector('#teamA-section button[onclick*="saveTeam"]') as HTMLButtonElement;
-  const teamBBtn = document.querySelector('#teamB-section button[onclick*="saveTeam"]') as HTMLButtonElement;
+  const teamABtn = document.querySelector(
+    '#teamA-section button[onclick*="saveTeam"]',
+  ) as HTMLButtonElement;
+  const teamBBtn = document.querySelector(
+    '#teamB-section button[onclick*="saveTeam"]',
+  ) as HTMLButtonElement;
 
   if (teamABtn) {
     teamABtn.textContent = swapped ? "Update Team B" : "Update Team A";
     // Update button color to match displayed team
-    const btnColor = swapped ? currentState.teams.B.color : currentState.teams.A.color;
+    const btnColor = swapped
+      ? currentState.teams.B.color
+      : currentState.teams.A.color;
     teamABtn.style.backgroundColor = btnColor;
     const rgb = hexToRgb(btnColor);
     if (rgb) {
@@ -253,7 +263,9 @@ function renderUI(): void {
 
   if (teamBBtn) {
     teamBBtn.textContent = swapped ? "Update Team A" : "Update Team B";
-    const btnColor = swapped ? currentState.teams.A.color : currentState.teams.B.color;
+    const btnColor = swapped
+      ? currentState.teams.A.color
+      : currentState.teams.B.color;
     teamBBtn.style.backgroundColor = btnColor;
     const rgb = hexToRgb(btnColor);
     if (rgb) {
@@ -378,10 +390,10 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16),
-    }
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
     : null;
 }
 
@@ -420,15 +432,18 @@ function renderPlayers(
       
       <!-- Lane/Role -->
       <div class="player-card__role ${player.hero ? "" : "disabled"}" 
-           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${player.hero ? "true" : "false"
-        })"
-           title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")
-        }">
-        ${laneImgPath
-          ? `<img src="${laneImgPath}" alt="${escapeHtml(
-            player.lane || "",
-          )}">`
-          : '<i class="ph-duotone ph-map-pin"></i>'
+           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${
+             player.hero ? "true" : "false"
+           })"
+           title="${
+             player.lane || (player.hero ? "Select Lane" : "Select Hero first")
+           }">
+        ${
+          laneImgPath
+            ? `<img src="${laneImgPath}" alt="${escapeHtml(
+                player.lane || "",
+              )}">`
+            : '<i class="ph-duotone ph-map-pin"></i>'
         }
       </div>
       
@@ -446,11 +461,12 @@ function renderPlayers(
       <div class="player-card__hero ${player.hero ? "has-hero" : ""}" 
            onclick="openHeroPicker('${teamSide}', ${player.slot})"
            title="${player.hero || "Select Hero"}">
-        ${heroImgPath
-          ? `<img src="${heroImgPath}" alt="${escapeHtml(
-            player.hero || "",
-          )}">`
-          : '<i class="ph-duotone ph-game-controller"></i>'
+        ${
+          heroImgPath
+            ? `<img src="${heroImgPath}" alt="${escapeHtml(
+                player.hero || "",
+              )}">`
+            : '<i class="ph-duotone ph-game-controller"></i>'
         }
       </div>
       
@@ -506,18 +522,25 @@ async function saveTeam(side: "A" | "B"): Promise<void> {
 async function adjustScore(side: "A" | "B", delta: number): Promise<void> {
   if (!currentState) return;
 
-  const team = currentState.teams[side];
+  // When swapped, panel A shows Team B data, panel B shows Team A data
+  // So we need to adjust the ACTUAL team the panel is displaying
+  const swapped = currentState.swapped || false;
+  const actualSide = swapped ? (side === "A" ? "B" : "A") : side;
+
+  const team = currentState.teams[actualSide];
   const newScore = Math.max(0, team.score + delta);
 
   const success = await postAPI("/api/team/update", {
-    side,
+    side: actualSide,
     score: newScore,
   });
 
   if (success) {
-    console.log(`✅ Score ${side} updated: ${newScore}`);
+    console.log(
+      `✅ Score ${actualSide} updated: ${newScore} (from panel ${side})`,
+    );
   } else {
-    console.error(`❌ Failed to update score for Team ${side}`);
+    console.error(`❌ Failed to update score for Team ${actualSide}`);
   }
 }
 
@@ -532,7 +555,8 @@ async function swapSides(): Promise<void> {
       const result = await response.json();
       updateSwapUI(result.swapped);
       console.log(
-        `✅ Sides swapped: ${result.swapped ? "Team A → Right, Team B → Left" : "Normal"
+        `✅ Sides swapped: ${
+          result.swapped ? "Team A → Right, Team B → Left" : "Normal"
         }`,
       );
     } else {
@@ -903,7 +927,15 @@ function switchPage(page: string): void {
   currentPage = page;
 
   // Hide ALL pages by removing 'active' class
-  const allPages = ["scoreboard", "broadcast", "showinfo", "bracket", "fonts"];
+  const allPages = [
+    "scoreboard",
+    "broadcast",
+    "showinfo",
+    "bracket",
+    "fonts",
+    "wait",
+    "obs",
+  ];
   allPages.forEach((p) => {
     const pageEl = document.getElementById(`page-${p}`);
     const navEl = document.getElementById(`nav-${p}`);
@@ -1505,7 +1537,9 @@ function confirmCrop(): void {
     if (blob) {
       if (currentCropSide === "TEMPLATE") {
         // Handle Template Manager Crop
-        const file = new File([blob], "template_logo.png", { type: "image/png" });
+        const file = new File([blob], "template_logo.png", {
+          type: "image/png",
+        });
         templateLogoFile = file; // Store for later upload
 
         // Update Preview
@@ -1517,7 +1551,9 @@ function confirmCrop(): void {
         closeCropModal();
       } else {
         // Handle Team A/B Upload
-        const file = new File([blob], "logo_cropped.png", { type: "image/png" });
+        const file = new File([blob], "logo_cropped.png", {
+          type: "image/png",
+        });
         await uploadLogo(currentCropSide as "A" | "B", file);
         closeCropModal();
       }
@@ -2031,7 +2067,7 @@ const HERO_FILE_MAP: Record<string, { name: string; ext: string }> = {
   Roxie: { name: "Roxie-2", ext: "webp" },
   // Different extension
   Edras: { name: "Edras", ext: "png" },
-  Goverra: { name: "Goverra", ext: "jpg" },
+  Goverra: { name: "Goverra", ext: "png" },
   // Space to underscore
   "Bolt Baron": { name: "Bolt_Baron", ext: "webp" },
   "Diao Chan": { name: "Diao_Chan", ext: "webp" },
@@ -2046,18 +2082,20 @@ const HERO_FILE_MAP: Record<string, { name: string; ext: string }> = {
   "Y'bneth": { name: "Ybneth", ext: "webp" },
 };
 
-// Updated for PNG assets (standardized)
+// Updated for assets in public/assets/heroes - checks HERO_FILE_MAP first
 function getHeroImagePath(heroName: string): string {
-  // Standardize: "Lu Bu" -> "Lu_Bu", "D'Arcy" -> "D'Arcy" (file has quote)
+  // Check if this hero has a special filename mapping
+  if (HERO_FILE_MAP[heroName]) {
+    const mapping = HERO_FILE_MAP[heroName];
+    return `/assets/heroes/${mapping.name}.${mapping.ext}`;
+  }
+
+  // Default: standardize name and use webp
   let formatted = heroName.trim();
   formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
-
-  // Check specific manual overrides if needed (e.g. for files that don't match simple logic)
-  // But D'Arcy.png exists.
-  // Replace spaces with underscores
   formatted = formatted.replace(/\s+/g, "_");
 
-  return `/src/ROV/${formatted}.png`;
+  return `/assets/heroes/${formatted}.webp`;
 }
 
 let heroPickerOverlay: HTMLDivElement | null = null;
@@ -2086,15 +2124,15 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
   // Create modal container
   const modal = document.createElement("div");
   modal.style.cssText = `
-        background: var(--color-bg-elevated, #1c1c1e);
-        border-radius: 20px;
+        background: var(--color-bg-elevated);
+        border-radius: var(--radius-xl);
         width: 100%;
         max-width: 800px;
         max-height: 85vh;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--color-border-light);
         overflow: hidden;
     `;
 
@@ -2102,22 +2140,22 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
   const header = document.createElement("div");
   header.style.cssText = `
         padding: 20px 24px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--color-border-light);
         display: flex;
         align-items: center;
         justify-content: space-between;
     `;
   header.innerHTML = `
-        <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.25rem; font-weight: 600; margin: 0;">
-            <i class="ph-duotone ph-game-controller" style="color: var(--color-accent, #0a84ff); margin-right: 8px;"></i>
+        <h2 style="color: var(--color-text-primary); font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin: 0;">
+            <i class="ph-duotone ph-game-controller" style="color: var(--color-accent); margin-right: 8px;"></i>
             Select Hero - Team ${side} Player ${slot}
         </h2>
         <button id="hero-picker-close" style="
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1); border: none;
-            color: var(--color-text-secondary, #a1a1a6); cursor: pointer;
+            width: 32px; height: 32px; border-radius: var(--radius-full);
+            background: var(--color-bg-tertiary); border: none;
+            color: var(--color-text-secondary); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
+            font-size: var(--font-size-xl);
         ">
             <i class="ph-bold ph-x"></i>
         </button>
@@ -2130,11 +2168,11 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
   searchInput.style.cssText = `
         margin: 16px 24px;
         padding: 12px 16px;
-        font-size: 1rem;
-        color: var(--color-text-primary, #f5f5f7);
-        background: var(--color-bg-tertiary, #2c2c2e);
-        border: 1px solid var(--color-border, #38383a);
-        border-radius: 12px;
+        font-size: var(--font-size-base);
+        color: var(--color-text-primary);
+        background: var(--color-bg-tertiary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
         outline: none;
     `;
 
@@ -2168,13 +2206,13 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
                     align-items: center;
                     gap: 6px;
                     padding: 8px;
-                    background: var(--color-bg-tertiary, #2c2c2e);
+                    background: var(--color-bg-tertiary);
                     border: 2px solid transparent;
-                    border-radius: 12px;
+                    border-radius: var(--radius-lg);
                     cursor: pointer;
-                    transition: all 0.15s ease;
+                    transition: all var(--transition-fast);
                 "
-                onmouseover="this.style.borderColor='var(--color-accent, #0a84ff)'; this.style.transform='scale(1.05)';"
+                onmouseover="this.style.borderColor='var(--color-accent)'; this.style.transform='scale(1.05)';"
                 onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)';"
                 title="${hero.replace(/"/g, "&quot;")}"
             >
@@ -2184,12 +2222,12 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
                     style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #1a1a1a;"
                     onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); } else { this.style.display='none'; this.nextElementSibling.style.display='flex'; }"
                 >
-                <div style="display: none; width: 60px; height: 60px; border-radius: 8px; background: var(--color-bg-secondary, #1c1c1e); align-items: center; justify-content: center;">
-                    <i class="ph-duotone ph-game-controller" style="font-size: 1.5rem; color: var(--color-text-tertiary, #636366);"></i>
+                <div style="display: none; width: 60px; height: 60px; border-radius: 8px; background: var(--color-bg-secondary); align-items: center; justify-content: center;">
+                    <i class="ph-duotone ph-game-controller" style="font-size: 1.5rem; color: var(--color-text-tertiary);"></i>
                 </div>
                 <span style="
-                    font-size: 0.7rem;
-                    color: var(--color-text-secondary, #a1a1a6);
+                    font-size: var(--font-size-xs);
+                    color: var(--color-text-secondary);
                     text-align: center;
                     white-space: nowrap;
                     overflow: hidden;
@@ -2203,7 +2241,7 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
 
     if (filteredHeroes.length === 0) {
       gridContainer.innerHTML =
-        '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary, #636366);">No heroes found</div>';
+        '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary);">No heroes found</div>';
     }
   };
 
@@ -2286,38 +2324,38 @@ function openBanPicker(side: "A" | "B", slot: number): void {
 
   const modal = document.createElement("div");
   modal.style.cssText = `
-    background: var(--color-bg-elevated, #1c1c1e);
-    border-radius: 20px;
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-xl);
     width: 100%;
     max-width: 800px;
     max-height: 85vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--color-border-light);
     overflow: hidden;
   `;
 
   const header = document.createElement("div");
   header.style.cssText = `
     padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--color-border-light);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), transparent);
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), transparent);
   `;
   header.innerHTML = `
-    <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.25rem; font-weight: 600; margin: 0;">
-      <i class="ph-duotone ph-prohibit" style="color: #ef4444; margin-right: 8px;"></i>
+    <h2 style="color: var(--color-text-primary); font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); margin: 0;">
+      <i class="ph-duotone ph-prohibit" style="color: var(--color-danger); margin-right: 8px;"></i>
       Ban Hero - Team ${side} Slot ${slot}
     </h2>
     <button id="ban-picker-close" style="
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1); border: none;
-      color: var(--color-text-secondary, #a1a1a6); cursor: pointer;
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      background: var(--color-bg-tertiary); border: none;
+      color: var(--color-text-secondary); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem;
+      font-size: var(--font-size-xl);
     ">
       <i class="ph-bold ph-x"></i>
     </button>
@@ -2329,11 +2367,11 @@ function openBanPicker(side: "A" | "B", slot: number): void {
   searchInput.style.cssText = `
     margin: 16px 24px;
     padding: 12px 16px;
-    font-size: 1rem;
-    color: var(--color-text-primary, #f5f5f7);
-    background: var(--color-bg-tertiary, #2c2c2e);
-    border: 1px solid var(--color-border, #38383a);
-    border-radius: 12px;
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     outline: none;
   `;
 
@@ -2365,14 +2403,14 @@ function openBanPicker(side: "A" | "B", slot: number): void {
             align-items: center;
             gap: 6px;
             padding: 8px;
-            background: var(--color-bg-tertiary, #2c2c2e);
+            background: var(--color-bg-tertiary);
             border: 2px solid transparent;
-            border-radius: 12px;
+            border-radius: var(--radius-lg);
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all var(--transition-fast);
             position: relative;
           "
-          onmouseover="this.style.borderColor='#ef4444'; this.style.transform='scale(1.05)';"
+          onmouseover="this.style.borderColor='var(--color-danger)'; this.style.transform='scale(1.05)';"
           onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)';"
           title="Ban ${hero.replace(/"/g, "&quot;")}"
         >
@@ -2382,12 +2420,12 @@ function openBanPicker(side: "A" | "B", slot: number): void {
             style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #1a1a1a;"
             onerror="if (this.src.endsWith('.png')) { this.src = this.src.replace('.png', '.webp'); } else { this.style.display='none'; this.nextElementSibling.style.display='flex'; }"
           >
-          <div style="display: none; width: 60px; height: 60px; border-radius: 8px; background: var(--color-bg-secondary, #1c1c1e); align-items: center; justify-content: center;">
-            <i class="ph-duotone ph-game-controller" style="font-size: 1.5rem; color: var(--color-text-tertiary, #636366);"></i>
+          <div style="display: none; width: 60px; height: 60px; border-radius: 8px; background: var(--color-bg-secondary); align-items: center; justify-content: center;">
+            <i class="ph-duotone ph-game-controller" style="font-size: 1.5rem; color: var(--color-text-tertiary);"></i>
           </div>
           <span style="
-            font-size: 0.7rem;
-            color: var(--color-text-secondary, #a1a1a6);
+            font-size: var(--font-size-xs);
+            color: var(--color-text-secondary);
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
@@ -2401,7 +2439,7 @@ function openBanPicker(side: "A" | "B", slot: number): void {
 
     if (filteredHeroes.length === 0) {
       gridContainer.innerHTML =
-        '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary, #636366);">No heroes found</div>';
+        '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--color-text-tertiary);">No heroes found</div>';
     }
   };
 
@@ -2455,7 +2493,9 @@ async function selectBan(heroName: string): Promise<void> {
   });
 
   if (success) {
-    console.log(`🚫 Banned ${heroName} for Team ${banPickerSide} Slot ${banPickerSlot}`);
+    console.log(
+      `🚫 Banned ${heroName} for Team ${banPickerSide} Slot ${banPickerSlot}`,
+    );
     renderBanSlots(); // Refresh UI
   } else {
     console.error("❌ Failed to update ban");
@@ -2530,15 +2570,29 @@ function renderBanSlots(): void {
 async function selectHero(heroName: string): Promise<void> {
   if (!heroPickerSide || !heroPickerSlot) return;
 
+  // When swapped, panel A shows Team B data, panel B shows Team A data
+  const swapped = currentState ? currentState.swapped : false;
+  // If we clicked on panel "A" and we are swapped, we actually want to update Team "B"
+  // But wait, the panel ID mapping is already tricky.
+  // The panels are labeled "Team A" and "Team B" on the UI.
+  // Previous fixes suggest we need to FLIP the side if swapped.
+  // "heroPickerSide" comes from openHeroPicker(side), where side is "A" or "B" from the button.
+
+  const actualSide = swapped
+    ? heroPickerSide === "A"
+      ? "B"
+      : "A"
+    : heroPickerSide;
+
   const success = await postAPI("/api/player/update", {
-    side: heroPickerSide,
+    side: actualSide,
     slot: heroPickerSlot,
     hero: heroName,
   });
 
   if (success) {
     console.log(
-      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`,
+      `✅ Hero ${heroName} selected for Team ${actualSide} Player ${heroPickerSlot} (Panel ${heroPickerSide})`,
     );
   } else {
     console.error("❌ Failed to update hero");
@@ -2590,14 +2644,14 @@ function openLanePicker(side: "A" | "B", slot: number): void {
   // Create modal container
   const modal = document.createElement("div");
   modal.style.cssText = `
-        background: var(--color-bg-elevated, #1c1c1e);
-        border-radius: 20px;
+        background: var(--color-bg-elevated);
+        border-radius: var(--radius-xl);
         width: 100%;
         max-width: 400px;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--color-border-light);
         overflow: hidden;
     `;
 
@@ -2605,22 +2659,22 @@ function openLanePicker(side: "A" | "B", slot: number): void {
   const header = document.createElement("div");
   header.style.cssText = `
         padding: 20px 24px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--color-border-light);
         display: flex;
         align-items: center;
         justify-content: space-between;
     `;
   header.innerHTML = `
-        <h2 style="color: var(--color-text-primary, #f5f5f7); font-size: 1.125rem; font-weight: 600; margin: 0;">
-            <i class="ph-duotone ph-map-pin" style="color: var(--color-warning, #ff9f0a); margin-right: 8px;"></i>
+        <h2 style="color: var(--color-text-primary); font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); margin: 0;">
+            <i class="ph-duotone ph-map-pin" style="color: var(--color-warning); margin-right: 8px;"></i>
             Select Lane - Player ${slot}
         </h2>
         <button id="lane-picker-close" style="
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1); border: none;
-            color: var(--color-text-secondary, #a1a1a6); cursor: pointer;
+            width: 32px; height: 32px; border-radius: var(--radius-full);
+            background: var(--color-bg-tertiary); border: none;
+            color: var(--color-text-secondary); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
+            font-size: var(--font-size-xl);
         ">
             <i class="ph-bold ph-x"></i>
         </button>
@@ -2645,26 +2699,29 @@ function openLanePicker(side: "A" | "B", slot: number): void {
                 align-items: center;
                 gap: 12px;
                 padding: 12px 16px;
-                background: var(--color-bg-tertiary, #2c2c2e);
+                background: var(--color-bg-tertiary);
                 border: 1px solid transparent;
-                border-radius: 12px;
+                border-radius: var(--radius-lg);
                 cursor: pointer;
-                transition: all 0.15s ease;
+                transition: all var(--transition-fast);
                 text-align: left;
             "
-            onmouseover="this.style.borderColor='var(--color-accent, #0a84ff)'; this.style.background='var(--color-team-a-bg, rgba(10,132,255,0.15))';"
-            onmouseout="this.style.borderColor='transparent'; this.style.background='var(--color-bg-tertiary, #2c2c2e)';"
+            onmouseover="this.style.borderColor='var(--color-accent)'; this.style.background='var(--color-team-a-bg)';"
+            onmouseout="this.style.borderColor='transparent'; this.style.background='var(--color-bg-tertiary)';"
         >
             <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
                  style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #1a1a1a;" 
                  alt="${lane.name}"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon
-      }%3C/text%3E%3C/svg%3E';">
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${
+                   lane.icon
+                 }%3C/text%3E%3C/svg%3E';">
             <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--color-text-primary, #f5f5f7); font-size: 0.95rem;">${lane.label
-      }</div>
-                <div style="font-size: 0.8rem; color: var(--color-text-tertiary, #636366);">${lane.thaiName
-      }</div>
+                <div style="font-weight: 600; color: var(--color-text-primary); font-size: 0.95rem;">${
+                  lane.label
+                }</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-tertiary);">${
+                  lane.thaiName
+                }</div>
             </div>
         </button>
     `,
@@ -2713,15 +2770,24 @@ function closeLanePicker(): void {
 async function selectLane(laneName: string): Promise<void> {
   if (!lanePickerSide || !lanePickerSlot) return;
 
+  // Swap logic same as selectHero
+  const swapped = currentState ? currentState.swapped : false;
+  const actualSide = swapped
+    ? lanePickerSide === "A"
+      ? "B"
+      : "A"
+    : lanePickerSide;
+
   const success = await postAPI("/api/player/update", {
-    side: lanePickerSide,
+    side: actualSide,
     slot: lanePickerSlot,
     lane: laneName,
   });
 
   if (success) {
     console.log(
-      `✅ Lane ${laneName || "cleared"
+      `✅ Lane ${
+        laneName || "cleared"
       } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
     );
   } else {
@@ -3001,7 +3067,8 @@ function openTemplateManager(): void {
 
   // Header for List
   const listHeader = document.createElement("div");
-  listHeader.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);";
+  listHeader.style.cssText =
+    "display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);";
   listHeader.innerHTML = `
     <div style="display: flex; align-items: center; gap: var(--space-2);">
         <span class="status-indicator">
@@ -3024,13 +3091,14 @@ function openTemplateManager(): void {
         </div>
       `;
   } else {
-    grid.innerHTML = templates.map(t => {
-      const initials = t.name.substring(0, 2).toUpperCase();
-      const logoHtml = t.logo
-        ? `<img src="${t.logo}" alt="${t.name}">`
-        : `<span style="font-weight: bold; font-size: 12px; color: ${t.color}">${initials}</span>`;
+    grid.innerHTML = templates
+      .map((t) => {
+        const initials = t.name.substring(0, 2).toUpperCase();
+        const logoHtml = t.logo
+          ? `<img src="${t.logo}" alt="${t.name}">`
+          : `<span style="font-weight: bold; font-size: 12px; color: ${t.color}">${initials}</span>`;
 
-      return `
+        return `
             <div class="template-card" onclick="loadTemplateToForm('${t.id}')">
                 <div class="template-card__header">
                     <div class="template-card__logo">
@@ -3053,7 +3121,8 @@ function openTemplateManager(): void {
                 </div>
             </div>
           `;
-    }).join('');
+      })
+      .join("");
   }
 
   listPanel.appendChild(listHeader);
@@ -3077,8 +3146,12 @@ function openTemplateManager(): void {
 
   // Color sync
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
-  const colorText = document.getElementById("tpl-color-text") as HTMLInputElement;
-  const colorPreview = document.querySelector(".template-color-preview") as HTMLElement;
+  const colorText = document.getElementById(
+    "tpl-color-text",
+  ) as HTMLInputElement;
+  const colorPreview = document.querySelector(
+    ".template-color-preview",
+  ) as HTMLElement;
 
   if (colorInput && colorText) {
     // Update text on color pick
@@ -3185,14 +3258,14 @@ function deleteTemplate(id: string): void {
     `;
 
   confirmOverlay.innerHTML = `
-        <div style="background: #1f2937; border-radius: 12px; padding: 24px; max-width: 400px; text-align: center; box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);">
-            <h3 style="color: #ef4444; font-size: 18px; margin-bottom: 16px;">⚠️ ยืนยันการลบ</h3>
-            <p style="color: white; margin-bottom: 8px;">คุณต้องการลบ Template</p>
-            <p style="color: #a855f7; font-weight: bold; font-size: 16px; margin-bottom: 16px;">"${templateName}"</p>
+        <div class="dialog_delete">
+            <h3>are you sure ?</h3>
+            <p >คุณต้องการลบ Template "${templateName}"</p>
+            <p></p>
             <p style="color: #6b7280; font-size: 12px; margin-bottom: 24px;">การลบจะไม่สามารถกู้คืนได้</p>
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="confirm-delete-yes" style="padding: 10px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🗑️ ลบเลย</button>
-                <button id="confirm-delete-no" style="padding: 10px 24px; background: #374151; color: white; border: none; border-radius: 8px; cursor: pointer;">ยกเลิก</button>
+            <div class="dialog_delete_footer">
+                <button id="confirm-delete-yes">sure</button>
+                <button id="confirm-delete-no">cancel</button>
             </div>
         </div>
     `;
@@ -3264,8 +3337,7 @@ function loadTemplateToForm(id: string): void {
   // Update button text to show "Update" instead of "Create"
   const createBtn = document.getElementById("create-template-btn");
   if (createBtn) {
-    createBtn.innerHTML = "✏️ Update Template";
-    createBtn.style.background = "#3b82f6";
+    createBtn.innerHTML = "Update Template";
   }
 
   // Scroll to form (visual feedback)
@@ -3560,6 +3632,237 @@ function toggleTheme(): void {
 (window as any).uploadSlotLogo = uploadSlotLogo;
 
 // ==========================================
+// OBS Layout Helper
+// ==========================================
+
+async function switchScene(sceneName: string): Promise<void> {
+  try {
+    console.log(`🎬 Switching to scene: ${sceneName}`);
+    const response = await fetch(`${API_BASE}/api/obs/switch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sceneName }),
+    });
+
+    if (response.ok) {
+      // Update UI active state if needed
+      document.querySelectorAll(".obs-scene-btn").forEach((btn) => {
+        btn.classList.remove("active");
+        if (btn.querySelector("span")?.textContent === sceneName) {
+          btn.classList.add("active");
+        }
+      });
+    } else {
+      console.error("Failed to switch scene");
+    }
+  } catch (err) {
+    console.error("Switch scene error:", err);
+  }
+}
+(window as any).switchScene = switchScene;
+
+async function refreshScenes(): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/api/obs/scenes`);
+    if (response.ok) {
+      const scenes = await response.json();
+      const grid = document.getElementById("obs-scene-grid");
+      if (grid) {
+        grid.innerHTML = scenes
+          .map(
+            (scene: string) => `
+                <button class="obs-scene-btn" onclick="switchScene('${scene}')">
+                    <i class="ph-duotone ph-broadcast"></i>
+                    <span>${scene}</span>
+                </button>
+            `,
+          )
+          .join("");
+      }
+    }
+  } catch (err) {
+    console.error("Failed to refresh scenes:", err);
+  }
+}
+
+async function loadDefaultLayout(): Promise<void> {
+  const btn = document.querySelector(
+    'button[onclick="loadDefaultLayout()"]',
+  ) as HTMLButtonElement;
+  const originalText = btn ? btn.innerHTML : "";
+
+  if (btn) {
+    btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Loading...';
+    btn.disabled = true;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/obs/apply-layout`, {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      console.log("✅ Layout imported successfully");
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Import Successful",
+          "Layout copied to OBS. Please RESTART OBS to see 'Esport | PaperX' in Scene Collection.",
+          "success",
+        );
+      }
+      // Do not refresh scenes immediately as restart is required
+    } else {
+      throw new Error("Failed to load layout");
+    }
+  } catch (err) {
+    console.error("❌ loadDefaultLayout error:", err);
+    if ((window as any).showNotification) {
+      (window as any).showNotification(
+        "Error",
+        "Could not load default layout",
+        "error",
+      );
+    }
+  } finally {
+    if (btn) {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+}
+
+(window as any).loadDefaultLayout = loadDefaultLayout;
+
+// ==========================================
+// Font Management
+// ==========================================
+
+let currentFontsState: any = { fonts: [], assignments: {} };
+
+async function fetchFonts(): Promise<void> {
+  try {
+    const [fontsRes, assignRes] = await Promise.all([
+      fetch(`${API_BASE}/api/fonts`),
+      fetch(`${API_BASE}/api/fonts/assignments`),
+    ]);
+
+    if (fontsRes.ok && assignRes.ok) {
+      const state = await fontsRes.json();
+      const assignments = await assignRes.json();
+
+      currentFontsState = {
+        fonts: state.fonts || [],
+        assignments: assignments,
+      };
+
+      updateFontDropdowns();
+    }
+  } catch (err) {
+    console.error("Failed to fetch fonts:", err);
+  }
+}
+
+function updateFontDropdowns(): void {
+  const assignmentKeys = [
+    "lowerThirdTitle",
+    "lowerThirdSlots",
+    "scoreboardTeamName",
+    "scoreboardScore",
+    "versusTeamName",
+    "bracketTeamName",
+    "transitionTitle",
+  ];
+
+  const defaultLabels: Record<string, string> = {
+    lowerThirdTitle: "Default (Rajdhani)",
+    lowerThirdSlots: "Default (Outfit)",
+    scoreboardTeamName: "Default (Rajdhani)",
+    scoreboardScore: "Default (Rajdhani Bold)",
+    versusTeamName: "Default (Rajdhani)",
+    bracketTeamName: "Default (Inter)",
+    transitionTitle: "Default (System)",
+  };
+
+  for (const key of assignmentKeys) {
+    const select = document.getElementById(
+      `font-assign-${key}`,
+    ) as HTMLSelectElement;
+    if (!select) continue;
+
+    const currentValue = currentFontsState.assignments[key] || "";
+
+    select.innerHTML = `<option value="">${defaultLabels[key] || "Default"}</option>`;
+
+    for (const font of currentFontsState.fonts) {
+      const selected = font.id === currentValue ? "selected" : "";
+      // Escape HTML helper
+      const fontName = font.name
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+      select.innerHTML += `<option value="${font.id}" ${selected}>${fontName} (${font.weight})</option>`;
+    }
+  }
+}
+
+async function updateFontAssignment(
+  key: string,
+  fontId: string,
+): Promise<void> {
+  currentFontsState.assignments[key] = fontId || null;
+
+  // Auto-save immediately
+  try {
+    const response = await fetch(`${API_BASE}/api/fonts/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(currentFontsState.assignments),
+    });
+
+    if (response.ok) {
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Saved",
+          "เปลี่ยนฟอนต์เรียบร้อย",
+          "success",
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Auto-save font assignment error:", err);
+  }
+}
+
+async function saveFontAssignments(): Promise<void> {
+  // Legacy function support
+  try {
+    const response = await fetch(`${API_BASE}/api/fonts/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(currentFontsState.assignments),
+    });
+
+    if (response.ok) {
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Saved",
+          "บันทึกการตั้งค่าฟอนต์สำเร็จ",
+          "success",
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Save font assignments error:", err);
+  }
+}
+
+(window as any).updateFontAssignment = updateFontAssignment;
+
+(window as any).saveFontAssignments = saveFontAssignments;
+
+// ==========================================
 // Initialization
 // ==========================================
 
@@ -3571,6 +3874,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fetch templates
   fetchTemplates();
+
+  // Fetch fonts
+  fetchFonts();
 
   // Connect to WebSocket for real-time updates
   // Connect to WebSocket for real-time updates
@@ -3682,4 +3988,457 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("No transition logo found");
     }
   })();
+});
+
+// ==========================================
+// Bracket Logic
+// ==========================================
+
+let currentBracketType: "single" | "double" = "single";
+
+function setBracketType(type: "single" | "double"): void {
+  currentBracketType = type;
+  document
+    .getElementById("bracket-type-single")
+    ?.classList.toggle("btn-primary", type === "single");
+  document
+    .getElementById("bracket-type-single")
+    ?.classList.toggle("btn-secondary", type !== "single");
+  document
+    .getElementById("bracket-type-double")
+    ?.classList.toggle("btn-primary", type === "double");
+  document
+    .getElementById("bracket-type-double")
+    ?.classList.toggle("btn-secondary", type !== "double");
+}
+
+async function loadBracketTemplates(): Promise<void> {
+  try {
+    const list = document.getElementById("bracket-template-list");
+    if (!list) return;
+
+    const response = await fetch(`${API_BASE}/api/templates`);
+    if (response.ok) {
+      const templates = await response.json();
+
+      if (templates.length === 0) {
+        list.innerHTML = `
+            <div style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); grid-column: 1 / -1; text-align: center; padding: var(--space-4);">
+                <i class="ph-duotone ph-folder-open" style="font-size: 24px; display: block; margin-bottom: var(--space-2);"></i>
+                No templates found. Create templates first in the Template Manager.
+            </div>`;
+        return;
+      }
+
+      list.innerHTML = templates
+        .map(
+          (t: any) => `
+        <label style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); background: var(--surface-2); border-radius: var(--radius-sm); cursor: pointer; border: 1px solid transparent;" 
+               class="template-checkbox-item">
+            <input type="checkbox" class="template-checkbox" value="${t.id}" data-name="${t.name}">
+            <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.name}</span>
+        </label>
+    `,
+        )
+        .join("");
+
+      // Add event listeners to all checkboxes (instead of inline onchange)
+      list.querySelectorAll(".template-checkbox").forEach((checkbox) => {
+        checkbox.addEventListener("change", updateSelectedCount);
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load bracket templates:", err);
+  }
+}
+
+function updateSelectedCount(): void {
+  const checkboxes = document.querySelectorAll(".template-checkbox:checked");
+  const countSpan = document.getElementById("bracket-selected-count");
+  if (countSpan) {
+    countSpan.textContent = `${checkboxes.length} selected`;
+  }
+}
+
+async function createBracket(): Promise<void> {
+  const nameInput = document.getElementById("bracket-name") as HTMLInputElement;
+
+  // Update selector to match index.html's generated structure
+  // It renders generic checkboxes inside #bracket-template-list
+  // using parent label .bracket-team-card
+  const list = document.getElementById("bracket-template-list");
+  let teams: { id: string; name: string }[] = [];
+
+  if (list) {
+    // Try getting checked inputs
+    const checkedInputs = list.querySelectorAll(
+      'input[type="checkbox"]:checked',
+    );
+
+    teams = Array.from(checkedInputs).map((input: any) => {
+      // index.html stores full template in data-template, or name in data-name/parent
+      // Let's try to parse data-template if available
+      if (input.dataset.template) {
+        try {
+          const t = JSON.parse(input.dataset.template);
+          return { id: t.id, name: t.name };
+        } catch (e) {
+          console.error("Error parsing template data", e);
+        }
+      }
+
+      // Fallback to finding name from UI or other attributes
+      // The index.html version puts name in onchange handler or parent data-name
+      // Let's check parent label data-name as fallback
+      const parent = input.closest(".bracket-team-card");
+      if (parent && parent.dataset.name) {
+        return { id: parent.dataset.name, name: parent.dataset.name }; // Use name as ID if needed
+      }
+
+      return { id: input.value, name: "Unknown" };
+    });
+  }
+
+  const name = nameInput?.value || "Tournament";
+
+  if (teams.length < 2) {
+    alert("Please select at least 2 teams");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/bracket/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        type: currentBracketType,
+        teams: teams.map((t) => t.name), // Just names for simplicity as per existing API
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      renderBracket(data.bracket);
+    } else {
+      alert("Failed to create bracket");
+    }
+  } catch (err) {
+    console.error("Create bracket error:", err);
+  }
+}
+
+async function fetchBracket(): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/api/bracket`);
+    if (response.ok) {
+      const bracket = await response.json();
+      if (bracket && bracket.matches && bracket.matches.length > 0) {
+        renderBracket(bracket);
+      } else {
+        document.getElementById("bracket-create-section")!.style.display =
+          "block";
+        document.getElementById("bracket-display")!.style.display = "none";
+      }
+    }
+  } catch (err) {
+    console.error("Fetch bracket error:", err);
+  }
+}
+
+function renderBracket(bracket: any): void {
+  const display = document.getElementById("bracket-display");
+  const createSection = document.getElementById("bracket-create-section");
+  const container = document.getElementById("bracket-container");
+  const title = document.getElementById("bracket-title");
+  const info = document.getElementById("bracket-info");
+
+  if (!display || !createSection || !container || !title) return;
+
+  if (!bracket) {
+    createSection.style.display = "block";
+    display.style.display = "none";
+    return;
+  }
+
+  createSection.style.display = "none";
+  display.style.display = "block";
+  title.textContent = bracket.name;
+  if (info) {
+    info.textContent = `${bracket.teams.length} Teams • ${bracket.type === "single" ? "Single" : "Double"} Elimination`;
+  }
+
+  container.innerHTML = "";
+
+  // Group matches by round
+  const rounds: { [key: number]: any[] } = {};
+  bracket.matches.forEach((match: any) => {
+    if (!rounds[match.round]) rounds[match.round] = [];
+    rounds[match.round].push(match);
+  });
+
+  // Render each round
+  Object.keys(rounds)
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .forEach((roundNum) => {
+      const roundEl = document.createElement("div");
+      roundEl.className = "bracket-round";
+      roundEl.style.cssText =
+        "display: flex; flex-direction: column; gap: var(--space-4); min-width: 280px;";
+
+      const roundHeader = document.createElement("div");
+      roundHeader.style.cssText =
+        "font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-2);";
+
+      const firstMatch = rounds[parseInt(roundNum)][0];
+      roundHeader.textContent =
+        firstMatch.roundName?.split(" ").slice(0, -1).join(" ") ||
+        `Round ${roundNum}`;
+      roundEl.appendChild(roundHeader);
+
+      rounds[parseInt(roundNum)].forEach((match: any) => {
+        const matchEl = createMatchElement(match);
+        roundEl.appendChild(matchEl);
+      });
+
+      container.appendChild(roundEl);
+    });
+}
+
+function createMatchElement(match: any): HTMLElement {
+  const matchEl = document.createElement("div");
+  matchEl.className = "bracket-match";
+  matchEl.style.cssText = `
+          background: var(--color-bg-secondary);
+          border: 1px solid var(--color-border-light);
+          border-radius: var(--radius-md);
+          padding: var(--space-3);
+          margin-bottom: var(--space-2);
+      `;
+
+  // Round title
+  const titleRow = document.createElement("div");
+  titleRow.style.cssText =
+    "display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);";
+  titleRow.innerHTML = `
+          <span style="font-size: var(--font-size-xs); color: var(--color-text-tertiary);">${match.roundName || ""}</span>
+          ${match.isBye ? '<span style="font-size: var(--font-size-xs); color: var(--color-warning); font-weight: var(--font-weight-semibold);">BYE</span>' : ""}
+      `;
+  matchEl.appendChild(titleRow);
+
+  // Team A
+  const teamAEl = createTeamRow(match, "A", match.teamA);
+  matchEl.appendChild(teamAEl);
+
+  // Team B
+  const teamBEl = createTeamRow(match, "B", match.teamB);
+  matchEl.appendChild(teamBEl);
+
+  return matchEl;
+}
+
+function createTeamRow(match: any, side: "A" | "B", team: any): HTMLElement {
+  const isWinner = match.winner === side; // Backend uses 'A' or 'B'
+  const teamEl = document.createElement("div");
+  teamEl.style.cssText = `
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          padding: var(--space-2);
+          border-radius: var(--radius-sm);
+          background: ${isWinner ? "var(--color-success-bg, rgba(34, 197, 94, 0.1))" : "transparent"};
+          border: 1px solid ${isWinner ? "var(--color-success, #22c55e)" : "var(--color-border-light)"};
+          margin-bottom: var(--space-1);
+      `;
+
+  // Winner checkbox
+  const checkbox = document.createElement("button");
+  checkbox.style.cssText = `
+          width: 24px;
+          height: 24px;
+          border-radius: var(--radius-sm);
+          border: 2px solid ${isWinner ? "var(--color-success, #22c55e)" : "var(--color-border)"};
+          background: ${isWinner ? "var(--color-success, #22c55e)" : "transparent"};
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 14px;
+          transition: all 0.2s;
+      `;
+  checkbox.innerHTML = isWinner ? '<i class="ph-bold ph-check"></i>' : "";
+  checkbox.disabled = !team || match.isBye;
+  checkbox.onclick = () => setMatchWinner(match.id, side);
+  teamEl.appendChild(checkbox);
+
+  // Team name
+  const nameEl = document.createElement("span");
+  nameEl.style.cssText = `
+          flex: 1;
+          font-weight: ${isWinner ? "var(--font-weight-semibold)" : "var(--font-weight-normal)"};
+          color: ${team ? "var(--color-text-primary)" : "var(--color-text-tertiary)"};
+      `;
+  nameEl.textContent = team ? team.name : "TBA";
+  teamEl.appendChild(nameEl);
+
+  // Score input
+  const scoreInput = document.createElement("input");
+  scoreInput.type = "number";
+  scoreInput.min = "0";
+  scoreInput.value = (side === "A" ? match.scoreA : match.scoreB) || 0;
+  scoreInput.style.cssText = `
+          width: 50px;
+          padding: var(--space-1) var(--space-2);
+          text-align: center;
+          border: 1px solid var(--color-border-light);
+          border-radius: var(--radius-sm);
+          background: var(--color-bg-primary);
+          color: var(--color-text-primary);
+      `;
+  scoreInput.disabled = !team;
+  scoreInput.onchange = (e) =>
+    updateMatchScore(
+      match.id,
+      side,
+      parseInt((e.target as HTMLInputElement).value) || 0,
+    );
+  teamEl.appendChild(scoreInput);
+
+  return teamEl;
+}
+
+async function setMatchWinner(
+  matchId: number,
+  winner: "A" | "B",
+): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/api/bracket/match/winner`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchId, winner }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      renderBracket(result.bracket);
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Winner Set",
+          "Match updated successfully",
+          "success",
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Set winner error:", err);
+  }
+}
+
+async function updateMatchScore(
+  matchId: number,
+  side: "A" | "B",
+  score: number,
+): Promise<void> {
+  try {
+    const body: any = { matchId };
+    if (side === "A") body.scoreA = score;
+    else body.scoreB = score;
+
+    const response = await fetch(`${API_BASE}/api/bracket/match/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      renderBracket(result.bracket); // Re-render to ensure consistency
+    }
+  } catch (err) {
+    console.error("Update score error:", err);
+  }
+}
+
+async function shuffleBracketTeams(): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/api/bracket/shuffle`, {
+      method: "POST",
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      renderBracket(result.bracket);
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Shuffled!",
+          "Team matchups have been randomized",
+          "success",
+        );
+      }
+    } else if (result.locked) {
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Locked",
+          "Cannot shuffle after scoring has started",
+          "warning",
+        );
+      }
+    } else {
+      alert(result.message || "Shuffle failed");
+    }
+  } catch (err) {
+    console.error("Shuffle bracket error:", err);
+  }
+}
+
+async function resetBracket(): Promise<void> {
+  console.log("🗑️ Resetting bracket...");
+
+  try {
+    const response = await fetch(`${API_BASE}/api/bracket`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      document.getElementById("bracket-create-section")!.style.display =
+        "block";
+      document.getElementById("bracket-display")!.style.display = "none";
+      loadBracketTemplates(); // Refresh list
+      if ((window as any).showNotification) {
+        (window as any).showNotification(
+          "Reset",
+          "Bracket has been reset",
+          "info",
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Reset bracket error:", err);
+  }
+}
+
+function copyBracketOverlayUrl(): void {
+  const url = `${window.location.origin}/bracket.html`;
+  navigator.clipboard.writeText(url).then(() => {
+    if ((window as any).showNotification) {
+      (window as any).showNotification(
+        "Copied",
+        "Bracket overlay URL copied to clipboard",
+        "success",
+      );
+    }
+  });
+}
+
+(window as any).setBracketType = setBracketType;
+// Note: updateSelectedCount and loadBracketTemplates are defined in index.html inline script
+// with more complete implementation (logo badges, sequence numbers)
+(window as any).createBracket = createBracket;
+(window as any).resetBracket = resetBracket;
+(window as any).shuffleBracketTeams = shuffleBracketTeams;
+(window as any).copyBracketOverlayUrl = copyBracketOverlayUrl;
+
+// Initialize - only fetchBracket, loadBracketTemplates is in index.html
+document.addEventListener("DOMContentLoaded", () => {
+  fetchBracket();
 });

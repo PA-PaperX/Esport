@@ -25,6 +25,12 @@ interface FontAssignments {
   scoreboardScore: string | null;
   versusTeamName: string | null;
   bracketTeamName: string | null;
+  // New granular assignments
+  versusScore: string | null;
+  waitTeamName: string | null;
+  waitTimer: string | null;
+  winnerTeamName: string | null;
+  [key: string]: any; // Allow style objects (e.g. scoreboardTeamName_style)
 }
 
 interface FontSettings {
@@ -42,6 +48,10 @@ const defaultState: FontSettings = {
     scoreboardScore: null,
     versusTeamName: null,
     bracketTeamName: null,
+    versusScore: null,
+    waitTeamName: null,
+    waitTimer: null,
+    winnerTeamName: null,
   },
 };
 

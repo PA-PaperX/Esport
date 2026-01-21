@@ -119,14 +119,17 @@ export class BracketManager {
     if (type === "double") {
       const validTeamCounts = [4, 8, 16];
       if (!validTeamCounts.includes(numTeams)) {
-        throw new Error(`Double Elimination requires exactly 4, 8, or 16 teams. Got ${numTeams} teams.`);
+        throw new Error(
+          `Double Elimination requires exactly 4, 8, or 16 teams. Got ${numTeams} teams.`,
+        );
       }
     }
 
     // Generate matches based on bracket type
-    const matches = type === "double"
-      ? this.generateDoubleEliminationMatches(teams, rounds, bracketSize)
-      : this.generateMatches(teams, rounds, bracketSize);
+    const matches =
+      type === "double"
+        ? this.generateDoubleEliminationMatches(teams, rounds, bracketSize)
+        : this.generateMatches(teams, rounds, bracketSize);
 
     this.state = {
       id: `bracket_${Date.now()}`,
@@ -368,7 +371,9 @@ export class BracketManager {
     // SEED TEAMS INTO WINNERS BRACKET
     // ========================================
     const seedOrder = this.generateSeedOrder(firstRoundMatches * 2);
-    const winnersR1 = matches.filter((m) => m.bracket === "winners" && m.round === 1);
+    const winnersR1 = matches.filter(
+      (m) => m.bracket === "winners" && m.round === 1,
+    );
 
     for (let i = 0; i < seedOrder.length; i++) {
       const seedPosition = seedOrder[i] - 1;
@@ -422,10 +427,18 @@ export class BracketManager {
     }
 
     // Send loser to losers bracket (only for winners bracket matches)
-    if (currentMatch.bracket === "winners" && currentMatch.loserNextMatchId && currentMatch.loserNextSlot && !currentMatch.isBye) {
-      const loser = currentMatch.winner === "A" ? currentMatch.teamB : currentMatch.teamA;
+    if (
+      currentMatch.bracket === "winners" &&
+      currentMatch.loserNextMatchId &&
+      currentMatch.loserNextSlot &&
+      !currentMatch.isBye
+    ) {
+      const loser =
+        currentMatch.winner === "A" ? currentMatch.teamB : currentMatch.teamA;
       if (loser) {
-        const loserMatch = matches.find((m) => m.id === currentMatch.loserNextMatchId);
+        const loserMatch = matches.find(
+          (m) => m.id === currentMatch.loserNextMatchId,
+        );
         if (loserMatch) {
           if (currentMatch.loserNextSlot === "A") {
             loserMatch.teamA = loser;

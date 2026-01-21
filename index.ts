@@ -1,7 +1,10 @@
 import { stateManager } from "./src/state";
-import { lowerThirdManager } from "./src/lower-third-state";
+
+import { obsManager } from "./src/obs-manager";
 import { bracketManager } from "./src/bracket-state";
 import { fontManager } from "./src/font-state";
+import { showInfoManager } from "./src/show-info-state";
+import { waitTimerManager } from "./src/wait-timer-state";
 
 const PORT = 3000;
 
@@ -10,46 +13,36 @@ const server = Bun.serve({
   // 1. WebSocket Setup (สำหรับ Overlay)
   websocket: {
     open(ws) {
-      console.log("🔌 Client Connected via WebSocket");
-      // พอ connect ปุ๊บ ส่ง state ล่าสุดไปให้ render ทันที
+      console.log("🔌 Client Connected");
       ws.send(
         JSON.stringify({
           type: "STATE_UPDATE",
           data: stateManager.getState(),
         }),
       );
-      // Subscribe เข้าห้องชื่อ "overlay" ไว้รอรับ update
       ws.subscribe("overlay");
     },
-    message(ws, message) {
-      // V1 ยังไม่ต้องรับ message จาก overlay (One-way communication)
-    },
+    message(ws, message) {},
   },
 
   // 2. HTTP Request Handler
   async fetch(req, server) {
     const url = new URL(req.url);
 
-    // --- WebSocket Upgrade ---
     if (server.upgrade(req)) {
-      return; // Return if upgrade succeeded (WebSocket connection)
+      return;
     }
 
-    // --- CORS Headers (เผื่อรันแยก port) ---
     const headers = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
 
-    // Handle Preflight Request
     if (req.method === "OPTIONS") {
       return new Response(null, { headers });
     }
 
-    // --- API ENDPOINTS ---
-
-    // GET /api/state - ดึงข้อมูลทั้งหมด
     if (url.pathname === "/api/state" && req.method === "GET") {
       return Response.json(stateManager.getState(), { headers });
     }
@@ -58,17 +51,14 @@ const server = Bun.serve({
     if (url.pathname === "/api/team/update" && req.method === "POST") {
       try {
         const body = await req.json();
-        // body expect: { side: 'A' | 'B', ...data }
         const { side, ...data } = body;
 
         if (side !== "A" && side !== "B") {
           return new Response("Invalid side", { status: 400 });
         }
 
-        // 1. Update Logic
         stateManager.updateTeam(side, data);
 
-        // 2. Sync scores to linked bracket match (if exists)
         const linkedMatchId = stateManager.getLinkedMatch();
         if (linkedMatchId && data.score !== undefined) {
           const state = stateManager.getState();
@@ -77,7 +67,6 @@ const server = Bun.serve({
             scoreB: state.teams.B.score,
           });
 
-          // Broadcast bracket update
           const bracket = bracketManager.getState();
           server.publish(
             "overlay",
@@ -86,10 +75,8 @@ const server = Bun.serve({
               data: bracket,
             }),
           );
-          console.log(`📊 Score synced to bracket match: ${linkedMatchId}`);
         }
 
-        // 3. Broadcast to Overlay (Real-time!)
         const newState = stateManager.getState();
         server.publish(
           "overlay",
@@ -236,6 +223,31 @@ const server = Bun.serve({
       }
     }
 
+    // POST /api/reset-heroes - Reset all heroes, lanes and bans
+    if (url.pathname === "/api/reset-heroes" && req.method === "POST") {
+      try {
+        stateManager.resetHeroes();
+        const state = stateManager.getState();
+
+        // Broadcast to overlay for real-time update
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "STATE_UPDATE",
+            data: state,
+          }),
+        );
+
+        console.log("🔄 Heroes reset via API");
+        return Response.json(
+          { success: true, message: "Heroes, lanes and bans reset" },
+          { headers },
+        );
+      } catch (err) {
+        return new Response("Reset heroes failed", { status: 500 });
+      }
+    }
+
     // POST /api/transition/trigger - Trigger transition animation
     if (url.pathname === "/api/transition/trigger" && req.method === "POST") {
       try {
@@ -305,91 +317,6 @@ const server = Bun.serve({
     }
 
     // ==========================================
-    // Lower Third API Endpoints
-    // ==========================================
-
-    // GET /api/lower-third - Get current Lower Third state
-    if (url.pathname === "/api/lower-third" && req.method === "GET") {
-      return Response.json(lowerThirdManager.getState(), { headers });
-    }
-
-    // POST /api/lower-third - Update Lower Third settings
-    if (url.pathname === "/api/lower-third" && req.method === "POST") {
-      try {
-        const data = await req.json();
-        lowerThirdManager.updateState(data);
-
-        // Broadcast to all overlay clients
-        server.publish(
-          "overlay",
-          JSON.stringify({
-            type: "LOWER_THIRD_UPDATE",
-            data: lowerThirdManager.getState(),
-          }),
-        );
-
-        return Response.json(
-          { success: true, state: lowerThirdManager.getState() },
-          { headers },
-        );
-      } catch (err) {
-        return new Response("Update failed", { status: 500 });
-      }
-    }
-
-    // POST /api/lower-third/slot/:id/logo - Upload logo for specific slot
-    if (
-      url.pathname.startsWith("/api/lower-third/slot/") &&
-      url.pathname.endsWith("/logo") &&
-      req.method === "POST"
-    ) {
-      try {
-        const pathParts = url.pathname.split("/");
-        const slotId = parseInt(pathParts[4]);
-
-        if (isNaN(slotId) || slotId < 1 || slotId > 3) {
-          return new Response("Invalid slot ID", { status: 400 });
-        }
-
-        const formData = await req.formData();
-        const logoFile = formData.get("logo") as File | null;
-
-        if (!logoFile) {
-          return new Response("No logo file provided", { status: 400 });
-        }
-
-        // Save logo to public/assets/lower-third-slot-{id}.png
-        const logoPath = `./public/assets/lower-third-slot-${slotId}.png`;
-        const arrayBuffer = await logoFile.arrayBuffer();
-        await Bun.write(logoPath, arrayBuffer);
-
-        // Update state
-        lowerThirdManager.setSlotLogo(
-          slotId,
-          `/assets/lower-third-slot-${slotId}.png`,
-        );
-
-        // Broadcast update
-        server.publish(
-          "overlay",
-          JSON.stringify({
-            type: "LOWER_THIRD_UPDATE",
-            data: lowerThirdManager.getState(),
-          }),
-        );
-
-        console.log(`✅ Lower Third slot ${slotId} logo uploaded`);
-        return Response.json(
-          { success: true, path: `/assets/lower-third-slot-${slotId}.png` },
-          { headers },
-        );
-      } catch (err) {
-        console.error("Logo upload error:", err);
-        return new Response("Logo upload failed", { status: 500 });
-      }
-    }
-
-    // ==========================================
     // Bracket API Endpoints
     // ==========================================
 
@@ -431,7 +358,10 @@ const server = Bun.serve({
       } catch (err: any) {
         console.error("Create bracket error:", err);
         const message = err?.message || "Create bracket failed";
-        return Response.json({ success: false, message }, { status: 400, headers });
+        return Response.json(
+          { success: false, message },
+          { status: 400, headers },
+        );
       }
     }
 
@@ -555,6 +485,27 @@ const server = Bun.serve({
         );
 
         console.log("🗑️ Bracket reset");
+        return Response.json({ success: true }, { headers });
+      } catch (err) {
+        return new Response("Reset bracket failed", { status: 500 });
+      }
+    }
+
+    // POST /api/bracket/reset - Reset bracket (alias for frontend)
+    if (url.pathname === "/api/bracket/reset" && req.method === "POST") {
+      try {
+        bracketManager.resetBracket();
+
+        // Broadcast reset
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "BRACKET_UPDATE",
+            data: null,
+          }),
+        );
+
+        console.log("🗑️ Bracket reset via POST");
         return Response.json({ success: true }, { headers });
       } catch (err) {
         return new Response("Reset bracket failed", { status: 500 });
@@ -914,8 +865,8 @@ const server = Bun.serve({
       return new Response(css, {
         headers: {
           ...headers,
-          "Content-Type": "text/css"
-        }
+          "Content-Type": "text/css",
+        },
       });
     }
 
@@ -934,9 +885,14 @@ const server = Bun.serve({
 
         // Validate file type
         const allowedExtensions = [".ttf", ".otf", ".woff", ".woff2"];
-        const ext = fontFile.name.substring(fontFile.name.lastIndexOf('.')).toLowerCase();
+        const ext = fontFile.name
+          .substring(fontFile.name.lastIndexOf("."))
+          .toLowerCase();
         if (!allowedExtensions.includes(ext)) {
-          return new Response("Invalid file type. Allowed: TTF, OTF, WOFF, WOFF2", { status: 400 });
+          return new Response(
+            "Invalid file type. Allowed: TTF, OTF, WOFF, WOFF2",
+            { status: 400 },
+          );
         }
 
         // Validate file size (max 5MB)
@@ -946,34 +902,39 @@ const server = Bun.serve({
         }
 
         // Save file
-        const filename = fontFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filename = fontFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
         const filepath = `public/fonts/custom/${filename}`;
         const buffer = await fontFile.arrayBuffer();
         await Bun.write(filepath, buffer);
 
         // Get format from extension
         const formatMap: Record<string, string> = {
-          '.ttf': 'truetype',
-          '.otf': 'opentype',
-          '.woff': 'woff',
-          '.woff2': 'woff2'
+          ".ttf": "truetype",
+          ".otf": "opentype",
+          ".woff": "woff",
+          ".woff2": "woff2",
         };
 
         // Add to font manager
         const font = fontManager.addFont({
-          name: fontName || fontFile.name.substring(0, fontFile.name.lastIndexOf('.')),
+          name:
+            fontName ||
+            fontFile.name.substring(0, fontFile.name.lastIndexOf(".")),
           filename: filename,
-          format: formatMap[ext] || 'truetype',
+          format: formatMap[ext] || "truetype",
           path: `/fonts/custom/${filename}`,
-          weight: fontWeight || '400',
-          style: fontStyle || 'normal'
+          weight: fontWeight || "400",
+          style: fontStyle || "normal",
         });
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`🔤 Font uploaded: ${font.name}`);
         return Response.json({ success: true, font }, { headers });
@@ -984,7 +945,13 @@ const server = Bun.serve({
     }
 
     // PUT /api/fonts/:id - Update font info
-    if (url.pathname.startsWith("/api/fonts/") && !url.pathname.includes("/css") && !url.pathname.includes("/upload") && !url.pathname.includes("/settings") && req.method === "PUT") {
+    if (
+      url.pathname.startsWith("/api/fonts/") &&
+      !url.pathname.includes("/css") &&
+      !url.pathname.includes("/upload") &&
+      !url.pathname.includes("/settings") &&
+      req.method === "PUT"
+    ) {
       try {
         const id = url.pathname.split("/").pop();
         const body = await req.json();
@@ -995,10 +962,13 @@ const server = Bun.serve({
         }
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`📝 Font updated: ${font.name}`);
         return Response.json({ success: true, font }, { headers });
@@ -1009,7 +979,13 @@ const server = Bun.serve({
     }
 
     // DELETE /api/fonts/:id - Delete a font
-    if (url.pathname.startsWith("/api/fonts/") && !url.pathname.includes("/css") && !url.pathname.includes("/upload") && !url.pathname.includes("/settings") && req.method === "DELETE") {
+    if (
+      url.pathname.startsWith("/api/fonts/") &&
+      !url.pathname.includes("/css") &&
+      !url.pathname.includes("/upload") &&
+      !url.pathname.includes("/settings") &&
+      req.method === "DELETE"
+    ) {
       try {
         const id = url.pathname.split("/").pop();
         const font = fontManager.getFont(id!);
@@ -1022,20 +998,23 @@ const server = Bun.serve({
         const filepath = `public${font.path}`;
         const file = Bun.file(filepath);
         if (await file.exists()) {
-          await Bun.write(filepath, ''); // Clear file
+          await Bun.write(filepath, ""); // Clear file
           // Note: Bun doesn't have direct unlink, but we can leave empty file
           // or use node:fs
-          const { unlinkSync } = await import('fs');
+          const { unlinkSync } = await import("fs");
           unlinkSync(filepath);
         }
 
         fontManager.deleteFont(id!);
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`🗑️ Font deleted: ${font.name}`);
         return Response.json({ success: true }, { headers });
@@ -1057,16 +1036,491 @@ const server = Bun.serve({
         const assignments = fontManager.updateAssignments(body);
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`⚙️ Font assignments updated`);
         return Response.json({ success: true, assignments }, { headers });
       } catch (err) {
         console.error("Font settings update error:", err);
         return new Response("Font settings update failed", { status: 500 });
+      }
+    }
+
+    // ==========================================
+    // SHOW INFO API
+    // ==========================================
+
+    // GET /api/showinfo - Get current show info state
+    if (url.pathname === "/api/showinfo" && req.method === "GET") {
+      return Response.json(showInfoManager.getState(), { headers });
+    }
+
+    // POST /api/showinfo/update - Update show info
+    if (url.pathname === "/api/showinfo/update" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const state = showInfoManager.update(body);
+
+        // Broadcast to overlays
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "SHOWINFO_UPDATE",
+            data: state,
+          }),
+        );
+
+        console.log(`📺 ShowInfo updated`);
+        return Response.json({ success: true, state }, { headers });
+      } catch (err) {
+        console.error("ShowInfo update error:", err);
+        return new Response("Update failed", { status: 500 });
+      }
+    }
+
+    // POST /api/showinfo/logo - Upload logo (left or right)
+    if (url.pathname === "/api/showinfo/logo" && req.method === "POST") {
+      try {
+        const formData = await req.formData();
+        const file = formData.get("file") as File;
+        const position = formData.get("position") as string; // "left" or "right"
+
+        if (!file || !position) {
+          return new Response("Missing file or position", { status: 400 });
+        }
+
+        const ext = file.name.split(".").pop() || "png";
+        const filename = `showinfo-${position}-logo.${ext}`;
+        const filePath = `public/uploads/${filename}`;
+
+        await Bun.write(filePath, file);
+
+        const logoUrl = `/uploads/${filename}?v=${Date.now()}`;
+
+        // Update state based on position
+        if (position === "left") {
+          showInfoManager.update({ leftLogo: logoUrl });
+        } else {
+          showInfoManager.update({ rightLogo: logoUrl });
+        }
+
+        // Broadcast update
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "SHOWINFO_UPDATE",
+            data: showInfoManager.getState(),
+          }),
+        );
+
+        console.log(`📷 ShowInfo ${position} logo uploaded: ${filename}`);
+        return Response.json({ success: true, path: logoUrl }, { headers });
+      } catch (err) {
+        console.error("Logo upload error:", err);
+        return new Response("Upload failed", { status: 500 });
+      }
+    }
+
+    // ==========================================
+    // WAIT TIMER API
+    // ==========================================
+
+    // GET /api/wait-timer - Get current timer state
+    if (url.pathname === "/api/wait-timer" && req.method === "GET") {
+      return Response.json(waitTimerManager.getState(), { headers });
+    }
+
+    // POST /api/wait-timer/set - Set timer value (in seconds)
+    if (url.pathname === "/api/wait-timer/set" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { seconds } = body;
+
+        if (typeof seconds !== "number" || seconds < 0) {
+          return new Response("Invalid seconds value", { status: 400 });
+        }
+
+        const state = waitTimerManager.setTimer(seconds);
+
+        // Broadcast to overlays
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "WAIT_TIMER_UPDATE",
+            data: {
+              action: "set",
+              seconds: state.seconds,
+              running: state.running,
+              endTime: state.endTime,
+            },
+          }),
+        );
+
+        console.log(`⏱️ Wait Timer set: ${seconds}s`);
+        return Response.json({ success: true, state }, { headers });
+      } catch (err) {
+        console.error("Set timer error:", err);
+        return new Response("Set timer failed", { status: 500 });
+      }
+    }
+
+    // POST /api/wait-timer/start - Start the timer
+    if (url.pathname === "/api/wait-timer/start" && req.method === "POST") {
+      try {
+        const state = waitTimerManager.startTimer();
+
+        // Broadcast to overlays
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "WAIT_TIMER_UPDATE",
+            data: {
+              action: "start",
+              seconds: state.seconds,
+              running: state.running,
+              endTime: state.endTime,
+            },
+          }),
+        );
+
+        console.log(`▶️ Wait Timer started`);
+        return Response.json({ success: true, state }, { headers });
+      } catch (err) {
+        console.error("Start timer error:", err);
+        return new Response("Start timer failed", { status: 500 });
+      }
+    }
+
+    // POST /api/wait-timer/stop - Stop the timer
+    if (url.pathname === "/api/wait-timer/stop" && req.method === "POST") {
+      try {
+        const state = waitTimerManager.stopTimer();
+
+        // Broadcast to overlays
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "WAIT_TIMER_UPDATE",
+            data: {
+              action: "stop",
+              seconds: state.seconds,
+              running: state.running,
+              endTime: state.endTime,
+            },
+          }),
+        );
+
+        console.log(`⏸️ Wait Timer stopped`);
+        return Response.json({ success: true, state }, { headers });
+      } catch (err) {
+        console.error("Stop timer error:", err);
+        return new Response("Stop timer failed", { status: 500 });
+      }
+    }
+
+    // POST /api/wait-timer/reset - Reset the timer
+    if (url.pathname === "/api/wait-timer/reset" && req.method === "POST") {
+      try {
+        const state = waitTimerManager.resetTimer();
+
+        // Broadcast to overlays
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "WAIT_TIMER_UPDATE",
+            data: {
+              action: "reset",
+              seconds: 0,
+              running: false,
+              endTime: null,
+            },
+          }),
+        );
+
+        console.log(`🔄 Wait Timer reset`);
+        return Response.json({ success: true, state }, { headers });
+      } catch (err) {
+        console.error("Reset timer error:", err);
+        return new Response("Reset timer failed", { status: 500 });
+      }
+    }
+
+    // ==========================================
+    // OBS API
+    // ==========================================
+
+    // POST /api/obs/connect
+    if (url.pathname === "/api/obs/connect" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { address, password } = body;
+        const success = await obsManager.connect(address, password);
+        return Response.json({ success }, { headers });
+      } catch (error) {
+        console.error("OBS Connect Error:", error);
+        return new Response("Failed to connect", { status: 500 });
+      }
+    }
+
+    // POST /api/obs/disconnect
+    if (url.pathname === "/api/obs/disconnect" && req.method === "POST") {
+      await obsManager.disconnect();
+      return Response.json({ success: true }, { headers });
+    }
+
+    // POST /api/obs/switch
+    if (url.pathname === "/api/obs/switch" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { sceneName } = body;
+        const success = await obsManager.switchScene(sceneName);
+        return Response.json({ success }, { headers });
+      } catch (error) {
+        console.error("OBS Switch Error:", error);
+        return new Response("Failed to switch scene", { status: 500 });
+      }
+    }
+
+    // GET /api/obs/status
+    if (url.pathname === "/api/obs/status" && req.method === "GET") {
+      return Response.json(obsManager.getStatus(), { headers });
+    }
+
+    // GET /api/obs/scenes
+    if (url.pathname === "/api/obs/scenes" && req.method === "GET") {
+      const scenes = await obsManager.getScenes();
+      return Response.json(scenes, { headers });
+    }
+
+    // POST /api/obs/apply-layout - Copy Esport__PaperX2.json to OBS scenes directory
+    if (url.pathname === "/api/obs/apply-layout" && req.method === "POST") {
+      try {
+        const file = Bun.file("./obs/Esport__PaperX2.json");
+        if (await file.exists()) {
+          // Windows only: Copy to AppData
+          if (process.platform === "win32" && process.env.APPDATA) {
+            try {
+              const obsScenesPath = `${process.env.APPDATA}\\obs-studio\\basic\\scenes`;
+              // Use the exact filename to match manual import behavior expectation
+              const destPath = `${obsScenesPath}\\Esport__PaperX2.json`;
+
+              console.log(`📂 Copying layout to: ${destPath}`);
+              await Bun.write(destPath, file);
+              console.log("✅ Layout file imported to OBS");
+
+              return Response.json(
+                {
+                  success: true,
+                  message: "Imported to OBS. Please restart OBS.",
+                },
+                { headers },
+              );
+            } catch (copyErr) {
+              console.error("Copy error:", copyErr);
+              return new Response("Permission error copying to OBS", {
+                status: 500,
+              });
+            }
+          } else {
+            return new Response("Auto-import only supported on Windows", {
+              status: 400,
+            });
+          }
+        } else {
+          return new Response("Layout file not found", { status: 404 });
+        }
+      } catch (err) {
+        console.error("Import layout error:", err);
+        return new Response("Error importing layout", { status: 500 });
+      }
+    }
+
+    // ==========================================
+    // TRANSITION LOGO API
+    // ==========================================
+
+    // GET /api/transition/logo
+    if (url.pathname === "/api/transition/logo" && req.method === "GET") {
+      try {
+        // Check for existing logo files
+        const extensions = ["png", "jpg", "jpeg", "webp", "gif"];
+        let logoPath = null;
+
+        // Only check for transition-logo.*
+        for (const ext of extensions) {
+          const path = `public/uploads/transition-logo.${ext}`;
+          const file = Bun.file(path);
+          if (await file.exists()) {
+            logoPath = `/uploads/transition-logo.${ext}`;
+            break;
+          }
+        }
+
+        return Response.json(
+          {
+            success: true,
+            url: logoPath ? `${logoPath}?v=${Date.now()}` : null,
+            path: logoPath ? `${logoPath}?v=${Date.now()}` : null,
+          },
+          { headers },
+        );
+      } catch (err) {
+        return new Response("Error checking logo", { status: 500 });
+      }
+    }
+
+    // POST /api/transition/logo
+    if (url.pathname === "/api/transition/logo" && req.method === "POST") {
+      try {
+        const formData = await req.formData();
+        const file = formData.get("file") as File;
+
+        if (!file) {
+          return new Response("No file uploaded", { status: 400 });
+        }
+
+        // Delete existing logos first to avoid confusion
+        const extensions = ["png", "jpg", "jpeg", "webp", "gif"];
+        const { unlinkSync, existsSync } = await import("fs"); // Use node:fs for synchronous delete
+
+        for (const ext of extensions) {
+          const p = `public/uploads/transition-logo.${ext}`;
+          if (existsSync(p)) {
+            try {
+              unlinkSync(p);
+            } catch (e) {}
+          }
+        }
+
+        const ext = file.name.split(".").pop() || "png";
+        const filename = `transition-logo.${ext}`;
+        const filePath = `public/uploads/${filename}`;
+
+        await Bun.write(filePath, file);
+
+        const logoUrl = `/uploads/${filename}?v=${Date.now()}`;
+
+        // Broadcast update to transition.html
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "TRANSITION_CONFIG",
+            data: {
+              logoUrl: logoUrl,
+            },
+          }),
+        );
+
+        return Response.json(
+          {
+            success: true,
+            url: logoUrl,
+            path: logoUrl,
+          },
+          { headers },
+        );
+      } catch (err) {
+        console.error("Transition logo upload error:", err);
+        return new Response("Upload failed", { status: 500 });
+      }
+    }
+
+    // --- FONT MANAGEMENT ---
+
+    // GET /api/fonts - List all fonts and assignments
+    if (url.pathname === "/api/fonts" && req.method === "GET") {
+      return Response.json(fontManager.getState(), { headers });
+    }
+
+    // POST /api/fonts - Upload new font
+    if (url.pathname === "/api/fonts" && req.method === "POST") {
+      try {
+        const formData = await req.formData();
+        const fontFile = formData.get("font");
+
+        if (!fontFile || !(fontFile instanceof File)) {
+          return new Response("No font file provided", { status: 400 });
+        }
+
+        const name = fontFile.name;
+        const id = crypto.randomUUID();
+        // Determine extension
+        const ext = name.split(".").pop()?.toLowerCase() || "ttf";
+        const filename = `${id}-${name}`;
+        const savePath = `public/fonts/custom/${filename}`;
+
+        await Bun.write(savePath, fontFile);
+
+        // Analyze font meta (simplified)
+        const familyName = name.replace(/\.[^/.]+$/, "");
+
+        const newFontData = {
+          name: familyName,
+          filename: filename,
+          format:
+            ext === "ttf" ? "truetype" : ext === "otf" ? "opentype" : "woff2",
+          path: `/fonts/custom/${filename}`,
+          weight: "normal",
+          style: "normal",
+        };
+
+        const newState = fontManager.addFont(newFontData);
+
+        // Broadcast update
+        server.publish(
+          "overlay",
+          JSON.stringify({ type: "FONT_UPDATE", data: fontManager.getState() }),
+        );
+
+        return Response.json(
+          { success: true, state: fontManager.getState() },
+          { headers },
+        );
+      } catch (err) {
+        console.error("Font upload error:", err);
+        return new Response("Upload failed", { status: 500 });
+      }
+    }
+
+    // POST /api/fonts/settings - Update assignments
+    // POST /api/fonts/settings - Update assignments
+    if (url.pathname === "/api/fonts/settings" && req.method === "POST") {
+      try {
+        const assignments = await req.json();
+        const newState = fontManager.updateAssignments(assignments);
+
+        // Broadcast update
+        server.publish(
+          "overlay",
+          JSON.stringify({ type: "FONT_UPDATE", data: fontManager.getState() }),
+        );
+
+        return Response.json(
+          { success: true, state: fontManager.getState() },
+          { headers },
+        );
+      } catch (err) {
+        return new Response("Update settings failed", { status: 500 });
+      }
+    }
+
+    // DELETE /api/fonts/:id
+    if (url.pathname.startsWith("/api/fonts/") && req.method === "DELETE") {
+      const id = url.pathname.split("/").pop();
+      if (id) {
+        fontManager.deleteFont(id);
+        const newState = fontManager.getState();
+        server.publish(
+          "overlay",
+          JSON.stringify({ type: "FONT_UPDATE", data: newState }),
+        );
+        return Response.json({ success: true }, { headers });
       }
     }
 

@@ -144,11 +144,31 @@ export class StateManager {
     }
   }
 
-  // สลับฝั่งทีม
+  // สลับฝั่งทีม (พร้อม reset heroes เพื่อป้องกันบัค)
   public toggleSwap(): boolean {
     this.state.swapped = !this.state.swapped;
+    this.resetHeroes(); // Auto-reset heroes when swapping
     this.saveToDisk();
     return this.state.swapped;
+  }
+
+  // รีเซ็ต Hero, Lane และ Bans ของทั้งสองทีม
+  public resetHeroes(): void {
+    // Reset Team A
+    this.state.teams.A.players.forEach((player) => {
+      player.hero = "";
+      player.lane = "";
+    });
+    this.state.teams.A.bans = [];
+
+    // Reset Team B
+    this.state.teams.B.players.forEach((player) => {
+      player.hero = "";
+      player.lane = "";
+    });
+    this.state.teams.B.bans = [];
+
+    console.log("🔄 Heroes, lanes, and bans reset for both teams");
   }
 
   // อัปเดตข้อมูล Match (BestOf, BanCount)
