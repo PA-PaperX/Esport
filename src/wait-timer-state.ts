@@ -1,6 +1,4 @@
-// ==========================================
 // Wait Timer State Manager
-// ==========================================
 
 const DB_FILE = "data/wait-timer.json";
 

@@ -1,12 +1,8 @@
-// ==========================================
 // Bracket State Manager - Tournament Bracket System
-// ==========================================
 
 const BRACKET_DB_FILE = "data/bracket.json";
 
-// ==========================================
 // 1. Data Schemas
-// ==========================================
 
 export type BracketType = "single" | "double";
 
@@ -47,9 +43,7 @@ export interface BracketState {
   updatedAt: string;
 }
 
-// ==========================================
 // 2. Bracket Manager Class
-// ==========================================
 
 export class BracketManager {
   private state: BracketState | null = null;
@@ -256,9 +250,7 @@ export class BracketManager {
     const matches: BracketMatch[] = [];
     const firstRoundMatches = bracketSize / 2;
 
-    // ========================================
     // WINNERS BRACKET
-    // ========================================
     const getWinnersRoundName = (
       round: number,
       totalRounds: number,
@@ -317,9 +309,7 @@ export class BracketManager {
       }
     }
 
-    // ========================================
     // LOSERS BRACKET (Ranking Bracket)
-    // ========================================
     const getLosersRoundName = (
       round: number,
       totalRounds: number,
@@ -367,9 +357,7 @@ export class BracketManager {
       }
     }
 
-    // ========================================
     // SEED TEAMS INTO WINNERS BRACKET
-    // ========================================
     const seedOrder = this.generateSeedOrder(firstRoundMatches * 2);
     const winnersR1 = matches.filter(
       (m) => m.bracket === "winners" && m.round === 1,

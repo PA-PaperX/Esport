@@ -1,8 +1,6 @@
 import { join } from "path";
 
-// ==========================================
 // 1. Data Schemas (โครงสร้างข้อมูล)
-// ==========================================
 
 export interface Player {
   slot: number; // 1-5
@@ -55,9 +53,22 @@ export interface LowerThirdState {
   slots: LowerThirdSlot[]; // 3 ช่อง
 }
 
-// ==========================================
+export interface ShowInfoSocial {
+  platform: string;
+  handle: string;
+}
+
+export interface ShowInfo {
+  title: string;
+  infoText: string;
+  leftLogo: string;
+  leftText: string;
+  centerText: string;
+  rightLogo: string;
+  socials: ShowInfoSocial[];
+}
+
 // 2. Default State (ค่าเริ่มต้น)
-// ==========================================
 
 const DEFAULT_PLAYERS = (prefix: string) =>
   Array.from({ length: 5 }, (_, i) => ({
@@ -96,9 +107,7 @@ export const INITIAL_STATE: MatchState = {
   },
 };
 
-// ==========================================
 // 3. State Manager (Logic จัดการข้อมูล)
-// ==========================================
 
 const DB_FILE = "match-data.json"; // ไฟล์ที่จะบันทึก state ไว้กันหาย
 
