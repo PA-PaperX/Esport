@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="th" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Away Screen - Esport Overlay</title>
+
+    <!-- Shared Design System -->
+    <link rel="stylesheet" href="/styles/tokens.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <style>
+      /* ==========================================
+       OVERLAY CONFIG - แก้ไขค่าตรงนี้ได้เลย
+       ========================================== */
+      :root {
+        /* Colors (override tokens for overlay) */
+        --overlay-primary: #131131;
+        --overlay-accent: #fbbf24;
+        --overlay-text: #ffffff;
+        --overlay-text-secondary: rgba(255, 255, 255, 0.8);
+
+        /* Sizes */
+        --title-size: 6em;
+        --info-size: 2em;
+        --tagline-size: 1.5em;
+        --footer-text-size: 1.8em;
+        --social-size: 2em;
+        --logo-size: 80px;
+
+        /* Positions */
+        --header-top: 350px;
+        --footer-bottom: 50px;
+        --footer-padding: 50px;
+        --social-bottom: 150px;
+
+        /* Animation Delays */
+        --delay-header: 0.5s;
+        --delay-footer: 1s;
+        --delay-logo: 1.2s;
+        --delay-tagline: 1.5s;
+        --delay-socials: 2s;
+      }
+
+      /* ==========================================
+       OVERLAY BASE
+       ========================================== */
+      body {
+        width: 1920px;
+        height: 1080px;
+        margin: 0 auto;
+        overflow: hidden;
+        background: transparent;
+        font-family: var(--custom-font-ui, "Rajdhani"), sans-serif;
+      }
+
+      /* ==========================================
+       HEADER (กึ่งกลาง)
+       ========================================== */
+      .header {
+        position: absolute;
+        top: var(--header-top);
+        left: 0;
+        right: 0;
+        text-align: center;
+        opacity: 0;
+        animation: fadeIn 1s ease-out forwards;
+        animation-delay: var(--delay-header);
+      }
+
+      .title {
+        font-family: var(--custom-font-title, "Rajdhani"), sans-serif;
+        font-size: var(--title-size);
+        font-weight: var(--font-weight-bold, 700);
+        text-transform: uppercase;
+        color: var(--overlay-text);
+        margin-bottom: 20px;
+      }
+
+      .info-text {
+        font-size: var(--info-size);
+        color: var(--overlay-text-secondary);
+        font-weight: var(--font-weight-medium, 500);
+      }
+
+      /* ==========================================
+       FOOTER (3 Columns)
+       ========================================== */
+      .footer {
+        position: absolute;
+        bottom: var(--footer-bottom);
+        left: var(--footer-padding);
+        right: var(--footer-padding);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        opacity: 0;
+        animation: slideUp 0.8s ease-out forwards;
+        animation-delay: var(--delay-footer);
+      }
+
+      .footer-left,
+      .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        min-width: 300px;
+      }
+
+      .footer-right {
+        justify-content: flex-end;
+      }
+
+      .footer-logo {
+        width: var(--logo-size);
+        height: var(--logo-size);
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .footer-left .footer-logo {
+        animation: slideRight 0.8s ease-out both;
+        animation-delay: var(--delay-logo);
+      }
+
+      .footer-right .footer-logo {
+        animation: slideLeft 0.8s ease-out both;
+        animation-delay: var(--delay-logo);
+      }
+
+      .footer-text {
+        font-size: var(--footer-text-size);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--overlay-text);
+        text-transform: uppercase;
+      }
+
+      /* Center Tagline */
+      .footer-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.8s ease-out both;
+        animation-delay: var(--delay-tagline);
+      }
+
+      .tagline {
+        font-size: var(--tagline-size);
+        font-weight: var(--font-weight-bold, 700);
+        text-transform: uppercase;
+        padding: 15px 40px;
+        background: var(--overlay-primary);
+        border-left: 6px solid var(--overlay-accent);
+        border-right: 6px solid var(--overlay-accent);
+        color: var(--overlay-text);
+      }
+
+      /* ==========================================
+       SOCIALS
+       ========================================== */
+      .socials {
+        position: absolute;
+        bottom: var(--social-bottom);
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 60px;
+        opacity: 0;
+        animation: fadeIn 0.8s ease-out forwards;
+        animation-delay: var(--delay-socials);
+      }
+
+      .social-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: var(--social-size);
+        color: var(--overlay-text);
+      }
+
+      .social-item i {
+        font-size: 1.2em;
+        color: var(--overlay-accent);
+      }
+
+      /* ==========================================
+       ANIMATIONS
+       ========================================== */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes slideRight {
+        from {
+          opacity: 0;
+          transform: translateX(-50px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes slideLeft {
+        from {
+          opacity: 0;
+          transform: translateX(50px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <div class="title" id="title">Starting Soon</div>
+      <div class="info-text" id="info-text">The stream will begin shortly</div>
+    </div>
+
+    <!-- Socials -->
+    <div class="socials" id="socials"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-left">
+        <div class="footer-logo" id="left-logo"></div>
+        <span class="footer-text" id="left-text"></span>
+      </div>
+
+      <div class="footer-center">
+        <div class="tagline" id="center-text">Powered by PaperX</div>
+      </div>
+
+      <div class="footer-right">
+        <span class="footer-text" id="right-text"></span>
+        <div class="footer-logo" id="right-logo"></div>
+      </div>
+    </div>
+
+    <script>
+      // ==========================================
+      // CONFIG
+      // ==========================================
+      const WS_URL = "ws://localhost:3000/ws";
+      const API_BASE = "http://localhost:3000";
+
+      const PLATFORM_ICONS = {
+        facebook: "fa-brands fa-facebook",
+        youtube: "fa-brands fa-youtube",
+        twitch: "fa-brands fa-twitch",
+        discord: "fa-brands fa-discord",
+        instagram: "fa-brands fa-instagram",
+        tiktok: "fa-brands fa-tiktok",
+        "x-twitter": "fa-brands fa-x-twitter",
+        twitter: "fa-brands fa-twitter",
+      };
+
+      // ==========================================
+      // DOM Elements
+      // ==========================================
+      const elements = {
+        title: document.getElementById("title"),
+        infoText: document.getElementById("info-text"),
+        centerText: document.getElementById("center-text"),
+        leftLogo: document.getElementById("left-logo"),
+        leftText: document.getElementById("left-text"),
+        rightLogo: document.getElementById("right-logo"),
+        rightText: document.getElementById("right-text"),
+        socials: document.getElementById("socials"),
+      };
+
+      // ==========================================
+      // WebSocket
+      // ==========================================
+      let ws = null;
+
+      function connectWebSocket() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => console.log("✅ Connected");
+        ws.onmessage = handleMessage;
+        ws.onclose = () => setTimeout(connectWebSocket, 3000);
+        ws.onerror = () => ws?.close();
+      }
+
+      function handleMessage(event) {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "SHOWINFO_UPDATE") render(msg.data);
+          if (msg.type === "FONT_UPDATE") applyFonts(msg.data);
+        } catch (e) {}
+      }
+
+      // ==========================================
+      // Render
+      // ==========================================
+      function render(data) {
+        elements.title.textContent = data.title || "Starting Soon";
+        elements.infoText.textContent = data.infoText || "";
+        elements.centerText.textContent =
+          data.centerText || "Powered by PaperX";
+
+        setLogo(elements.leftLogo, data.leftLogo);
+        elements.leftText.textContent = data.leftText || "";
+
+        setLogo(elements.rightLogo, data.rightLogo);
+        elements.rightText.textContent = data.rightText || "";
+
+        renderSocials(data.socials || []);
+      }
+
+      function setLogo(el, url) {
+        if (url) {
+          el.style.backgroundImage = `url('${url}')`;
+          el.style.display = "block";
+        } else {
+          el.style.display = "none";
+        }
+      }
+
+      function renderSocials(socials) {
+        elements.socials.innerHTML = socials
+          .map((s) => {
+            const icon = PLATFORM_ICONS[s.platform] || "fa-solid fa-link";
+            return `<div class="social-item"><i class="${icon}"></i><span>${s.handle}</span></div>`;
+          })
+          .join("");
+      }
+
+      function applyFonts(fontData) {
+        if (!fontData?.assignments) return;
+        const a = fontData.assignments;
+        if (a.title)
+          document.documentElement.style.setProperty(
+            "--custom-font-title",
+            a.title,
+          );
+        if (a.ui)
+          document.documentElement.style.setProperty("--custom-font-ui", a.ui);
+      }
+
+      // ==========================================
+      // Init
+      // ==========================================
+      async function init() {
+        try {
+          const [showInfoRes, fontsRes] = await Promise.all([
+            fetch(`${API_BASE}/api/showinfo`),
+            fetch(`${API_BASE}/api/fonts`),
+          ]);
+
+          if (showInfoRes.ok) render(await showInfoRes.json());
+          if (fontsRes.ok) applyFonts(await fontsRes.json());
+        } catch (e) {
+          console.error("Init error:", e);
+        }
+
+        connectWebSocket();
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
