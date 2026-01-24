@@ -55,6 +55,21 @@ export interface LowerThirdState {
   slots: LowerThirdSlot[]; // 3 ช่อง
 }
 
+export interface ShowInfoSocial {
+  icon: string; // "facebook-logo", "youtube-logo"
+  text: string;
+}
+
+export interface ShowInfo {
+  title: string;
+  infoText: string;
+  leftLogo: string;
+  leftText: string;
+  centerText: string;
+  rightLogo: string;
+  socials: ShowInfoSocial[];
+}
+
 // ==========================================
 // 2. Default State (ค่าเริ่มต้น)
 // ==========================================

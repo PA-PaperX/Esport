@@ -1,4 +1,4 @@
-export {};
+export { };
 
 // ==========================================
 // Interfaces (Strict Typing)
@@ -390,10 +390,10 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null;
 }
 
@@ -432,18 +432,15 @@ function renderPlayers(
       
       <!-- Lane/Role -->
       <div class="player-card__role ${player.hero ? "" : "disabled"}" 
-           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${
-             player.hero ? "true" : "false"
-           })"
-           title="${
-             player.lane || (player.hero ? "Select Lane" : "Select Hero first")
-           }">
-        ${
-          laneImgPath
-            ? `<img src="${laneImgPath}" alt="${escapeHtml(
-                player.lane || "",
-              )}">`
-            : '<i class="ph-duotone ph-map-pin"></i>'
+           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${player.hero ? "true" : "false"
+        })"
+           title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")
+        }">
+        ${laneImgPath
+          ? `<img src="${laneImgPath}" alt="${escapeHtml(
+            player.lane || "",
+          )}">`
+          : '<i class="ph-duotone ph-map-pin"></i>'
         }
       </div>
       
@@ -461,12 +458,11 @@ function renderPlayers(
       <div class="player-card__hero ${player.hero ? "has-hero" : ""}" 
            onclick="openHeroPicker('${teamSide}', ${player.slot})"
            title="${player.hero || "Select Hero"}">
-        ${
-          heroImgPath
-            ? `<img src="${heroImgPath}" alt="${escapeHtml(
-                player.hero || "",
-              )}">`
-            : '<i class="ph-duotone ph-game-controller"></i>'
+        ${heroImgPath
+          ? `<img src="${heroImgPath}" alt="${escapeHtml(
+            player.hero || "",
+          )}">`
+          : '<i class="ph-duotone ph-game-controller"></i>'
         }
       </div>
       
@@ -555,8 +551,7 @@ async function swapSides(): Promise<void> {
       const result = await response.json();
       updateSwapUI(result.swapped);
       console.log(
-        `✅ Sides swapped: ${
-          result.swapped ? "Team A → Right, Team B → Left" : "Normal"
+        `✅ Sides swapped: ${result.swapped ? "Team A → Right, Team B → Left" : "Normal"
         }`,
       );
     } else {
@@ -2712,16 +2707,13 @@ function openLanePicker(side: "A" | "B", slot: number): void {
             <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
                  style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #1a1a1a;" 
                  alt="${lane.name}"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${
-                   lane.icon
-                 }%3C/text%3E%3C/svg%3E';">
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon
+      }%3C/text%3E%3C/svg%3E';">
             <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--color-text-primary); font-size: 0.95rem;">${
-                  lane.label
-                }</div>
-                <div style="font-size: 0.8rem; color: var(--color-text-tertiary);">${
-                  lane.thaiName
-                }</div>
+                <div style="font-weight: 600; color: var(--color-text-primary); font-size: 0.95rem;">${lane.label
+      }</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-tertiary);">${lane.thaiName
+      }</div>
             </div>
         </button>
     `,
@@ -2786,8 +2778,7 @@ async function selectLane(laneName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `✅ Lane ${
-        laneName || "cleared"
+      `✅ Lane ${laneName || "cleared"
       } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
     );
   } else {
@@ -3374,9 +3365,13 @@ function handleDragStart(event: DragEvent): void {
   ) as HTMLElement;
   if (!card) return;
 
+  // Robustly detect what we are dragging by looking at element under cursor
+  // This avoids dependency on 'mousedown' global variable which might be flaky
+  const sourceEl = document.elementFromPoint(event.clientX, event.clientY);
+
   // Check if the initial click was within the hero or lane section
-  const heroSection = dragSourceElement?.closest(".player-card__hero");
-  const laneSection = dragSourceElement?.closest(".player-card__role");
+  const heroSection = sourceEl?.closest(".player-card__hero");
+  const laneSection = sourceEl?.closest(".player-card__role");
 
   // Determine drag mode
   let dragMode: "full" | "hero" | "lane" = "full";
@@ -3384,9 +3379,10 @@ function handleDragStart(event: DragEvent): void {
   else if (laneSection) dragMode = "lane";
 
   // Debug
-  console.log("Drag Start Source:", {
-    source: dragSourceElement?.className,
+  console.log("Drag Start:", {
+    cardSlot: card.dataset.slot,
     mode: dragMode,
+    sourceEl: sourceEl?.className
   });
 
   draggedPlayer = {
@@ -3398,7 +3394,10 @@ function handleDragStart(event: DragEvent): void {
   card.classList.add("dragging");
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = "move";
-    // Optional: Set custom drag image if needed
+    // CRITICAL: setData is required for drag to work in many browsers (Firefox etc)
+    // We can also store the data here instead of just global variable, but global is fine for internal use.
+    // Just setting it allows the drag to proceed.
+    event.dataTransfer.setData("text/plain", JSON.stringify(draggedPlayer));
   }
 }
 
@@ -3409,10 +3408,13 @@ function handleDragEnd(event: DragEvent): void {
   if (card) {
     card.classList.remove("dragging");
   }
+  // Clear drag-over from ALL cards
   document
     .querySelectorAll(".player-card")
     .forEach((c) => c.classList.remove("drag-over"));
+
   draggedPlayer = null;
+  console.log("Drag End");
 }
 
 function handleDragOver(event: DragEvent): void {
@@ -3587,6 +3589,35 @@ async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
     }
   }
 }
+
+// ==========================================
+// Exposed Roster Functions
+// ==========================================
+
+// Drag & Drop
+(window as any).handleDragStart = handleDragStart;
+(window as any).handleDragEnd = handleDragEnd;
+(window as any).handleDragOver = handleDragOver;
+(window as any).handleDrop = handleDrop;
+
+// Hero Picker (Simple Implementation)
+
+(window as any).openHeroPicker = openHeroPicker;
+
+// Font Settings Logic
+async function saveFontAssignment(part: string, fontId: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/api/fonts/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [part]: fontId }),
+    });
+    console.log(`Saved font assignment ${part} -> ${fontId}`);
+  } catch (e) {
+    console.error("Failed to save font assignment", e);
+  }
+}
+(window as any).saveFontAssignment = saveFontAssignment;
 
 // ==========================================
 // Theme Toggle
