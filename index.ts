@@ -5,11 +5,49 @@ import { bracketManager } from "./src/bracket-state";
 import { fontManager } from "./src/font-state";
 import { showInfoManager } from "./src/show-info-state";
 import { waitTimerManager } from "./src/wait-timer-state";
+import { existsSync } from "fs";
+import { join, dirname } from "path";
 
-const PORT = 3000;
+// Path Resolver for Tauri Sidecar
+function resolvePath(relativePath: string): string {
+  // 1. Check CWD (Dev mode)
+  let path = join(process.cwd(), relativePath);
+  if (existsSync(path)) return path;
+
+  // 2. Check Resources (Prod mode)
+  const potentialPaths = [
+    join(process.cwd(), "resources", relativePath),
+    join(process.cwd(), "..", "resources", relativePath),
+    join(dirname(process.execPath), "resources", relativePath),
+  ];
+
+  for (const p of potentialPaths) {
+    if (existsSync(p)) return p;
+  }
+
+  return relativePath; // Fallback
+}
+
+const port = process.env.PORT || 3000;
+
+// DEBUG: Log startup paths
+try {
+  const debugPath = join(process.env.USERPROFILE || "C:\\Users\\Administrator", "Desktop", "server_debug.txt");
+  const debugInfo = `
+Time: ${new Date().toISOString()}
+CWD: ${process.cwd()}
+ExecPath: ${process.execPath}
+Dirs in CWD: ${JSON.stringify(require("fs").readdirSync(process.cwd()))}
+resources path: ${join(process.cwd(), "resources")}
+Files in resources: ${require("fs").existsSync(join(process.cwd(), "resources")) ? JSON.stringify(require("fs").readdirSync(join(process.cwd(), "resources"))) : "NOT FOUND"}
+  `;
+  require("fs").writeFileSync(debugPath, debugInfo);
+} catch (e) { }
+
+console.log(`Server running on port ${port}`);
 
 const server = Bun.serve({
-  port: PORT,
+  port: port,
   // 1. WebSocket Setup (สำหรับ Overlay)
   websocket: {
     open(ws) {
@@ -22,7 +60,7 @@ const server = Bun.serve({
       );
       ws.subscribe("overlay");
     },
-    message(ws, message) {},
+    message(ws, message) { },
   },
 
   // 2. HTTP Request Handler
@@ -1394,7 +1432,7 @@ const server = Bun.serve({
           if (existsSync(p)) {
             try {
               unlinkSync(p);
-            } catch (e) {}
+            } catch (e) { }
           }
         }
 
@@ -1489,6 +1527,16 @@ const server = Bun.serve({
     }
 
     // POST /api/fonts/settings - Update assignments
+    // GET /api/fonts - Get all font settings (fonts + assignments)
+    if (url.pathname === "/api/fonts" && req.method === "GET") {
+      return Response.json(fontManager.getState(), { headers });
+    }
+
+    // GET /api/fonts/assignments - Get just assignments
+    if (url.pathname === "/api/fonts/assignments" && req.method === "GET") {
+      return Response.json(fontManager.getState().assignments, { headers });
+    }
+
     // POST /api/fonts/settings - Update assignments
     if (url.pathname === "/api/fonts/settings" && req.method === "POST") {
       try {
@@ -1534,7 +1582,8 @@ const server = Bun.serve({
     }
 
     // Serve public folder (Overlay, Logo, etc.)
-    const publicFile = Bun.file(`public${url.pathname}`);
+    const publicPath = resolvePath(`public${url.pathname}`);
+    const publicFile = Bun.file(publicPath);
     if (await publicFile.exists()) {
       return new Response(publicFile);
     }
