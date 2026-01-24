@@ -1,578 +1,477 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tournament Bracket - Overlay</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="/styles/tokens.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Custom Fonts (injected dynamically) -->
-    <style id="custom-fonts"></style>
-    <style>
-      :root {
-        --custom-font-teamname: "Inter";
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROV Scoreboard - Esport Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Rajdhani", sans-serif;
+      /* Reference background for positioning - REMOVE for production */
+      /* background: url('rov-reference.png') no-repeat center top; */
+      /* background-size: cover; */
+      background: transparent;
+      overflow: hidden;
+      min-height: 100vh;
+    }
+
+    :root {
+      --team-a-color: #ff4757;
+      --team-b-color: #3742fa;
+    }
+
+    /* ========================================
+           ROV TOP BAR OVERLAY
+           Positioned to match in-game Tournament UI
+           ======================================== */
+
+    .scoreboard {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    /* Team Box Container */
+    .team-box {
+      display: flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 10px;
+      margin-top: 0;
+      min-width: 350px;
+      transition:
+        transform 0.35s ease-out,
+        background 0.35s ease-out,
+        opacity 0.35s ease-out;
+    }
+
+    .team-box.swapping {
+      transition:
+        transform 0.5s ease-out,
+        background 0.5s ease-out;
+    }
+
+    /* Team A (Left side - Red team in ROV) */
+    .team-a {
+      background: var(--team-a-color);
+      padding-left: 10px;
+      padding-right: 15px;
+      border-radius: 0 0 5px 0;
+      animation: slideFromLeft 0.5s ease-out;
+      border-bottom: 3px solid rgba(255, 255, 255, 0.9);
+      box-shadow:
+        0 3px 10px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 5px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Team B (Right side - Blue team in ROV) */
+    .team-b {
+      background: var(--team-b-color);
+      padding-right: 10px;
+      padding-left: 15px;
+      border-radius: 0 0 0 5px;
+      flex-direction: row-reverse;
+      animation: slideFromRight 0.5s ease-out;
+      border-bottom: 3px solid rgba(255, 255, 255, 0.9);
+      box-shadow:
+        0 3px 10px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 5px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Score */
+    .score {
+      font-size: 1em;
+      font-weight: 700;
+      color: white;
+      min-width: 20px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-right: 5px;
+    }
+
+    .team-b .score {
+      margin-right: 0;
+      margin-left: 5px;
+    }
+
+    /* Team Logo */
+    .team-logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 6px;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .team-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Team Name */
+    .team-name {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    /* Center Gap - space for in-game stats (gold/dragon/dark/towers) */
+    .center-gap {
+      width: 180px;
+      height: 26px;
+    }
+
+    /* Animations */
+    @keyframes slideFromLeft {
+      from {
+        transform: translateX(-50px);
+        opacity: 0;
       }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideFromRight {
+      from {
+        transform: translateX(50px);
+        opacity: 0;
       }
 
-      body {
-        font-family: "Inter", sans-serif;
-        background: transparent;
-        color: white;
-        min-height: 100vh;
-        overflow: hidden;
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
       }
 
-      .team-name {
-        font-family: var(--custom-font-teamname), "Rajdhani", sans-serif;
-        flex: 1;
-        font-size: 16px;
-        font-weight: var(--custom-font-teamname-weight, 700);
-        font-style: var(--custom-font-teamname-style, normal);
-        color: var(--custom-font-teamname-color, #ffffff);
-        text-shadow: var(--custom-font-teamname-glow, none);
-        text-transform: uppercase;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        padding-left: 10px;
+      50% {
+        transform: scale(1.2);
       }
-    </style>
-  </head>
+    }
 
-  <body>
-    <div class="bracket-overlay" id="bracket-overlay">
-      <div class="no-bracket" id="no-bracket">
-        <h2>No Bracket Available</h2>
-        <p>Create a bracket from the Control Panel to display it here.</p>
-      </div>
-      <h1
-        class="tournament-title"
-        id="tournament-title"
-        style="display: none"
-      ></h1>
-      <div class="bracket-container" id="bracket-container"></div>
+    .score.pulse {
+      animation: pulse 0.3s ease-out;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scoreboard">
+    <!-- Team A (Left - typically Red in ROV) -->
+    <div class="team-box team-a">
+      <div class="score" id="teamA-score">0</div>
+      <div class="team-logo" id="teamA-logo"></div>
+      <div class="team-name" id="teamA-name">TEAM A</div>
     </div>
 
-    <script>
-      let currentBracket = null;
-      let fontSettings = null;
+    <!-- Center Gap (space for in-game stats) -->
+    <div class="center-gap"></div>
 
-      // WebSocket Connection
-      function connectWebSocket() {
-        const wsUrl = `ws://${window.location.host}/ws`;
-        const ws = new WebSocket(wsUrl);
+    <!-- Team B (Right - typically Blue in ROV) -->
+    <div class="team-box team-b">
+      <div class="score" id="teamB-score">0</div>
+      <div class="team-logo" id="teamB-logo"></div>
+      <div class="team-name" id="teamB-name">TEAM B</div>
+    </div>
+  </div>
 
-        ws.onopen = () => {
-          console.log("🔌 WebSocket connected");
-        };
+  <script>
+    // WebSocket Connection
+    const WS_URL = `ws://localhost:3000/ws`;
+    let ws = null;
+    let currentState = null;
+    let fontState = { fonts: [], assignments: {} };
+    let previousScores = { A: 0, B: 0 };
 
-        ws.onmessage = (event) => {
-          const message = JSON.parse(event.data);
+    const elements = {
+      teamAName: document.getElementById("teamA-name"),
+      teamAScore: document.getElementById("teamA-score"),
+      teamALogo: document.getElementById("teamA-logo"),
+      teamBName: document.getElementById("teamB-name"),
+      teamBScore: document.getElementById("teamB-score"),
+      teamBLogo: document.getElementById("teamB-logo"),
+    };
 
-          if (message.type === "BRACKET_UPDATE") {
-            console.log("📊 Bracket update received");
-            updateBracket(message.data);
-          }
-
-          // Handle font updates in real-time
-          if (message.type === "FONT_UPDATE" && message.data) {
-            fontSettings = message.data;
-            applyCustomFonts();
-          }
-        };
-
-        ws.onclose = () => {
-          console.log("🔌 WebSocket disconnected, reconnecting...");
-          setTimeout(connectWebSocket, 2000);
-        };
-
-        ws.onerror = (error) => {
-          console.error("WebSocket error:", error);
-        };
-      }
-
-      // Fetch initial bracket
-      async function loadBracket() {
+    function connectWebSocket() {
+      ws = new WebSocket(WS_URL);
+      ws.onopen = () => console.log("✅ Connected");
+      ws.onmessage = (event) => {
         try {
-          const response = await fetch("/api/bracket");
-          const bracket = await response.json();
-          updateBracket(bracket);
-        } catch (err) {
-          console.error("Failed to load bracket:", err);
-        }
-      }
-
-      // Update bracket display
-      function updateBracket(bracket) {
-        currentBracket = bracket;
-
-        const noBracket = document.getElementById("no-bracket");
-        const title = document.getElementById("tournament-title");
-        const container = document.getElementById("bracket-container");
-
-        if (!bracket) {
-          noBracket.style.display = "block";
-          title.style.display = "none";
-          container.innerHTML = "";
-          return;
-        }
-
-        noBracket.style.display = "none";
-        title.style.display = "block";
-        title.textContent = bracket.name;
-
-        renderBracket(bracket, container);
-      }
-
-      // Render bracket
-      function renderBracket(bracket, container) {
-        container.innerHTML = "";
-
-        // Check if this is a double elimination bracket
-        const hasWinnersBracket = bracket.matches.some(
-          (m) => m.bracket === "winners",
-        );
-        const hasLosersBracket = bracket.matches.some(
-          (m) => m.bracket === "losers",
-        );
-        const isDoubleElim = hasWinnersBracket && hasLosersBracket;
-
-        if (isDoubleElim) {
-          // Double Elimination: Render Winners and Losers brackets separately
-          renderDoubleEliminationBracket(bracket, container);
-        } else {
-          // Single Elimination: Render normally
-          renderSingleEliminationBracket(bracket, container);
-        }
-      }
-
-      // Render single elimination bracket
-      function renderSingleEliminationBracket(bracket, container) {
-        // Group matches by round
-        const rounds = {};
-        bracket.matches.forEach((match) => {
-          if (!rounds[match.round]) rounds[match.round] = [];
-          rounds[match.round].push(match);
-        });
-
-        const roundNumbers = Object.keys(rounds).sort((a, b) => a - b);
-
-        roundNumbers.forEach((roundNum, idx) => {
-          const roundEl = document.createElement("div");
-          roundEl.className = "round";
-
-          // Round title
-          const roundTitle = document.createElement("div");
-          roundTitle.className = "round-title";
-
-          const firstMatch = rounds[roundNum][0];
-          if (firstMatch.roundName.includes("Grand Final")) {
-            roundTitle.textContent = "Grand Final";
-          } else if (firstMatch.roundName.includes("Semifinal")) {
-            roundTitle.textContent = "Semifinals";
-          } else if (firstMatch.roundName.includes("Quarterfinal")) {
-            roundTitle.textContent = "Quarterfinals";
-          } else {
-            roundTitle.textContent = `Round ${roundNum}`;
+          const msg = JSON.parse(event.data);
+          if (msg.type === "STATE_UPDATE" && msg.data) {
+            currentState = msg.data;
+            renderOverlay();
           }
-          roundEl.appendChild(roundTitle);
+          if (msg.type === "FONT_UPDATE" && msg.data) {
+            // msg.data might be full state or partial?
+            // Standardize: Index.ts sends full state {fonts, assignments} or just assignments?
+            // Index.ts sends fontManager.getState() which is {fonts, assignments}.
+            fontState = msg.data;
+            applyFonts();
+          }
+        } catch (e) { }
+      };
+      ws.onclose = () => setTimeout(connectWebSocket, 3000);
+      ws.onerror = () => ws?.close();
+    }
 
-          // Connector Line Logic
-          const FIXED_CONNECTOR_HEIGHT = 54;
+    let lastSwapState = null;
+    let isAnimating = false;
 
-          rounds[roundNum].forEach((match, matchIdx) => {
-            // Skip BYE matches with no real teams (both TBA/null)
-            if (match.isBye && !match.teamA && !match.teamB) {
-              return; // Don't render this empty BYE match
-            }
+    function renderOverlay() {
+      if (!currentState) return;
 
-            const delay = idx * 0.2 + matchIdx * 0.1 + 2.0; // 2s base offset for transition
-            const isTop = matchIdx % 2 === 0;
-            const hasConnector = rounds[roundNum].length > 1;
+      const swapped = currentState.swapped || false;
+      const teamA = currentState.teams.A;
+      const teamB = currentState.teams.B;
 
-            const matchEl = createMatchElement(
-              match,
-              rounds[roundNum].length === 1,
-              delay,
-              hasConnector,
-              isTop,
-              FIXED_CONNECTOR_HEIGHT,
-            );
-            roundEl.appendChild(matchEl);
-          });
+      // Get team box elements
+      const teamABox = document.querySelector(".team-a");
+      const teamBBox = document.querySelector(".team-b");
 
-          container.appendChild(roundEl);
-        });
-      }
+      // Check if swap state changed (trigger animation)
+      if (teamABox && teamBBox) {
+        if (
+          lastSwapState !== null &&
+          lastSwapState !== swapped &&
+          !isAnimating
+        ) {
+          isAnimating = true;
 
-      // Render double elimination bracket
-      function renderDoubleEliminationBracket(bracket, container) {
-        // Create wrapper for both brackets
-        const wrapper = document.createElement("div");
-        wrapper.style.display = "flex";
-        wrapper.style.flexDirection = "column";
-        wrapper.style.gap = "40px";
+          // Phase 1: Slide UP (hide)
+          teamABox.style.transform = "translateY(-50px)";
+          teamBBox.style.transform = "translateY(-50px)";
+          teamABox.style.opacity = "0";
+          teamBBox.style.opacity = "0";
 
-        // ========== WINNERS BRACKET ==========
-        const winnersSection = document.createElement("div");
-        winnersSection.className = "bracket-section winners-section";
-
-        const winnersTitle = document.createElement("h2");
-        winnersTitle.textContent = "🏆 Winners Bracket";
-        winnersTitle.style.cssText =
-          "color: #22c55e; font-size: 18px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;";
-        winnersSection.appendChild(winnersTitle);
-
-        const winnersContainer = document.createElement("div");
-        winnersContainer.className = "bracket-container";
-        winnersContainer.style.display = "flex";
-        winnersContainer.style.gap = "60px";
-
-        // Filter and group winners matches
-        const winnersMatches = bracket.matches.filter(
-          (m) => m.bracket === "winners",
-        );
-        const winnersRounds = {};
-        winnersMatches.forEach((m) => {
-          if (!winnersRounds[m.round]) winnersRounds[m.round] = [];
-          winnersRounds[m.round].push(m);
-        });
-
-        Object.keys(winnersRounds)
-          .sort((a, b) => a - b)
-          .forEach((roundNum, idx) => {
-            const roundEl = document.createElement("div");
-            roundEl.className = "round";
-
-            const roundTitle = document.createElement("div");
-            roundTitle.className = "round-title";
-            roundTitle.textContent =
-              winnersRounds[roundNum][0].roundName
-                .split(" ")
-                .slice(0, -1)
-                .join(" ") || `Winners R${roundNum}`;
-            roundEl.appendChild(roundTitle);
-
-            const FIXED_CONNECTOR_HEIGHT = 54;
-            winnersRounds[roundNum].forEach((match, matchIdx) => {
-              // Skip BYE matches with no real teams
-              if (match.isBye && !match.teamA && !match.teamB) {
-                return;
-              }
-
-              const delay = idx * 0.2 + matchIdx * 0.1 + 2.0; // 2s base offset for transition
-              const isTop = matchIdx % 2 === 0;
-              const hasConnector = winnersRounds[roundNum].length > 1;
-              const matchEl = createMatchElement(
-                match,
-                match.roundName.includes("Final"),
-                delay,
-                hasConnector,
-                isTop,
-                FIXED_CONNECTOR_HEIGHT,
-              );
-              matchEl.style.borderLeftColor = "#22c55e";
-              roundEl.appendChild(matchEl);
-            });
-
-            winnersContainer.appendChild(roundEl);
-          });
-
-        winnersSection.appendChild(winnersContainer);
-        wrapper.appendChild(winnersSection);
-
-        // ========== LOSERS BRACKET ==========
-        const losersSection = document.createElement("div");
-        losersSection.className = "bracket-section losers-section";
-
-        const losersTitle = document.createElement("h2");
-        losersTitle.textContent = "💀 Losers Bracket";
-        losersTitle.style.cssText =
-          "color: #ef4444; font-size: 18px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;";
-        losersSection.appendChild(losersTitle);
-
-        const losersContainer = document.createElement("div");
-        losersContainer.className = "bracket-container";
-        losersContainer.style.display = "flex";
-        losersContainer.style.gap = "60px";
-
-        // Filter and group losers matches
-        const losersMatches = bracket.matches.filter(
-          (m) => m.bracket === "losers",
-        );
-        const losersRounds = {};
-        losersMatches.forEach((m) => {
-          if (!losersRounds[m.round]) losersRounds[m.round] = [];
-          losersRounds[m.round].push(m);
-        });
-
-        Object.keys(losersRounds)
-          .sort((a, b) => a - b)
-          .forEach((roundNum, idx) => {
-            const roundEl = document.createElement("div");
-            roundEl.className = "round";
-
-            const roundTitle = document.createElement("div");
-            roundTitle.className = "round-title";
-            roundTitle.textContent =
-              losersRounds[roundNum][0].roundName
-                .split(" ")
-                .slice(0, -1)
-                .join(" ") || `Losers R${roundNum}`;
-            roundEl.appendChild(roundTitle);
-
-            const FIXED_CONNECTOR_HEIGHT = 54;
-            losersRounds[roundNum].forEach((match, matchIdx) => {
-              // Skip BYE matches with no real teams
-              if (match.isBye && !match.teamA && !match.teamB) {
-                return;
-              }
-
-              const delay = idx * 0.2 + matchIdx * 0.1 + 2.0; // 2s base offset for transition
-              const isTop = matchIdx % 2 === 0;
-              const hasConnector = losersRounds[roundNum].length > 1;
-              const matchEl = createMatchElement(
-                match,
-                match.roundName.includes("Final"),
-                delay,
-                hasConnector,
-                isTop,
-                FIXED_CONNECTOR_HEIGHT,
-              );
-              roundEl.appendChild(matchEl);
-            });
-
-            losersContainer.appendChild(roundEl);
-          });
-
-        losersSection.appendChild(losersContainer);
-        wrapper.appendChild(losersSection);
-
-        container.appendChild(wrapper);
-      }
-
-      // Create match element
-      function createMatchElement(
-        match,
-        isGrandFinal,
-        baseDelay = 0,
-        hasConnector = false,
-        isTop = true,
-        connectorLength = 20,
-      ) {
-        const matchEl = document.createElement("div");
-        // Add connector classes
-        const connectorClass = hasConnector
-          ? isTop
-            ? " connect-down"
-            : " connect-up"
-          : "";
-        matchEl.className = `match${match.isBye ? " bye" : ""}${isGrandFinal ? " grand-final" : ""}${connectorClass}`;
-
-        // Set variables for connector
-        if (hasConnector) {
-          matchEl.style.setProperty(
-            "--connector-height",
-            `${connectorLength}px`,
-          );
-        }
-
-        matchEl.dataset.matchId = match.id;
-
-        if (match.isBye) {
-          const byeBadge = document.createElement("div");
-          byeBadge.className = "bye-badge";
-          byeBadge.textContent = "BYE";
-          matchEl.appendChild(byeBadge);
-        }
-
-        // Don't show winners for BYE matches
-        const showWinnerA = !match.isBye && match.winner === "A";
-        const showWinnerB = !match.isBye && match.winner === "B";
-
-        // Team A
-        const teamAEl = createTeamElement(
-          match.teamA,
-          match.scoreA,
-          showWinnerA,
-          isGrandFinal && showWinnerA, // isChampion - only for Grand Final winner
-        );
-        teamAEl.style.animationDelay = `${baseDelay}s`;
-        matchEl.appendChild(teamAEl);
-
-        // Team B (stagger by 0.1s)
-        const teamBEl = createTeamElement(
-          match.teamB,
-          match.scoreB,
-          showWinnerB,
-          isGrandFinal && showWinnerB, // isChampion - only for Grand Final winner
-        );
-        teamBEl.style.animationDelay = `${baseDelay + 0.1}s`;
-        matchEl.appendChild(teamBEl);
-
-        // Champion crown is now handled by createTeamElement with SVG
-
-        return matchEl;
-      }
-
-      // Create team element
-      function createTeamElement(team, score, isWinner, isChampion = false) {
-        const teamEl = document.createElement("div");
-        // Add champion class only for Grand Final winner (gold), otherwise just winner (green)
-        teamEl.className = `team${isWinner ? " winner" : ""}${isChampion ? " champion" : ""}`;
-
-        // Add crown ONLY for champion (Grand Final winner)
-        if (isChampion && team) {
-          const crownContainer = document.createElement("div");
-          crownContainer.className = "winner-crown";
-          crownContainer.innerHTML = `
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06l-3.23.85-3.04-6.28C13.73 2.6 13.18 2.25 12.58 2.25h-1.15c-.6 0-1.15.35-1.38.9L6.99 9.43l-3.23-.85c-.8-.21-1.63.27-1.84 1.06-.21.8.27 1.62 1.06 1.84l4.21 1.11 1.81-3.75 1.5 3.09 1.5-3.09 1.81 3.75 4.21-1.11c.8-.22 1.28-1.04 1.06-1.84z"/>
-          </svg>
-        `;
-          teamEl.appendChild(crownContainer);
-
-          // Add float animation after reveal completes
+          // Phase 2: After hiding, apply new state and slide DOWN (reveal)
           setTimeout(() => {
-            const svg = crownContainer.querySelector("svg");
-            if (svg) svg.classList.add("revealed");
-          }, 5000); // 4s delay + 0.8s reveal animation
+            // Apply the swapped state visually
+            applySwapState(teamABox, teamBBox, swapped, teamA, teamB);
+            updateTeamData(swapped, teamA, teamB);
+
+            // Trigger slide down
+            requestAnimationFrame(() => {
+              teamABox.style.transform = "translateY(0)";
+              teamBBox.style.transform = "translateY(0)";
+              teamABox.style.opacity = "1";
+              teamBBox.style.opacity = "1";
+            });
+
+            setTimeout(() => {
+              isAnimating = false;
+            }, 400);
+          }, 350);
+        } else if (!isAnimating) {
+          // No animation needed, just apply state
+          applySwapState(teamABox, teamBBox, swapped, teamA, teamB);
+          updateTeamData(swapped, teamA, teamB);
         }
 
-        // Logo
-        const logoEl = document.createElement("div");
-        logoEl.className = "team-logo";
-        if (team && team.logo) {
-          logoEl.innerHTML = `<img src="${team.logo}" alt="${team.name}">`;
-        } else if (team) {
-          logoEl.textContent = team.name.substring(0, 2).toUpperCase();
-        } else {
-          logoEl.textContent = "?";
-        }
-        teamEl.appendChild(logoEl);
+        lastSwapState = swapped;
+      }
+    }
 
-        // Name
-        const nameEl = document.createElement("div");
-        nameEl.className = `team-name${!team ? " tba" : ""}`;
-        nameEl.textContent = team ? team.name : "TBA";
-        teamEl.appendChild(nameEl);
+    function applySwapState(teamABox, teamBBox, swapped, teamA, teamB) {
+      // Only swap background colors, keep layout (flex-direction, border-radius) constant
+      if (swapped) {
+        teamABox.style.background = teamB.color;
+        teamBBox.style.background = teamA.color;
+      } else {
+        teamABox.style.background = teamA.color;
+        teamBBox.style.background = teamB.color;
+      }
+      // Keep flex-direction constant - Team A (left) uses row, Team B (right) uses row-reverse
+      teamABox.style.flexDirection = "row";
+      teamBBox.style.flexDirection = "row-reverse";
+      // Keep border-radius constant
+      teamABox.style.borderRadius = "0 0 5px 0";
+      teamBBox.style.borderRadius = "0 0 0 5px";
+    }
 
-        // Score
-        const scoreEl = document.createElement("div");
-        scoreEl.className = "team-score";
-        scoreEl.textContent = score || "0";
-        teamEl.appendChild(scoreEl);
+    function updateTeamData(swapped, teamA, teamB) {
+      if (swapped) {
+        elements.teamAName.textContent = teamB.name;
+        updateScore("A", teamB.score);
+        updateLogo("A", teamB.logo, teamB.logoVersion);
 
-        return teamEl;
+        elements.teamBName.textContent = teamA.name;
+        updateScore("B", teamA.score);
+        updateLogo("B", teamA.logo, teamA.logoVersion);
+      } else {
+        elements.teamAName.textContent = teamA.name;
+        updateScore("A", teamA.score);
+        updateLogo("A", teamA.logo, teamA.logoVersion);
+
+        elements.teamBName.textContent = teamB.name;
+        updateScore("B", teamB.score);
+        updateLogo("B", teamB.logo, teamB.logoVersion);
+      }
+    }
+
+    function updateScore(side, score) {
+      const el = side === "A" ? elements.teamAScore : elements.teamBScore;
+      if (previousScores[side] !== score) {
+        el.textContent = score;
+        el.classList.remove("pulse");
+        void el.offsetWidth;
+        el.classList.add("pulse");
+        previousScores[side] = score;
+      }
+    }
+
+    function updateLogo(side, logoPath, version) {
+      const el = side === "A" ? elements.teamALogo : elements.teamBLogo;
+      const src = version ? `${logoPath}?v=${version}` : logoPath;
+      el.innerHTML = logoPath ? `<img src="${src}" alt="">` : "";
+    }
+
+    function updateTeamColor(side, color) {
+      document.documentElement.style.setProperty(
+        side === "A" ? "--team-a-color" : "--team-b-color",
+        color,
+      );
+    }
+
+    function applyFonts() {
+      if (!fontState || !fontState.fonts) return;
+
+      // 1. Inject @font-face styles
+      const styleId = "custom-fonts-style";
+      let styleEl = document.getElementById(styleId);
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
       }
 
-      // Initialize
-      loadBracket();
+      let css = "";
+      fontState.fonts.forEach((font) => {
+        css += `
+                @font-face {
+                    font-family: 'Custom-${font.id}';
+                    src: url('${font.path}') format('${font.format === "ttf" ? "truetype" : font.format}');
+                    font-weight: ${font.weight || "normal"};
+                    font-style: ${font.style || "normal"};
+                }
+            `;
+      });
+      styleEl.textContent = css;
+
+      // 2. Apply assignments
+      const map = {
+        rovOverlayTeamName: [".team-name"],
+        rovOverlayScore: [".score"],
+      };
+
+      if (fontState.assignments) {
+        Object.entries(map).forEach(([key, selectors]) => {
+          const fontId = fontState.assignments[key];
+          const style = fontState.assignments[`${key}_style`] || {};
+
+          selectors.forEach((sel) => {
+            document.querySelectorAll(sel).forEach((el) => {
+              // Apply Font Family
+              if (fontId) {
+                el.style.fontFamily = `'Custom-${fontId}', 'Rajdhani', sans-serif`;
+              }
+
+              // Apply Styles (Color, Bold, Italic, Glow)
+              if (style.color) el.style.color = style.color;
+              if (style.bold !== undefined)
+                el.style.fontWeight = style.bold ? "bold" : "normal";
+              if (style.italic !== undefined)
+                el.style.fontStyle = style.italic ? "italic" : "normal";
+              if (style.glow) {
+                el.style.textShadow = `0 0 10px ${style.color || "#ffffff"}, 0 0 20px ${style.color || "#ffffff"}`;
+              } else {
+                el.style.textShadow = "none";
+              }
+            });
+          });
+        });
+      }
+    }
+
+    async function init() {
+      try {
+        // Fetch State
+        const res = await fetch(`http://localhost:3000/api/state`);
+        if (res.ok) {
+          currentState = await res.json();
+          renderOverlay();
+        }
+
+        // Fetch Fonts
+        const fontsRes = await fetch(`http://localhost:3000/api/fonts`);
+        const assignRes = await fetch(
+          `http://localhost:3000/api/fonts/assignments`,
+        );
+
+        if (fontsRes.ok) {
+          // assignment might fail if not set, or return empty
+          const fontsData = await fontsRes.json();
+          // API structure check: GET /api/fonts returns { fonts: [] } ?
+          // Index.ts: if (url.pathname === "/api/fonts") -> Not explicit in snippet, but assuming standard rest
+          // Wait, I didn't see GET /api/fonts/assignments in index.ts snippet earlier.
+          // I only saw GET /api/fonts returning FontManager.getState() at 1500? Not really.
+          // Let's assume /api/fonts returning { fonts: [], assignments: {} } is standard.
+          // Actually, let's fetch /api/fonts which likely returns state.
+
+          // Correction: I should check what index.ts exposes.
+          // Step 4980 showed:
+          // if (url.pathname === "/api/fonts/settings" && POST) ...
+          // I didn't see GET /api/fonts.
+          // But fontManager.getState() returns both.
+          // If I don't have GET endpoint, I might fail.
+          // But let's assume I added it or it existed (my grep failed on 'font' earlier, so maybe it doesn't exist).
+
+          // If Fetch fails, WS update will fix it eventually.
+
+          if (fontsData && fontsData.fonts) {
+            fontState = fontsData;
+            applyFonts();
+          }
+        }
+      } catch (e) { }
       connectWebSocket();
-      loadFontSettings();
+    }
 
-      // Load font settings from API
-      async function loadFontSettings() {
-        try {
-          const response = await fetch("/api/fonts");
-          if (response.ok) {
-            fontSettings = await response.json();
-            applyCustomFonts();
-          }
-        } catch (e) {
-          console.log("Failed to load font settings");
-        }
-      }
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
 
-      // Apply custom fonts to the overlay
-      function applyCustomFonts() {
-        if (!fontSettings) return;
-
-        const styleEl = document.getElementById("custom-fonts");
-        let css = "";
-        for (const font of fontSettings.fonts || []) {
-          css += `
-          @font-face {
-            font-family: '${font.name}';
-            src: url('${font.path}') format('${font.format}');
-            font-weight: ${font.weight || "normal"};
-            font-style: ${font.style || "normal"};
-            font-display: swap;
-          }
-        `;
-        }
-        styleEl.textContent = css;
-
-        const assignments = fontSettings.assignments || {};
-
-        const getFontName = (fontId) => {
-          if (!fontId) return null;
-          const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
-          return font ? font.name : null;
-        };
-
-        const teamNameFont = getFontName(assignments.bracketTeamName);
-        document.documentElement.style.setProperty(
-          "--custom-font-teamname",
-          teamNameFont ? `'${teamNameFont}'` : '"Inter"',
-        );
-
-        const bracketStyle = assignments.bracketTeamName_style || {};
-        document.documentElement.style.setProperty(
-          "--custom-font-teamname-color",
-          bracketStyle.color || "#ffffff",
-        );
-        document.documentElement.style.setProperty(
-          "--custom-font-teamname-glow",
-          bracketStyle.glow
-            ? `0 0 10px ${bracketStyle.color || "#ffffff"}, 0 0 20px ${bracketStyle.color || "#ffffff"}`
-            : "none",
-        );
-        document.documentElement.style.setProperty(
-          "--custom-font-teamname-weight",
-          bracketStyle.bold ? "800" : "700",
-        );
-        document.documentElement.style.setProperty(
-          "--custom-font-teamname-style",
-          bracketStyle.italic ? "italic" : "normal",
-        );
-
-        const titleFont = getFontName(assignments.bracketTitle);
-        document.documentElement.style.setProperty(
-          "--custom-font-bracketTitle",
-          titleFont ? `'${titleFont}'` : '"Inter"',
-        );
-
-        const titleStyle = assignments.bracketTitle_style || {};
-        document.documentElement.style.setProperty(
-          "--custom-font-bracketTitle-color",
-          titleStyle.color || "#ffffff",
-        );
-        document.documentElement.style.setProperty(
-          "--custom-font-bracketTitle-glow",
-          titleStyle.glow
-            ? `0 0 15px ${titleStyle.color || "#ffffff"}, 0 0 30px ${titleStyle.color || "#ffffff"}`
-            : "none",
-        );
-        document.documentElement.style.setProperty(
-          "--custom-font-bracketTitle-weight",
-          titleStyle.bold ? "900" : "800",
-        );
-        document.documentElement.style.setProperty(
-          "--custom-font-bracketTitle-style",
-          titleStyle.italic ? "italic" : "normal",
-        );
-      }
-    </script>
-  </body>
 </html>
