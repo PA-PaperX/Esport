@@ -3,9 +3,30 @@
 // ==========================================
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
+import { join, dirname } from "path";
 
-const FONT_SETTINGS_FILE = "./font-settings.json";
-const FONTS_DIR = "./public/fonts/custom";
+// Path Resolver for Tauri Sidecar
+function resolvePath(relativePath: string): string {
+  // 1. Check CWD (Dev mode)
+  let path = join(process.cwd(), relativePath);
+  if (existsSync(path)) return path;
+
+  // 2. Check Resources (Prod mode)
+  const potentialPaths = [
+    join(process.cwd(), "resources", relativePath),
+    join(process.cwd(), "..", "resources", relativePath),
+    join(dirname(process.execPath), "resources", relativePath),
+  ];
+
+  for (const p of potentialPaths) {
+    if (existsSync(p)) return p;
+  }
+
+  return relativePath; // Fallback
+}
+
+const FONT_SETTINGS_FILE = resolvePath("font-settings.json");
+const FONTS_DIR = resolvePath("public/fonts/custom");
 
 interface CustomFont {
   id: string;
@@ -21,10 +42,16 @@ interface CustomFont {
 interface FontAssignments {
   lowerThirdTitle: string | null;
   lowerThirdSlots: string | null;
-  scoreboardTeamName: string | null;
-  scoreboardScore: string | null;
+  rovOverlayTeamName: string | null;
+  rovOverlayScore: string | null;
   versusTeamName: string | null;
   bracketTeamName: string | null;
+  // New granular assignments
+  versusScore: string | null;
+  waitTeamName: string | null;
+  waitTimer: string | null;
+  winnerTeamName: string | null;
+  [key: string]: any; // Allow style objects (e.g. scoreboardTeamName_style)
 }
 
 interface FontSettings {
@@ -38,10 +65,14 @@ const defaultState: FontSettings = {
   assignments: {
     lowerThirdTitle: null,
     lowerThirdSlots: null,
-    scoreboardTeamName: null,
-    scoreboardScore: null,
+    rovOverlayTeamName: null,
+    rovOverlayScore: null,
     versusTeamName: null,
     bracketTeamName: null,
+    versusScore: null,
+    waitTeamName: null,
+    waitTimer: null,
+    winnerTeamName: null,
   },
 };
 

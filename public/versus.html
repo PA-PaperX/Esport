@@ -30,7 +30,7 @@
     :root {
       --color-a: #4a9fd4;
       --color-b: #c75b39;
-      --bg-dark: #0a0e1a;
+      --bg-dark: var(--color-bg-primary);
       --bg-card: rgba(10, 15, 25, 0.95);
       --custom-font-teamname: "Rajdhani";
     }
@@ -97,7 +97,7 @@
       justify-content: center;
     }
 
-    /* LeagueBroadcast Inspired: Breathing Gradient Overlay on Hero */
+    /* LeagueBroadcast Inspired: Gradient Overlay on Hero Selection */
     .hero-area::after {
       content: "";
       position: absolute;
@@ -107,29 +107,38 @@
       height: 100%;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.5s ease;
       /* Gradient will be dynamically colored by parent .player-card */
       background: linear-gradient(to top, var(--team-color-alpha, rgba(0, 0, 0, 0.5)) 0%, transparent 60%);
       z-index: 5;
     }
 
-    .player-card:hover .hero-area::after {
-      opacity: 1;
-      animation: pulsate-pick 2s infinite;
+    /* Auto-animate glow when hero is selected (synced with heroRise) */
+    .player-card.hero-selected .hero-area::after {
+      animation: heroGlowFade 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
-    @keyframes pulsate-pick {
+    @keyframes heroGlowFade {
       0% {
-        opacity: 0.3;
+        opacity: 0;
       }
 
-      50% {
-        opacity: 0.7;
+      20% {
+        opacity: 0.8;
+      }
+
+      60% {
+        opacity: 0.6;
       }
 
       100% {
-        opacity: 0.3;
+        opacity: 0;
       }
+    }
+
+    /* Keep hover effect as well for interactivity */
+    .player-card:hover .hero-area::after {
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
     }
 
     .hero-img {
@@ -146,14 +155,20 @@
     }
 
     @keyframes heroRise {
-      from {
+      0% {
         transform: translateX(-50%) translateY(100%);
         opacity: 0;
+        filter: grayscale(100%) brightness(1.2);
       }
 
-      to {
+      70% {
+        filter: grayscale(50%) brightness(1.1);
+      }
+
+      100% {
         transform: translateX(-50%) translateY(0);
         opacity: 1;
+        filter: grayscale(0%) brightness(1);
       }
     }
 
@@ -285,6 +300,7 @@
     }
 
     .team-score {
+      font-family: var(--custom-font-score, "Rajdhani"), sans-serif;
       font-size: 2.8rem;
       font-weight: 800;
       line-height: 1;
@@ -301,11 +317,12 @@
     .team-name {
       font-family: var(--custom-font-teamname), "Rajdhani", sans-serif;
       font-size: 1.4rem;
-      font-weight: 700;
+      font-weight: var(--custom-font-teamname-weight, 700);
+      font-style: var(--custom-font-teamname-style, normal);
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: white;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      color: var(--custom-font-teamname-color, white);
+      text-shadow: var(--custom-font-teamname-glow, 0 2px 10px rgba(0, 0, 0, 0.3));
     }
 
     .team-coach {
@@ -676,13 +693,7 @@
       background: rgba(0, 0, 0, 0.3);
     }
 
-    .team-bans-a .ban-circle {
-      /* border-color: var(--color-a); Remove static colored border */
-    }
 
-    .team-bans-b .ban-circle {
-      /* border-color: var(--color-b); Remove static colored border */
-    }
 
     .ban-circle img {
       width: 100%;
@@ -724,7 +735,7 @@
           <svg class="league-icon" viewBox="0 0 100 100" fill="#0a0e1a">
             <path d="M50 5 L60 35 L95 35 L68 55 L78 90 L50 70 L22 90 L32 55 L5 35 L40 35 Z" />
           </svg>
-          <span class="patch-text" id="patch-text">Patch 9.19</span>
+          <span class="patch-text" id="patch-text"></span>
         </div>
       </div>
 
@@ -762,8 +773,6 @@
         </div>
       </div>
     </div>
-
-  </div>
   </div>
   </div>
 
@@ -774,12 +783,36 @@
     let fontSettings = null;
 
     // --- HELPERS ---
+    // Map for special hero filenames (inconsistent naming/extensions)
+    const HERO_FILE_MAP = {
+      "Aleister": { name: "Aleister-3", ext: "webp" },
+      "D'Arcy": { name: "DArcy", ext: "webp" },
+      "K'Kri": { name: "Kkri", ext: "webp" },
+      "Batman": { name: "Kaine", ext: "webp" },
+      "Timmy": { name: "Teemee", ext: "webp" },
+      "Kriknak": { name: "Krinak", ext: "webp" },
+      "Chaugnar": { name: "Chaugner", ext: "webp" },
+      "Lu Bu": { name: "Lu_Bu", ext: "webp" },
+      "The Flash": { name: "The_Flash", ext: "webp" },
+      "Wonder Woman": { name: "Wonder_Woman", ext: "webp" },
+      "Goverra": { name: "Goverra", ext: "png" }
+    };
+
     function getHeroImage(heroName) {
       if (!heroName) return null;
+
+      // Check if this hero has a special filename mapping
+      if (HERO_FILE_MAP[heroName]) {
+        const mapping = HERO_FILE_MAP[heroName];
+        return `/assets/heroes/${mapping.name}.${mapping.ext}`;
+      }
+
       let formatted = heroName.trim();
       formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
       formatted = formatted.replace(/\s+/g, "_");
-      return `/src/rov/${formatted}.png`;
+
+      // Default to webp in assets/heroes
+      return `/assets/heroes/${formatted}.webp`;
     }
 
     // --- HERO POSITION MAPPING ---
@@ -1083,6 +1116,10 @@
       const currentImg = heroArea.querySelector("img.hero-img");
       const newSrc = getHeroImage(player.hero);
 
+      // Check if hero changed
+      const previousHero = el.dataset.lastHero || "";
+      const heroChanged = previousHero !== (player.hero || "");
+
       if (newSrc) {
         if (
           currentImg &&
@@ -1090,6 +1127,18 @@
         ) {
           currentImg.src = newSrc;
           currentImg.style.objectPosition = getHeroPosition(player.hero);
+
+          // Trigger glow animation on hero change
+          if (heroChanged && player.hero) {
+            el.classList.remove("hero-selected");
+            void el.offsetWidth; // Force reflow
+            el.classList.add("hero-selected");
+
+            // Remove class after animation completes (0.9s)
+            setTimeout(() => {
+              el.classList.remove("hero-selected");
+            }, 900);
+          }
         } else if (!currentImg) {
           const placeholder = heroArea.querySelector(".hero-placeholder");
           if (placeholder) placeholder.remove();
@@ -1097,10 +1146,35 @@
             "beforeend",
             getHeroContent(player.hero),
           );
+
+          // Trigger glow animation for new hero
+          if (player.hero) {
+            el.classList.add("hero-selected");
+            setTimeout(() => {
+              el.classList.remove("hero-selected");
+            }, 900);
+          }
         } else if (currentImg) {
           currentImg.style.objectPosition = getHeroPosition(player.hero);
         }
+      } else {
+        // Hero was cleared - remove image and show placeholder
+        if (currentImg) {
+          currentImg.remove();
+        }
+        // Add placeholder if not exists
+        if (!heroArea.querySelector(".hero-placeholder")) {
+          heroArea.insertAdjacentHTML(
+            "beforeend",
+            '<div class="hero-placeholder"></div>'
+          );
+        }
+        // Remove glow class
+        el.classList.remove("hero-selected");
       }
+
+      // Store current hero for change detection
+      el.dataset.lastHero = player.hero || "";
     }
 
     // Init
@@ -1164,12 +1238,36 @@
 
       // Apply to team name
       const teamNameFont = getFontName(assignments.versusTeamName);
+      const teamNameStyle = assignments.versusTeamName_style || {};
       document.documentElement.style.setProperty(
         "--custom-font-teamname",
         teamNameFont ? `'${teamNameFont}'` : '"Rajdhani"',
       );
+      document.documentElement.style.setProperty(
+        "--custom-font-teamname-color",
+        teamNameStyle.color || "white"
+      );
+      document.documentElement.style.setProperty(
+        "--custom-font-teamname-glow",
+        teamNameStyle.glow ? `0 0 10px ${teamNameStyle.color || 'white'}, 0 2px 10px rgba(0,0,0,0.3)` : "0 2px 10px rgba(0, 0, 0, 0.3)"
+      );
+      document.documentElement.style.setProperty(
+        "--custom-font-teamname-weight",
+        teamNameStyle.bold ? "800" : "700"
+      );
+      document.documentElement.style.setProperty(
+        "--custom-font-teamname-style",
+        teamNameStyle.italic ? "italic" : "normal"
+      );
 
-      console.log("🔤 Versus fonts applied");
+      // Apply to score
+      const scoreFont = getFontName(assignments.versusScore);
+      document.documentElement.style.setProperty(
+        "--custom-font-score",
+        scoreFont ? `'${scoreFont}'` : '"Rajdhani"',
+      );
+
+      console.log("🔤 Versus fonts applied", teamNameStyle);
     }
   </script>
 </body>
