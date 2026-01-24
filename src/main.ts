@@ -1,4 +1,4 @@
-export {};
+export { };
 
 // ==========================================
 // Interfaces (Strict Typing)
@@ -390,10 +390,10 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null;
 }
 
@@ -432,18 +432,15 @@ function renderPlayers(
       
       <!-- Lane/Role -->
       <div class="player-card__role ${player.hero ? "" : "disabled"}" 
-           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${
-             player.hero ? "true" : "false"
-           })"
-           title="${
-             player.lane || (player.hero ? "Select Lane" : "Select Hero first")
-           }">
-        ${
-          laneImgPath
-            ? `<img src="${laneImgPath}" alt="${escapeHtml(
-                player.lane || "",
-              )}">`
-            : '<i class="ph-duotone ph-map-pin"></i>'
+           onclick="handleLaneClick('${teamSide}', ${player.slot}, ${player.hero ? "true" : "false"
+        })"
+           title="${player.lane || (player.hero ? "Select Lane" : "Select Hero first")
+        }">
+        ${laneImgPath
+          ? `<img src="${laneImgPath}" alt="${escapeHtml(
+            player.lane || "",
+          )}">`
+          : '<i class="ph-duotone ph-map-pin"></i>'
         }
       </div>
       
@@ -461,12 +458,11 @@ function renderPlayers(
       <div class="player-card__hero ${player.hero ? "has-hero" : ""}" 
            onclick="openHeroPicker('${teamSide}', ${player.slot})"
            title="${player.hero || "Select Hero"}">
-        ${
-          heroImgPath
-            ? `<img src="${heroImgPath}" alt="${escapeHtml(
-                player.hero || "",
-              )}">`
-            : '<i class="ph-duotone ph-game-controller"></i>'
+        ${heroImgPath
+          ? `<img src="${heroImgPath}" alt="${escapeHtml(
+            player.hero || "",
+          )}">`
+          : '<i class="ph-duotone ph-game-controller"></i>'
         }
       </div>
       
@@ -555,8 +551,7 @@ async function swapSides(): Promise<void> {
       const result = await response.json();
       updateSwapUI(result.swapped);
       console.log(
-        `✅ Sides swapped: ${
-          result.swapped ? "Team A → Right, Team B → Left" : "Normal"
+        `✅ Sides swapped: ${result.swapped ? "Team A → Right, Team B → Left" : "Normal"
         }`,
       );
     } else {
@@ -2712,16 +2707,13 @@ function openLanePicker(side: "A" | "B", slot: number): void {
             <img src="/lane/${encodeURIComponent(lane.name)}.jpg" 
                  style="width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #1a1a1a;" 
                  alt="${lane.name}"
-                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${
-                   lane.icon
-                 }%3C/text%3E%3C/svg%3E';">
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2212%22%3E${lane.icon
+      }%3C/text%3E%3C/svg%3E';">
             <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--color-text-primary); font-size: 0.95rem;">${
-                  lane.label
-                }</div>
-                <div style="font-size: 0.8rem; color: var(--color-text-tertiary);">${
-                  lane.thaiName
-                }</div>
+                <div style="font-weight: 600; color: var(--color-text-primary); font-size: 0.95rem;">${lane.label
+      }</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-tertiary);">${lane.thaiName
+      }</div>
             </div>
         </button>
     `,
@@ -2786,8 +2778,7 @@ async function selectLane(laneName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `✅ Lane ${
-        laneName || "cleared"
+      `✅ Lane ${laneName || "cleared"
       } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
     );
   } else {
@@ -3391,7 +3382,7 @@ function handleDragStart(event: DragEvent): void {
   console.log("Drag Start:", {
     cardSlot: card.dataset.slot,
     mode: dragMode,
-    sourceEl: sourceEl?.className,
+    sourceEl: sourceEl?.className
   });
 
   draggedPlayer = {
