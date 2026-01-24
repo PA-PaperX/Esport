@@ -60,3 +60,4 @@ public/assets/lower-third-slot-*.png
 
 # Large Binaries
 src-tauri/binaries/
+src/main.css
