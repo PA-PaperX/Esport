@@ -9,86 +9,83 @@
       "name": "HOME TEAM",
       "shortName": "HOME",
       "color": "#3b82f6",
-      "logo": "",
-      "logoVersion": 1768409813188,
-      "score": 3,
+      "logo": "/logos/team-a.png",
+      "logoVersion": 1768893950726,
+      "score": 0,
       "players": [
         {
           "slot": 1,
           "name": "Home Player 1",
-          "hero": "Aleister"
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 2,
           "name": "Home Player 2",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 3,
           "name": "Home Player 3",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 4,
           "name": "Home Player 4",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 5,
           "name": "Home Player 5",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         }
       ],
-      "bans": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ]
+      "bans": []
     },
     "B": {
       "name": "AWAY TEAM",
       "shortName": "AWAY",
       "color": "#ef4444",
       "logo": "",
-      "logoVersion": 1768409813188,
-      "score": 2,
+      "logoVersion": 1768893647080,
+      "score": 0,
       "players": [
         {
           "slot": 1,
           "name": "Away Player 1",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 2,
           "name": "Away Player 2",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 3,
           "name": "Away Player 3",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 4,
           "name": "Away Player 4",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         },
         {
           "slot": 5,
           "name": "Away Player 5",
-          "hero": ""
+          "hero": "",
+          "lane": ""
         }
       ],
-      "bans": [
-        "",
-        "",
-        "",
-        "Astrid",
-        "Alice"
-      ]
+      "bans": []
     }
-  },
-  "banCount": 5
+  }
 }

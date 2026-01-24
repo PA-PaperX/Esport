@@ -7,15 +7,15 @@
   "type": "module",
   "scripts": {
     "dev": "bun run index.ts",
+    "dev:css": "bun x @tailwindcss/cli -i ./src/main.css -o ./public/styles/tokens.css --watch",
     "electron": "electron .",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "write": "bunx prettier . --write",
-    "dev:css": "bun x @tailwindcss/cli -i ./src/main.css -o ./public/styles/tokens.css --watch",
     "build:css": "bun x @tailwindcss/cli -i ./src/main.css -o ./public/styles/tokens.css",
-    "build:win": "electron-builder --win",
-    "build:linux": "electron-builder --linux"
+    "build:server": "bun build --compile --minify --sourcemap index.ts --outfile src-tauri/binaries/esport-server-x86_64-pc-windows-msvc.exe",
+    "build:prepare": "bun run scripts/pre-build.ts",
+    "tauri:build": "bun run build:prepare && bun run build:server && tauri build",
+    "write": "bunx prettier . --write"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.9.6",
