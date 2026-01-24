@@ -138,10 +138,10 @@
 
         // Check if this is a double elimination bracket
         const hasWinnersBracket = bracket.matches.some(
-          (m) => m.bracket === "winners"
+          (m) => m.bracket === "winners",
         );
         const hasLosersBracket = bracket.matches.some(
-          (m) => m.bracket === "losers"
+          (m) => m.bracket === "losers",
         );
         const isDoubleElim = hasWinnersBracket && hasLosersBracket;
 
@@ -199,7 +199,7 @@
               delay,
               hasConnector,
               isTop,
-              FIXED_CONNECTOR_HEIGHT
+              FIXED_CONNECTOR_HEIGHT,
             );
             roundEl.appendChild(matchEl);
           });
@@ -233,7 +233,7 @@
 
         // Filter and group winners matches
         const winnersMatches = bracket.matches.filter(
-          (m) => m.bracket === "winners"
+          (m) => m.bracket === "winners",
         );
         const winnersRounds = {};
         winnersMatches.forEach((m) => {
@@ -267,7 +267,7 @@
                 delay,
                 hasConnector,
                 isTop,
-                FIXED_CONNECTOR_HEIGHT
+                FIXED_CONNECTOR_HEIGHT,
               );
               matchEl.style.borderLeftColor = "#22c55e";
               roundEl.appendChild(matchEl);
@@ -296,7 +296,7 @@
 
         // Filter and group losers matches
         const losersMatches = bracket.matches.filter(
-          (m) => m.bracket === "losers"
+          (m) => m.bracket === "losers",
         );
         const losersRounds = {};
         losersMatches.forEach((m) => {
@@ -330,7 +330,7 @@
                 delay,
                 hasConnector,
                 isTop,
-                FIXED_CONNECTOR_HEIGHT
+                FIXED_CONNECTOR_HEIGHT,
               );
               roundEl.appendChild(matchEl);
             });
@@ -351,7 +351,7 @@
         baseDelay = 0,
         hasConnector = false,
         isTop = true,
-        connectorLength = 20
+        connectorLength = 20,
       ) {
         const matchEl = document.createElement("div");
         // Add connector classes
@@ -366,7 +366,7 @@
         if (hasConnector) {
           matchEl.style.setProperty(
             "--connector-height",
-            `${connectorLength}px`
+            `${connectorLength}px`,
           );
         }
 
@@ -383,7 +383,7 @@
         const teamAEl = createTeamElement(
           match.teamA,
           match.scoreA,
-          match.winner === "A"
+          match.winner === "A",
         );
         teamAEl.style.animationDelay = `${baseDelay}s`;
         matchEl.appendChild(teamAEl);
@@ -392,7 +392,7 @@
         const teamBEl = createTeamElement(
           match.teamB,
           match.scoreB,
-          match.winner === "B"
+          match.winner === "B",
         );
         teamBEl.style.animationDelay = `${baseDelay + 0.1}s`;
         matchEl.appendChild(teamBEl);
@@ -492,7 +492,7 @@
         const teamNameFont = getFontName(assignments.bracketTeamName);
         document.documentElement.style.setProperty(
           "--custom-font-teamname",
-          teamNameFont ? `'${teamNameFont}'` : '"Inter"'
+          teamNameFont ? `'${teamNameFont}'` : '"Inter"',
         );
 
         console.log("🔤 Bracket fonts applied");

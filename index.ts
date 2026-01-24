@@ -431,7 +431,10 @@ const server = Bun.serve({
       } catch (err: any) {
         console.error("Create bracket error:", err);
         const message = err?.message || "Create bracket failed";
-        return Response.json({ success: false, message }, { status: 400, headers });
+        return Response.json(
+          { success: false, message },
+          { status: 400, headers },
+        );
       }
     }
 
@@ -914,8 +917,8 @@ const server = Bun.serve({
       return new Response(css, {
         headers: {
           ...headers,
-          "Content-Type": "text/css"
-        }
+          "Content-Type": "text/css",
+        },
       });
     }
 
@@ -934,9 +937,14 @@ const server = Bun.serve({
 
         // Validate file type
         const allowedExtensions = [".ttf", ".otf", ".woff", ".woff2"];
-        const ext = fontFile.name.substring(fontFile.name.lastIndexOf('.')).toLowerCase();
+        const ext = fontFile.name
+          .substring(fontFile.name.lastIndexOf("."))
+          .toLowerCase();
         if (!allowedExtensions.includes(ext)) {
-          return new Response("Invalid file type. Allowed: TTF, OTF, WOFF, WOFF2", { status: 400 });
+          return new Response(
+            "Invalid file type. Allowed: TTF, OTF, WOFF, WOFF2",
+            { status: 400 },
+          );
         }
 
         // Validate file size (max 5MB)
@@ -946,34 +954,39 @@ const server = Bun.serve({
         }
 
         // Save file
-        const filename = fontFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filename = fontFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
         const filepath = `public/fonts/custom/${filename}`;
         const buffer = await fontFile.arrayBuffer();
         await Bun.write(filepath, buffer);
 
         // Get format from extension
         const formatMap: Record<string, string> = {
-          '.ttf': 'truetype',
-          '.otf': 'opentype',
-          '.woff': 'woff',
-          '.woff2': 'woff2'
+          ".ttf": "truetype",
+          ".otf": "opentype",
+          ".woff": "woff",
+          ".woff2": "woff2",
         };
 
         // Add to font manager
         const font = fontManager.addFont({
-          name: fontName || fontFile.name.substring(0, fontFile.name.lastIndexOf('.')),
+          name:
+            fontName ||
+            fontFile.name.substring(0, fontFile.name.lastIndexOf(".")),
           filename: filename,
-          format: formatMap[ext] || 'truetype',
+          format: formatMap[ext] || "truetype",
           path: `/fonts/custom/${filename}`,
-          weight: fontWeight || '400',
-          style: fontStyle || 'normal'
+          weight: fontWeight || "400",
+          style: fontStyle || "normal",
         });
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`🔤 Font uploaded: ${font.name}`);
         return Response.json({ success: true, font }, { headers });
@@ -984,7 +997,13 @@ const server = Bun.serve({
     }
 
     // PUT /api/fonts/:id - Update font info
-    if (url.pathname.startsWith("/api/fonts/") && !url.pathname.includes("/css") && !url.pathname.includes("/upload") && !url.pathname.includes("/settings") && req.method === "PUT") {
+    if (
+      url.pathname.startsWith("/api/fonts/") &&
+      !url.pathname.includes("/css") &&
+      !url.pathname.includes("/upload") &&
+      !url.pathname.includes("/settings") &&
+      req.method === "PUT"
+    ) {
       try {
         const id = url.pathname.split("/").pop();
         const body = await req.json();
@@ -995,10 +1014,13 @@ const server = Bun.serve({
         }
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`📝 Font updated: ${font.name}`);
         return Response.json({ success: true, font }, { headers });
@@ -1009,7 +1031,13 @@ const server = Bun.serve({
     }
 
     // DELETE /api/fonts/:id - Delete a font
-    if (url.pathname.startsWith("/api/fonts/") && !url.pathname.includes("/css") && !url.pathname.includes("/upload") && !url.pathname.includes("/settings") && req.method === "DELETE") {
+    if (
+      url.pathname.startsWith("/api/fonts/") &&
+      !url.pathname.includes("/css") &&
+      !url.pathname.includes("/upload") &&
+      !url.pathname.includes("/settings") &&
+      req.method === "DELETE"
+    ) {
       try {
         const id = url.pathname.split("/").pop();
         const font = fontManager.getFont(id!);
@@ -1022,20 +1050,23 @@ const server = Bun.serve({
         const filepath = `public${font.path}`;
         const file = Bun.file(filepath);
         if (await file.exists()) {
-          await Bun.write(filepath, ''); // Clear file
+          await Bun.write(filepath, ""); // Clear file
           // Note: Bun doesn't have direct unlink, but we can leave empty file
           // or use node:fs
-          const { unlinkSync } = await import('fs');
+          const { unlinkSync } = await import("fs");
           unlinkSync(filepath);
         }
 
         fontManager.deleteFont(id!);
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`🗑️ Font deleted: ${font.name}`);
         return Response.json({ success: true }, { headers });
@@ -1057,10 +1088,13 @@ const server = Bun.serve({
         const assignments = fontManager.updateAssignments(body);
 
         // Broadcast font update
-        server.publish("overlay", JSON.stringify({
-          type: "FONT_UPDATE",
-          data: fontManager.getState()
-        }));
+        server.publish(
+          "overlay",
+          JSON.stringify({
+            type: "FONT_UPDATE",
+            data: fontManager.getState(),
+          }),
+        );
 
         console.log(`⚙️ Font assignments updated`);
         return Response.json({ success: true, assignments }, { headers });

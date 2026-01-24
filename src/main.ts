@@ -227,10 +227,10 @@ function renderUI(): void {
 
   // Update panel titles based on swap state
   const teamATitle = document.querySelector(
-    "#teamA-section .team-panel__title"
+    "#teamA-section .team-panel__title",
   );
   const teamBTitle = document.querySelector(
-    "#teamB-section .team-panel__title"
+    "#teamB-section .team-panel__title",
   );
 
   if (teamATitle) {
@@ -242,10 +242,10 @@ function renderUI(): void {
 
   // Update button labels based on swap state
   const teamABtn = document.querySelector(
-    '#teamA-section button[onclick*="saveTeam"]'
+    '#teamA-section button[onclick*="saveTeam"]',
   ) as HTMLButtonElement;
   const teamBBtn = document.querySelector(
-    '#teamB-section button[onclick*="saveTeam"]'
+    '#teamB-section button[onclick*="saveTeam"]',
   ) as HTMLButtonElement;
 
   if (teamABtn) {
@@ -378,7 +378,7 @@ function applyThemeColor(side: "A" | "B", color: string): void {
   if (rosterList) {
     // renderPlayers generates elements with class 'player-card'
     const items = rosterList.querySelectorAll(
-      ".player-card"
+      ".player-card",
     ) as NodeListOf<HTMLElement>;
     items.forEach((item) => {
       item.style.borderLeftColor = color;
@@ -401,7 +401,7 @@ function renderPlayers(
   panelSide: "A" | "B",
   teamSide: "A" | "B",
   players: Player[],
-  container: HTMLDivElement
+  container: HTMLDivElement,
 ): void {
   // panelSide = for styling (player-card--a or --b)
   // teamSide = for API calls (updatePlayer, openHeroPicker, etc.)
@@ -441,7 +441,7 @@ function renderPlayers(
         ${
           laneImgPath
             ? `<img src="${laneImgPath}" alt="${escapeHtml(
-                player.lane || ""
+                player.lane || "",
               )}">`
             : '<i class="ph-duotone ph-map-pin"></i>'
         }
@@ -464,7 +464,7 @@ function renderPlayers(
         ${
           heroImgPath
             ? `<img src="${heroImgPath}" alt="${escapeHtml(
-                player.hero || ""
+                player.hero || "",
               )}">`
             : '<i class="ph-duotone ph-game-controller"></i>'
         }
@@ -550,7 +550,7 @@ async function swapSides(): Promise<void> {
       console.log(
         `✅ Sides swapped: ${
           result.swapped ? "Team A → Right, Team B → Left" : "Normal"
-        }`
+        }`,
       );
     } else {
       console.error("❌ Swap failed");
@@ -591,7 +591,7 @@ function previewTransitionLogo(input: HTMLInputElement): void {
 
   transitionLogoFile = file;
   const img = document.getElementById(
-    "transition-logo-img"
+    "transition-logo-img",
   ) as HTMLImageElement;
   const placeholder = document.getElementById("transition-logo-placeholder");
   const status = document.getElementById("transition-logo-status");
@@ -665,13 +665,13 @@ async function uploadTransitionLogo(): Promise<void> {
 
 // Combined function: select and upload in one step
 async function uploadTransitionLogoFromInput(
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
 
   const img = document.getElementById(
-    "transition-logo-img"
+    "transition-logo-img",
   ) as HTMLImageElement;
   const placeholder = document.getElementById("transition-logo-placeholder");
   const status = document.getElementById("transition-logo-status");
@@ -721,10 +721,10 @@ async function loadTransitionLogo(): Promise<void> {
       const result = await response.json();
       if (result.path) {
         const img = document.getElementById(
-          "transition-logo-img"
+          "transition-logo-img",
         ) as HTMLImageElement;
         const placeholder = document.getElementById(
-          "transition-logo-placeholder"
+          "transition-logo-placeholder",
         );
         if (img && placeholder) {
           img.src = result.path;
@@ -750,7 +750,7 @@ async function updateLowerThird(): Promise<void> {
 
   const slots = [1, 2, 3].map((id) => {
     const textInput = document.getElementById(
-      `slot-${id}-text`
+      `slot-${id}-text`,
     ) as HTMLInputElement;
     const text = textInput?.value || "";
 
@@ -777,7 +777,7 @@ async function updateLowerThird(): Promise<void> {
         (window as any).showNotification(
           "Lower Third Saved",
           "Settings updated successfully",
-          "success"
+          "success",
         );
       }
     } else {
@@ -794,7 +794,7 @@ const saveLowerThird = updateLowerThird;
 // Clear a specific slot
 function clearSlot(slotId: number): void {
   const textInput = document.getElementById(
-    `slot-${slotId}-text`
+    `slot-${slotId}-text`,
   ) as HTMLInputElement;
   const logoPreview = document.getElementById(`slot-${slotId}-logo-preview`);
 
@@ -811,7 +811,7 @@ function clearSlot(slotId: number): void {
 // Upload logo for specific slot (with preview)
 async function uploadSlotLogo(
   slotId: number,
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
@@ -836,7 +836,7 @@ async function uploadSlotLogo(
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
 
     if (response.ok) {
@@ -845,7 +845,7 @@ async function uploadSlotLogo(
         (window as any).showNotification(
           "Logo Uploaded",
           `Slot ${slotId} logo saved`,
-          "success"
+          "success",
         );
       }
     } else {
@@ -865,7 +865,7 @@ async function loadLowerThird(): Promise<void> {
 
       // Update title
       const titleEl = document.getElementById(
-        "lower-third-title"
+        "lower-third-title",
       ) as HTMLInputElement;
       if (titleEl) titleEl.value = state.title || "";
 
@@ -879,10 +879,10 @@ async function loadLowerThird(): Promise<void> {
           logoPath?: string;
         }) => {
           const slotText = document.getElementById(
-            `slot-${slot.id}-text`
+            `slot-${slot.id}-text`,
           ) as HTMLInputElement;
           const logoPreview = document.getElementById(
-            `slot-${slot.id}-logo-preview`
+            `slot-${slot.id}-logo-preview`,
           );
 
           if (slotText) slotText.value = slot.text || "";
@@ -892,7 +892,7 @@ async function loadLowerThird(): Promise<void> {
             logoPreview.style.backgroundImage = `url('${slot.logoPath}')`;
             logoPreview.innerHTML = "";
           }
-        }
+        },
       );
     }
   } catch (err) {
@@ -1161,10 +1161,10 @@ function loadPanelData(panelType: string): void {
 
     setTimeout(() => {
       const eventInput = document.getElementById(
-        "event-name"
+        "event-name",
       ) as HTMLInputElement;
       const colorInput = document.getElementById(
-        "transition-color"
+        "transition-color",
       ) as HTMLInputElement;
       const colorHex = document.getElementById("transition-color-hex");
       const altInput = document.getElementById("alt-color") as HTMLInputElement;
@@ -1224,7 +1224,7 @@ function updateSwapUI(swapped: boolean): void {
 async function updatePlayer(
   side: "A" | "B",
   slot: number,
-  name: string
+  name: string,
 ): Promise<void> {
   const success = await postAPI("/api/player/update", {
     side,
@@ -1241,7 +1241,7 @@ async function updatePlayer(
 
 async function handleLogoSelect(
   side: "A" | "B",
-  input: HTMLInputElement
+  input: HTMLInputElement,
 ): Promise<void> {
   const file = input.files?.[0];
   if (!file) return;
@@ -1480,7 +1480,7 @@ function drawCrop(): void {
     cropOffsetX,
     cropOffsetY,
     cropImage.width * cropScale,
-    cropImage.height * cropScale
+    cropImage.height * cropScale,
   );
 
   // Draw Overlay: Semi-transparent dark outside the circle
@@ -1497,7 +1497,7 @@ function drawCrop(): void {
     cropCanvas.width / 2,
     0,
     Math.PI * 2,
-    true
+    true,
   );
   cropCtx.fill();
 
@@ -1510,7 +1510,7 @@ function drawCrop(): void {
     cropCanvas.height / 2,
     cropCanvas.width / 2 - 2,
     0,
-    Math.PI * 2
+    Math.PI * 2,
   );
   cropCtx.stroke();
 }
@@ -1605,7 +1605,7 @@ async function pickScreenColor(side: "A" | "B"): Promise<void> {
     }
   } else {
     alert(
-      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)"
+      "ฟีเจอร์นี้รองรับเฉพาะ Chrome/Edge บน Desktop\n(กรุณาใช้ Color Picker ปกติ หรือดูดสีจากโลโก้แทน)",
     );
   }
 }
@@ -1630,7 +1630,7 @@ async function pickLogoColor(side: "A" | "B"): Promise<void> {
 function openPixelPickerModal(
   actualSide: "A" | "B",
   panelSide: "A" | "B",
-  imageSrc: string
+  imageSrc: string,
 ): void {
   activePickerSide = actualSide;
   activePickerPanelSide = panelSide;
@@ -1801,7 +1801,7 @@ function rgbToHex(r: number, g: number, b: number): string {
 function applyColor(
   actualSide: "A" | "B",
   color: string,
-  panelSide?: "A" | "B"
+  panelSide?: "A" | "B",
 ): void {
   // panelSide is the UI panel, actualSide is the real team (after swap adjustment)
   // If panelSide not provided, assume no swap adjustment needed for UI
@@ -1820,7 +1820,7 @@ function applyColor(
   }
 
   console.log(
-    `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`
+    `🎨 Picked color for Team ${actualSide} (panel ${uiSide}): ${color}`,
   );
 }
 
@@ -2218,7 +2218,7 @@ function openHeroPicker(side: "A" | "B", slot: number): void {
                     width: 100%;
                 ">${hero}</span>
             </button>
-        `
+        `,
       )
       .join("");
 
@@ -2416,7 +2416,7 @@ function openBanPicker(side: "A" | "B", slot: number): void {
             width: 100%;
           ">${hero}</span>
         </button>
-      `
+      `,
       )
       .join("");
 
@@ -2477,7 +2477,7 @@ async function selectBan(heroName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `🚫 Banned ${heroName} for Team ${banPickerSide} Slot ${banPickerSlot}`
+      `🚫 Banned ${heroName} for Team ${banPickerSide} Slot ${banPickerSlot}`,
     );
     renderBanSlots(); // Refresh UI
   } else {
@@ -2561,7 +2561,7 @@ async function selectHero(heroName: string): Promise<void> {
 
   if (success) {
     console.log(
-      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`
+      `✅ Hero ${heroName} selected for Team ${heroPickerSide} Player ${heroPickerSlot}`,
     );
   } else {
     console.error("❌ Failed to update hero");
@@ -2693,7 +2693,7 @@ function openLanePicker(side: "A" | "B", slot: number): void {
                 }</div>
             </div>
         </button>
-    `
+    `,
   ).join("");
 
   // Close button event
@@ -2749,7 +2749,7 @@ async function selectLane(laneName: string): Promise<void> {
     console.log(
       `✅ Lane ${
         laneName || "cleared"
-      } for Team ${lanePickerSide} Player ${lanePickerSlot}`
+      } for Team ${lanePickerSide} Player ${lanePickerSlot}`,
     );
   } else {
     console.error("❌ Failed to update lane");
@@ -2767,7 +2767,7 @@ async function selectLane(laneName: string): Promise<void> {
 function handleLaneClick(
   side: "A" | "B",
   slot: number,
-  hasHero: boolean
+  hasHero: boolean,
 ): void {
   if (hasHero) {
     openLanePicker(side, slot);
@@ -2777,7 +2777,7 @@ function handleLaneClick(
       (window as any).showNotification(
         "กรุณาเลือกตัวละครก่อน",
         "เลือก Hero ก่อนถึงจะเลือกตำแหน่งเลนได้",
-        "warning"
+        "warning",
       );
     }
   }
@@ -2817,10 +2817,10 @@ async function fetchTemplates(): Promise<void> {
 
 function renderTemplateDropdowns(): void {
   const teamASelect = document.getElementById(
-    "teamA-template"
+    "teamA-template",
   ) as HTMLSelectElement;
   const teamBSelect = document.getElementById(
-    "teamB-template"
+    "teamB-template",
   ) as HTMLSelectElement;
 
   const optionsHtml = templates
@@ -3108,10 +3108,10 @@ function openTemplateManager(): void {
   // Color sync
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
   const colorText = document.getElementById(
-    "tpl-color-text"
+    "tpl-color-text",
   ) as HTMLInputElement;
   const colorPreview = document.querySelector(
-    ".template-color-preview"
+    ".template-color-preview",
   ) as HTMLElement;
 
   if (colorInput && colorText) {
@@ -3277,7 +3277,7 @@ function loadTemplateToForm(id: string): void {
   const nameInput = document.getElementById("tpl-name") as HTMLInputElement;
   const colorInput = document.getElementById("tpl-color") as HTMLInputElement;
   const colorText = document.getElementById(
-    "tpl-color-text"
+    "tpl-color-text",
   ) as HTMLInputElement;
 
   if (nameInput) nameInput.value = template.name;
@@ -3287,7 +3287,7 @@ function loadTemplateToForm(id: string): void {
   // Populate players
   for (let i = 1; i <= 5; i++) {
     const playerInput = document.getElementById(
-      `tpl-p${i}`
+      `tpl-p${i}`,
     ) as HTMLInputElement;
     const player = template.players?.find((p) => p.slot === i);
     if (playerInput) {
@@ -3331,7 +3331,7 @@ let draggedPlayer: {
 
 function handleDragStart(event: DragEvent): void {
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!card) return;
 
@@ -3365,7 +3365,7 @@ function handleDragStart(event: DragEvent): void {
 
 function handleDragEnd(event: DragEvent): void {
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (card) {
     card.classList.remove("dragging");
@@ -3379,7 +3379,7 @@ function handleDragEnd(event: DragEvent): void {
 function handleDragOver(event: DragEvent): void {
   event.preventDefault();
   const card = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!card || !draggedPlayer) return;
 
@@ -3392,7 +3392,7 @@ function handleDragOver(event: DragEvent): void {
 async function handleDrop(event: DragEvent): Promise<void> {
   event.preventDefault();
   const targetCard = (event.target as HTMLElement).closest(
-    ".player-card"
+    ".player-card",
   ) as HTMLElement;
   if (!targetCard || !draggedPlayer) return;
 
@@ -3414,7 +3414,7 @@ async function swapPlayers(
   side: "A" | "B",
   slot1: number,
   slot2: number,
-  mode: "full" | "hero" | "lane" = "full"
+  mode: "full" | "hero" | "lane" = "full",
 ): Promise<void> {
   if (!currentState) return;
 
@@ -3441,7 +3441,7 @@ async function swapPlayers(
       (window as any).showNotification(
         "Heroes Swapped",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
       );
     }
   } else if (mode === "lane") {
@@ -3461,7 +3461,7 @@ async function swapPlayers(
       (window as any).showNotification(
         "Lanes Swapped",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
       );
     }
   } else {
@@ -3501,7 +3501,7 @@ async function swapPlayers(
       (window as any).showNotification(
         "Players Reordered",
         `Slot ${slot1} ↔ Slot ${slot2}`,
-        "success"
+        "success",
       );
     }
   }
@@ -3541,7 +3541,7 @@ async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
       (window as any).showNotification(
         "Captain set",
         `Player ${slot} is now captain`,
-        "success"
+        "success",
       );
     } else {
       (window as any).showNotification("Captain removed", "", "info");
@@ -3645,7 +3645,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Transition Logo Upload
   const transitionLogoInput = document.getElementById(
-    "transition-logo-input"
+    "transition-logo-input",
   ) as HTMLInputElement;
   if (transitionLogoInput) {
     transitionLogoInput.addEventListener("change", async () => {
@@ -3674,7 +3674,7 @@ document.addEventListener("DOMContentLoaded", () => {
             (window as any).showNotification(
               "Logo Uploaded",
               "Transition logo updated",
-              "success"
+              "success",
             );
           }
         }
@@ -3687,7 +3687,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Slot Logo Uploads
   [1, 2, 3].forEach((slotId) => {
     const input = document.getElementById(
-      `slot-${slotId}-logo-input`
+      `slot-${slotId}-logo-input`,
     ) as HTMLInputElement;
     if (input) {
       input.addEventListener("change", () => uploadSlotLogo(slotId, input));
