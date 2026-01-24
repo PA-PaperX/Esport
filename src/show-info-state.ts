@@ -1,8 +1,6 @@
 import type { ShowInfo, ShowInfoSocial } from "./state";
 
-// ==========================================
 // Show Info State Manager
-// ==========================================
 
 const DB_FILE = "data/show-info.json";
 

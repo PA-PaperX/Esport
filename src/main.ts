@@ -1,8 +1,6 @@
 export { };
 
-// ==========================================
 // Interfaces (Strict Typing)
-// ==========================================
 
 interface Player {
   slot: number;
@@ -41,9 +39,7 @@ interface WSMessage {
   data: MatchState;
 }
 
-// ==========================================
 // State & WebSocket Variables
-// ==========================================
 
 let currentState: MatchState | null = null;
 let ws: WebSocket | null = null;
@@ -52,9 +48,7 @@ const RECONNECT_DELAY = 3000;
 const WS_URL = `ws://localhost:3000/ws`;
 const API_BASE = `http://localhost:3000`;
 
-// ==========================================
 // DOM Elements
-// ==========================================
 
 const getElement = <T extends HTMLElement>(id: string): T | null =>
   document.getElementById(id) as T | null;
@@ -84,9 +78,7 @@ const elements = {
   teamBLogoInput: () => getElement<HTMLInputElement>("teamB-logo-input"),
 };
 
-// ==========================================
 // WebSocket Connection
-// ==========================================
 
 function updateConnectionStatus(connected: boolean): void {
   const dot = elements.statusDot();
