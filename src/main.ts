@@ -3357,9 +3357,13 @@ function handleDragStart(event: DragEvent): void {
   ) as HTMLElement;
   if (!card) return;
 
+  // Robustly detect what we are dragging by looking at element under cursor
+  // This avoids dependency on 'mousedown' global variable which might be flaky
+  const sourceEl = document.elementFromPoint(event.clientX, event.clientY);
+
   // Check if the initial click was within the hero or lane section
-  const heroSection = dragSourceElement?.closest(".player-card__hero");
-  const laneSection = dragSourceElement?.closest(".player-card__role");
+  const heroSection = sourceEl?.closest(".player-card__hero");
+  const laneSection = sourceEl?.closest(".player-card__role");
 
   // Determine drag mode
   let dragMode: "full" | "hero" | "lane" = "full";
@@ -3367,9 +3371,10 @@ function handleDragStart(event: DragEvent): void {
   else if (laneSection) dragMode = "lane";
 
   // Debug
-  console.log("Drag Start Source:", {
-    source: dragSourceElement?.className,
+  console.log("Drag Start:", {
+    cardSlot: card.dataset.slot,
     mode: dragMode,
+    sourceEl: sourceEl?.className
   });
 
   draggedPlayer = {
@@ -3381,7 +3386,10 @@ function handleDragStart(event: DragEvent): void {
   card.classList.add("dragging");
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = "move";
-    // Optional: Set custom drag image if needed
+    // CRITICAL: setData is required for drag to work in many browsers (Firefox etc)
+    // We can also store the data here instead of just global variable, but global is fine for internal use.
+    // Just setting it allows the drag to proceed.
+    event.dataTransfer.setData("text/plain", JSON.stringify(draggedPlayer));
   }
 }
 
@@ -3392,10 +3400,13 @@ function handleDragEnd(event: DragEvent): void {
   if (card) {
     card.classList.remove("dragging");
   }
+  // Clear drag-over from ALL cards
   document
     .querySelectorAll(".player-card")
     .forEach((c) => c.classList.remove("drag-over"));
+
   draggedPlayer = null;
+  console.log("Drag End");
 }
 
 function handleDragOver(event: DragEvent): void {
@@ -3570,6 +3581,35 @@ async function toggleCaptain(side: "A" | "B", slot: number): Promise<void> {
     }
   }
 }
+
+// ==========================================
+// Exposed Roster Functions
+// ==========================================
+
+// Drag & Drop
+(window as any).handleDragStart = handleDragStart;
+(window as any).handleDragEnd = handleDragEnd;
+(window as any).handleDragOver = handleDragOver;
+(window as any).handleDrop = handleDrop;
+
+// Hero Picker (Simple Implementation)
+
+(window as any).openHeroPicker = openHeroPicker;
+
+// Font Settings Logic
+async function saveFontAssignment(part: string, fontId: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/api/fonts/settings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [part]: fontId }),
+    });
+    console.log(`Saved font assignment ${part} -> ${fontId}`);
+  } catch (e) {
+    console.error("Failed to save font assignment", e);
+  }
+}
+(window as any).saveFontAssignment = saveFontAssignment;
 
 // ==========================================
 // Theme Toggle

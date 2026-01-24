@@ -56,6 +56,8 @@ export interface LowerThirdState {
 export interface ShowInfoSocial {
   platform: string;
   handle: string;
+  icon: string; // "facebook-logo", "youtube-logo"
+  text: string;
 }
 
 export interface ShowInfo {
@@ -68,6 +70,7 @@ export interface ShowInfo {
   socials: ShowInfoSocial[];
 }
 
+// ==========================================
 // 2. Default State (ค่าเริ่มต้น)
 
 const DEFAULT_PLAYERS = (prefix: string) =>
