@@ -36,8 +36,10 @@
         font-family: var(--custom-font-teamname), "Rajdhani", sans-serif;
         flex: 1;
         font-size: 16px;
-        font-weight: 700;
-        color: #888;
+        font-weight: var(--custom-font-teamname-weight, 700);
+        font-style: var(--custom-font-teamname-style, normal);
+        color: var(--custom-font-teamname-color, #ffffff);
+        text-shadow: var(--custom-font-teamname-glow, none);
         text-transform: uppercase;
         white-space: nowrap;
         overflow: hidden;
@@ -189,6 +191,11 @@
           const FIXED_CONNECTOR_HEIGHT = 54;
 
           rounds[roundNum].forEach((match, matchIdx) => {
+            // Skip BYE matches with no real teams (both TBA/null)
+            if (match.isBye && !match.teamA && !match.teamB) {
+              return; // Don't render this empty BYE match
+            }
+
             const delay = idx * 0.2 + matchIdx * 0.1 + 2.0; // 2s base offset for transition
             const isTop = matchIdx % 2 === 0;
             const hasConnector = rounds[roundNum].length > 1;
@@ -258,6 +265,11 @@
 
             const FIXED_CONNECTOR_HEIGHT = 54;
             winnersRounds[roundNum].forEach((match, matchIdx) => {
+              // Skip BYE matches with no real teams
+              if (match.isBye && !match.teamA && !match.teamB) {
+                return;
+              }
+
               const delay = idx * 0.2 + matchIdx * 0.1 + 2.0; // 2s base offset for transition
               const isTop = matchIdx % 2 === 0;
               const hasConnector = winnersRounds[roundNum].length > 1;
@@ -321,6 +333,11 @@
 
             const FIXED_CONNECTOR_HEIGHT = 54;
             losersRounds[roundNum].forEach((match, matchIdx) => {
+              // Skip BYE matches with no real teams
+              if (match.isBye && !match.teamA && !match.teamB) {
+                return;
+              }
+
               const delay = idx * 0.2 + matchIdx * 0.1 + 2.0; // 2s base offset for transition
               const isTop = matchIdx % 2 === 0;
               const hasConnector = losersRounds[roundNum].length > 1;
@@ -379,11 +396,16 @@
           matchEl.appendChild(byeBadge);
         }
 
+        // Don't show winners for BYE matches
+        const showWinnerA = !match.isBye && match.winner === "A";
+        const showWinnerB = !match.isBye && match.winner === "B";
+
         // Team A
         const teamAEl = createTeamElement(
           match.teamA,
           match.scoreA,
-          match.winner === "A",
+          showWinnerA,
+          isGrandFinal && showWinnerA, // isChampion - only for Grand Final winner
         );
         teamAEl.style.animationDelay = `${baseDelay}s`;
         matchEl.appendChild(teamAEl);
@@ -392,26 +414,40 @@
         const teamBEl = createTeamElement(
           match.teamB,
           match.scoreB,
-          match.winner === "B",
+          showWinnerB,
+          isGrandFinal && showWinnerB, // isChampion - only for Grand Final winner
         );
         teamBEl.style.animationDelay = `${baseDelay + 0.1}s`;
         matchEl.appendChild(teamBEl);
 
-        // Champion crown for grand final winner
-        if (isGrandFinal && match.winner) {
-          const crown = document.createElement("div");
-          crown.className = "champion-crown";
-          crown.textContent = "👑";
-          matchEl.appendChild(crown);
-        }
+        // Champion crown is now handled by createTeamElement with SVG
 
         return matchEl;
       }
 
       // Create team element
-      function createTeamElement(team, score, isWinner) {
+      function createTeamElement(team, score, isWinner, isChampion = false) {
         const teamEl = document.createElement("div");
-        teamEl.className = `team${isWinner ? " winner" : ""}`;
+        // Add champion class only for Grand Final winner (gold), otherwise just winner (green)
+        teamEl.className = `team${isWinner ? " winner" : ""}${isChampion ? " champion" : ""}`;
+
+        // Add crown ONLY for champion (Grand Final winner)
+        if (isChampion && team) {
+          const crownContainer = document.createElement("div");
+          crownContainer.className = "winner-crown";
+          crownContainer.innerHTML = `
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06l-3.23.85-3.04-6.28C13.73 2.6 13.18 2.25 12.58 2.25h-1.15c-.6 0-1.15.35-1.38.9L6.99 9.43l-3.23-.85c-.8-.21-1.63.27-1.84 1.06-.21.8.27 1.62 1.06 1.84l4.21 1.11 1.81-3.75 1.5 3.09 1.5-3.09 1.81 3.75 4.21-1.11c.8-.22 1.28-1.04 1.06-1.84z"/>
+          </svg>
+        `;
+          teamEl.appendChild(crownContainer);
+
+          // Add float animation after reveal completes
+          setTimeout(() => {
+            const svg = crownContainer.querySelector("svg");
+            if (svg) svg.classList.add("revealed");
+          }, 5000); // 4s delay + 0.8s reveal animation
+        }
 
         // Logo
         const logoEl = document.createElement("div");
@@ -462,7 +498,6 @@
       function applyCustomFonts() {
         if (!fontSettings) return;
 
-        // Inject @font-face rules
         const styleEl = document.getElementById("custom-fonts");
         let css = "";
         for (const font of fontSettings.fonts || []) {
@@ -478,24 +513,65 @@
         }
         styleEl.textContent = css;
 
-        // Apply font assignments
         const assignments = fontSettings.assignments || {};
 
-        // Get font name by ID
         const getFontName = (fontId) => {
           if (!fontId) return null;
           const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
           return font ? font.name : null;
         };
 
-        // Apply to team name
         const teamNameFont = getFontName(assignments.bracketTeamName);
         document.documentElement.style.setProperty(
           "--custom-font-teamname",
           teamNameFont ? `'${teamNameFont}'` : '"Inter"',
         );
 
-        console.log("🔤 Bracket fonts applied");
+        const bracketStyle = assignments.bracketTeamName_style || {};
+        document.documentElement.style.setProperty(
+          "--custom-font-teamname-color",
+          bracketStyle.color || "#ffffff",
+        );
+        document.documentElement.style.setProperty(
+          "--custom-font-teamname-glow",
+          bracketStyle.glow
+            ? `0 0 10px ${bracketStyle.color || "#ffffff"}, 0 0 20px ${bracketStyle.color || "#ffffff"}`
+            : "none",
+        );
+        document.documentElement.style.setProperty(
+          "--custom-font-teamname-weight",
+          bracketStyle.bold ? "800" : "700",
+        );
+        document.documentElement.style.setProperty(
+          "--custom-font-teamname-style",
+          bracketStyle.italic ? "italic" : "normal",
+        );
+
+        const titleFont = getFontName(assignments.bracketTitle);
+        document.documentElement.style.setProperty(
+          "--custom-font-bracketTitle",
+          titleFont ? `'${titleFont}'` : '"Inter"',
+        );
+
+        const titleStyle = assignments.bracketTitle_style || {};
+        document.documentElement.style.setProperty(
+          "--custom-font-bracketTitle-color",
+          titleStyle.color || "#ffffff",
+        );
+        document.documentElement.style.setProperty(
+          "--custom-font-bracketTitle-glow",
+          titleStyle.glow
+            ? `0 0 15px ${titleStyle.color || "#ffffff"}, 0 0 30px ${titleStyle.color || "#ffffff"}`
+            : "none",
+        );
+        document.documentElement.style.setProperty(
+          "--custom-font-bracketTitle-weight",
+          titleStyle.bold ? "900" : "800",
+        );
+        document.documentElement.style.setProperty(
+          "--custom-font-bracketTitle-style",
+          titleStyle.italic ? "italic" : "normal",
+        );
       }
     </script>
   </body>

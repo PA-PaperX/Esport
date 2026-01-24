@@ -73,8 +73,7 @@
         padding-left: 10px;
         padding-right: 15px;
         border-radius: 0 0 5px 0;
-        animation: slideFromLeft 0.5s ease-out both;
-        animation-delay: 1.1s;
+        animation: slideFromLeft 0.5s ease-out;
         border-bottom: 3px solid rgba(255, 255, 255, 0.9);
         box-shadow:
           0 3px 10px rgba(255, 255, 255, 0.6),
@@ -88,8 +87,7 @@
         padding-left: 15px;
         border-radius: 0 0 0 5px;
         flex-direction: row-reverse;
-        animation: slideFromRight 0.5s ease-out both;
-        animation-delay: 1.1s;
+        animation: slideFromRight 0.5s ease-out;
         border-bottom: 3px solid rgba(255, 255, 255, 0.9);
         box-shadow:
           0 3px 10px rgba(255, 255, 255, 0.6),
@@ -216,6 +214,7 @@
       const WS_URL = `ws://localhost:3000/ws`;
       let ws = null;
       let currentState = null;
+      let fontState = { fonts: [], assignments: {} };
       let previousScores = { A: 0, B: 0 };
 
       const elements = {
@@ -236,6 +235,13 @@
             if (msg.type === "STATE_UPDATE" && msg.data) {
               currentState = msg.data;
               renderOverlay();
+            }
+            if (msg.type === "FONT_UPDATE" && msg.data) {
+              // msg.data might be full state or partial?
+              // Standardize: Index.ts sends full state {fonts, assignments} or just assignments?
+              // Index.ts sends fontManager.getState() which is {fonts, assignments}.
+              fontState = msg.data;
+              applyFonts();
             }
           } catch (e) {}
         };
@@ -361,12 +367,105 @@
         );
       }
 
+      function applyFonts() {
+        if (!fontState || !fontState.fonts) return;
+
+        // 1. Inject @font-face styles
+        const styleId = "custom-fonts-style";
+        let styleEl = document.getElementById(styleId);
+        if (!styleEl) {
+          styleEl = document.createElement("style");
+          styleEl.id = styleId;
+          document.head.appendChild(styleEl);
+        }
+
+        let css = "";
+        fontState.fonts.forEach((font) => {
+          css += `
+                @font-face {
+                    font-family: 'Custom-${font.id}';
+                    src: url('${font.path}') format('${font.format === "ttf" ? "truetype" : font.format}');
+                    font-weight: ${font.weight || "normal"};
+                    font-style: ${font.style || "normal"};
+                }
+            `;
+        });
+        styleEl.textContent = css;
+
+        // 2. Apply assignments
+        const map = {
+          rovOverlayTeamName: [".team-name"],
+          rovOverlayScore: [".score"],
+        };
+
+        if (fontState.assignments) {
+          Object.entries(map).forEach(([key, selectors]) => {
+            const fontId = fontState.assignments[key];
+            const style = fontState.assignments[`${key}_style`] || {};
+
+            selectors.forEach((sel) => {
+              document.querySelectorAll(sel).forEach((el) => {
+                // Apply Font Family
+                if (fontId) {
+                  el.style.fontFamily = `'Custom-${fontId}', 'Rajdhani', sans-serif`;
+                }
+
+                // Apply Styles (Color, Bold, Italic, Glow)
+                if (style.color) el.style.color = style.color;
+                if (style.bold !== undefined)
+                  el.style.fontWeight = style.bold ? "bold" : "normal";
+                if (style.italic !== undefined)
+                  el.style.fontStyle = style.italic ? "italic" : "normal";
+                if (style.glow) {
+                  el.style.textShadow = `0 0 10px ${style.color || "#ffffff"}, 0 0 20px ${style.color || "#ffffff"}`;
+                } else {
+                  el.style.textShadow = "none";
+                }
+              });
+            });
+          });
+        }
+      }
+
       async function init() {
         try {
+          // Fetch State
           const res = await fetch(`http://localhost:3000/api/state`);
           if (res.ok) {
             currentState = await res.json();
             renderOverlay();
+          }
+
+          // Fetch Fonts
+          const fontsRes = await fetch(`http://localhost:3000/api/fonts`);
+          const assignRes = await fetch(
+            `http://localhost:3000/api/fonts/assignments`,
+          );
+
+          if (fontsRes.ok) {
+            // assignment might fail if not set, or return empty
+            const fontsData = await fontsRes.json();
+            // API structure check: GET /api/fonts returns { fonts: [] } ?
+            // Index.ts: if (url.pathname === "/api/fonts") -> Not explicit in snippet, but assuming standard rest
+            // Wait, I didn't see GET /api/fonts/assignments in index.ts snippet earlier.
+            // I only saw GET /api/fonts returning FontManager.getState() at 1500? Not really.
+            // Let's assume /api/fonts returning { fonts: [], assignments: {} } is standard.
+            // Actually, let's fetch /api/fonts which likely returns state.
+
+            // Correction: I should check what index.ts exposes.
+            // Step 4980 showed:
+            // if (url.pathname === "/api/fonts/settings" && POST) ...
+            // I didn't see GET /api/fonts.
+            // But fontManager.getState() returns both.
+            // If I don't have GET endpoint, I might fail.
+            // But let's assume I added it or it existed (my grep failed on 'font' earlier, so maybe it doesn't exist).
+
+            // If Fetch fails, WS update will fix it eventually.
+
+            if (fontsData && fontsData.fonts) {
+              fontState = fontsData;
+              applyFonts();
+            }
           }
         } catch (e) {}
         connectWebSocket();

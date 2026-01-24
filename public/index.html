@@ -919,10 +919,10 @@
             class="nav-menu__item"
             onclick="switchPage('showinfo')"
           >
-            <i class="ph-duotone ph-info"></i>
+            <i class="ph-duotone ph-video"></i>
             <div class="nav-menu__item-text">
-              <div class="nav-menu__item-title">Show Info</div>
-              <div class="nav-menu__item-desc">Lower third, transitions</div>
+              <div class="nav-menu__item-title">Transition Logo</div>
+              <div class="nav-menu__item-desc">OBS Stinger logo</div>
             </div>
           </button>
           <button
@@ -945,6 +945,28 @@
             <div class="nav-menu__item-text">
               <div class="nav-menu__item-title">Font Settings</div>
               <div class="nav-menu__item-desc">Custom fonts for overlays</div>
+            </div>
+          </button>
+          <button
+            id="nav-wait"
+            class="nav-menu__item"
+            onclick="switchPage('wait')"
+          >
+            <i class="ph-duotone ph-timer"></i>
+            <div class="nav-menu__item-text">
+              <div class="nav-menu__item-title">Wait Timer</div>
+              <div class="nav-menu__item-desc">Countdown before matches</div>
+            </div>
+          </button>
+          <button
+            id="nav-obs"
+            class="nav-menu__item"
+            onclick="switchPage('obs')"
+          >
+            <i class="ph-duotone ph-monitor-play"></i>
+            <div class="nav-menu__item-text">
+              <div class="nav-menu__item-title">OBS Control</div>
+              <div class="nav-menu__item-desc">Scene switching</div>
             </div>
           </button>
         </nav>
@@ -1417,6 +1439,42 @@
                 </button>
               </div>
             </div>
+            <div>
+              <label class="label">Versus Screen</label>
+              <div style="display: flex; gap: var(--space-2)">
+                <input type="text" class="input" id="versus-url" readonly />
+                <button
+                  onclick="copyUrlById('versus-url')"
+                  class="btn btn-secondary"
+                >
+                  <i class="ph-bold ph-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="label">Tournament Bracket</label>
+              <div style="display: flex; gap: var(--space-2)">
+                <input type="text" class="input" id="bracket-url" readonly />
+                <button
+                  onclick="copyUrlById('bracket-url')"
+                  class="btn btn-secondary"
+                >
+                  <i class="ph-bold ph-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="label">Wait Timer</label>
+              <div style="display: flex; gap: var(--space-2)">
+                <input type="text" class="input" id="wait-url" readonly />
+                <button
+                  onclick="copyUrlById('wait-url')"
+                  class="btn btn-secondary"
+                >
+                  <i class="ph-bold ph-copy"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -1433,10 +1491,10 @@
           "
         >
           <i
-            class="ph-duotone ph-info"
+            class="ph-duotone ph-video"
             style="margin-right: var(--space-2)"
           ></i>
-          Show Info
+          Transition Logo
         </h2>
 
         <!-- Transition Logo Card -->
@@ -1485,6 +1543,7 @@
                 id="transition-logo-input"
                 accept="image/*"
                 style="display: none"
+                onchange="handleTransitionLogoSelect(this)"
               />
               <button
                 onclick="
@@ -1505,35 +1564,6 @@
               </p>
             </div>
           </div>
-        </div>
-
-        <!-- Lower Third Card -->
-        <div
-          class="card"
-          style="padding: var(--space-5); margin-bottom: var(--space-4)"
-        >
-          <h3
-            style="
-              font-size: var(--font-size-lg);
-              font-weight: var(--font-weight-semibold);
-              margin-bottom: var(--space-4);
-            "
-          >
-            <i
-              class="ph-duotone ph-article"
-              style="margin-right: var(--space-2)"
-            ></i>
-            Waiting For Watch
-          </h3>
-          <!-- Social Media Slots -->
-           <div class="">
-            <select name="" id="">
-              <option value="">3m</option>
-              <option value="">5m</option>
-              <option value="">10m</option>
-            </select>
-           </div>
-          <div>           
         </div>
       </main>
     </div>
@@ -1951,7 +1981,7 @@
               gap: var(--space-4);
             "
           >
-            <!-- Lower Third Title -->
+            <!-- ROV Overlay Team Name -->
             <div
               style="
                 padding: var(--space-4);
@@ -1969,93 +1999,123 @@
                 "
               >
                 <i
-                  class="ph-duotone ph-article"
-                  style="font-size: 20px; color: var(--color-primary)"
-                ></i>
-                <span style="font-weight: var(--font-weight-medium)"
-                  >Lower Third - Title</span
-                >
-              </div>
-              <select
-                id="font-assign-lowerThirdTitle"
-                class="input"
-                onchange="updateFontAssignment('lowerThirdTitle', this.value)"
-              >
-                <option value="">Default (Rajdhani)</option>
-              </select>
-            </div>
-
-            <!-- Lower Third Slots -->
-            <div
-              style="
-                padding: var(--space-4);
-                background: var(--color-bg-primary);
-                border-radius: var(--radius-md);
-                border: 1px solid var(--color-border-light);
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: var(--space-2);
-                  margin-bottom: var(--space-2);
-                "
-              >
-                <i
-                  class="ph-duotone ph-chat-text"
-                  style="font-size: 20px; color: var(--color-primary)"
-                ></i>
-                <span style="font-weight: var(--font-weight-medium)"
-                  >Lower Third - Slots</span
-                >
-              </div>
-              <select
-                id="font-assign-lowerThirdSlots"
-                class="input"
-                onchange="updateFontAssignment('lowerThirdSlots', this.value)"
-              >
-                <option value="">Default (Outfit)</option>
-              </select>
-            </div>
-
-            <!-- Scoreboard Team Name -->
-            <div
-              style="
-                padding: var(--space-4);
-                background: var(--color-bg-primary);
-                border-radius: var(--radius-md);
-                border: 1px solid var(--color-border-light);
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: var(--space-2);
-                  margin-bottom: var(--space-2);
-                "
-              >
-                <i
-                  class="ph-duotone ph-game-controller"
+                  class="ph-duotone ph-sword"
                   style="font-size: 20px; color: var(--color-team-a)"
                 ></i>
                 <span style="font-weight: var(--font-weight-medium)"
-                  >Scoreboard - Team Name</span
+                  >ROV - Team Name</span
                 >
               </div>
               <select
-                id="font-assign-scoreboardTeamName"
+                id="font-assign-rovOverlayTeamName"
                 class="input"
+                style="margin-bottom: var(--space-3)"
                 onchange="
-                  updateFontAssignment('scoreboardTeamName', this.value)
+                  updateFontAssignment('rovOverlayTeamName', this.value)
                 "
               >
                 <option value="">Default (Rajdhani)</option>
               </select>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  type="color"
+                  id="font-style-rovOverlayTeamName-color"
+                  value="#ffffff"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    background: transparent;
+                  "
+                  onchange="
+                    updateFontStyle('rovOverlayTeamName', 'color', this.value)
+                  "
+                />
+                <button
+                  id="font-style-rovOverlayTeamName-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('rovOverlayTeamName', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-rovOverlayTeamName-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('rovOverlayTeamName', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-rovOverlayTeamName-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('rovOverlayTeamName', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
-            <!-- Scoreboard Score -->
+            <!-- ROV Overlay Score -->
             <div
               style="
                 padding: var(--space-4);
@@ -2077,16 +2137,114 @@
                   style="font-size: 20px; color: var(--color-team-b)"
                 ></i>
                 <span style="font-weight: var(--font-weight-medium)"
-                  >Scoreboard - Score</span
+                  >ROV - Score</span
                 >
               </div>
               <select
-                id="font-assign-scoreboardScore"
+                id="font-assign-rovOverlayScore"
                 class="input"
-                onchange="updateFontAssignment('scoreboardScore', this.value)"
+                style="margin-bottom: var(--space-3)"
+                onchange="updateFontAssignment('rovOverlayScore', this.value)"
               >
                 <option value="">Default (Rajdhani Bold)</option>
               </select>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  type="color"
+                  id="font-style-rovOverlayScore-color"
+                  value="#ffffff"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    background: transparent;
+                  "
+                  onchange="
+                    updateFontStyle('rovOverlayScore', 'color', this.value)
+                  "
+                />
+                <button
+                  id="font-style-rovOverlayScore-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('rovOverlayScore', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-rovOverlayScore-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('rovOverlayScore', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-rovOverlayScore-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('rovOverlayScore', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Versus Team Name -->
@@ -2117,10 +2275,108 @@
               <select
                 id="font-assign-versusTeamName"
                 class="input"
+                style="margin-bottom: var(--space-3)"
                 onchange="updateFontAssignment('versusTeamName', this.value)"
               >
                 <option value="">Default (Rajdhani)</option>
               </select>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  type="color"
+                  id="font-style-versusTeamName-color"
+                  value="#ffffff"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    background: transparent;
+                  "
+                  onchange="
+                    updateFontStyle('versusTeamName', 'color', this.value)
+                  "
+                />
+                <button
+                  id="font-style-versusTeamName-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('versusTeamName', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-versusTeamName-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('versusTeamName', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-versusTeamName-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('versusTeamName', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Bracket Team Name -->
@@ -2151,10 +2407,392 @@
               <select
                 id="font-assign-bracketTeamName"
                 class="input"
+                style="margin-bottom: var(--space-3)"
                 onchange="updateFontAssignment('bracketTeamName', this.value)"
               >
                 <option value="">Default (Inter)</option>
               </select>
+              <!-- Styling Options Row -->
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <!-- Color Picker -->
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: var(--space-1);
+                  "
+                >
+                  <input
+                    type="color"
+                    id="font-style-bracketTeamName-color"
+                    value="#ffffff"
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      border: none;
+                      border-radius: var(--radius-sm);
+                      cursor: pointer;
+                      background: transparent;
+                    "
+                    onchange="
+                      updateFontStyle('bracketTeamName', 'color', this.value)
+                    "
+                  />
+                </div>
+                <!-- Glow Toggle -->
+                <button
+                  id="font-style-bracketTeamName-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTeamName', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <!-- Bold Toggle -->
+                <button
+                  id="font-style-bracketTeamName-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                    font-weight: bold;
+                  "
+                  onclick="toggleFontStyle('bracketTeamName', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <!-- Italic Toggle -->
+                <button
+                  id="font-style-bracketTeamName-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTeamName', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bracket Tournament Name -->
+            <div
+              style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                "
+              >
+                <i
+                  class="ph-duotone ph-crown"
+                  style="font-size: 20px; color: var(--color-warning)"
+                ></i>
+                <span style="font-weight: var(--font-weight-medium)"
+                  >Bracket - Tournament Name</span
+                >
+              </div>
+              <select
+                id="font-assign-bracketTournamentName"
+                class="input"
+                style="margin-bottom: var(--space-3)"
+                onchange="
+                  updateFontAssignment('bracketTournamentName', this.value)
+                "
+              >
+                <option value="">Default (Inter)</option>
+              </select>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  type="color"
+                  id="font-style-bracketTournamentName-color"
+                  value="#ffffff"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    background: transparent;
+                  "
+                  onchange="
+                    updateFontStyle(
+                      'bracketTournamentName',
+                      'color',
+                      this.value,
+                    )
+                  "
+                />
+                <button
+                  id="font-style-bracketTournamentName-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTournamentName', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-bracketTournamentName-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTournamentName', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-bracketTournamentName-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTournamentName', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bracket Title (Tournament Name at top) -->
+            <div
+              style="
+                padding: var(--space-4);
+                background: var(--color-bg-primary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--color-border-light);
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  margin-bottom: var(--space-2);
+                "
+              >
+                <i
+                  class="ph-duotone ph-text-aa"
+                  style="font-size: 20px; color: var(--color-primary)"
+                ></i>
+                <span style="font-weight: var(--font-weight-medium)"
+                  >Bracket - Title</span
+                >
+              </div>
+              <select
+                id="font-assign-bracketTitle"
+                class="input"
+                style="margin-bottom: var(--space-3)"
+                onchange="updateFontAssignment('bracketTitle', this.value)"
+              >
+                <option value="">Default (Inter)</option>
+              </select>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  type="color"
+                  id="font-style-bracketTitle-color"
+                  value="#ffffff"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    background: transparent;
+                  "
+                  onchange="
+                    updateFontStyle('bracketTitle', 'color', this.value)
+                  "
+                />
+                <button
+                  id="font-style-bracketTitle-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTitle', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-bracketTitle-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTitle', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-bracketTitle-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('bracketTitle', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Transition Title -->
@@ -2185,14 +2823,473 @@
               <select
                 id="font-assign-transitionTitle"
                 class="input"
+                style="margin-bottom: var(--space-3)"
                 onchange="updateFontAssignment('transitionTitle', this.value)"
               >
                 <option value="">Default (System)</option>
               </select>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--space-2);
+                  flex-wrap: wrap;
+                "
+              >
+                <input
+                  type="color"
+                  id="font-style-transitionTitle-color"
+                  value="#ffffff"
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    background: transparent;
+                  "
+                  onchange="
+                    updateFontStyle('transitionTitle', 'color', this.value)
+                  "
+                />
+                <button
+                  id="font-style-transitionTitle-glow"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('transitionTitle', 'glow')"
+                  title="Glow Effect"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-transitionTitle-bold"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('transitionTitle', 'bold')"
+                  title="Bold"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                  </svg>
+                </button>
+                <button
+                  id="font-style-transitionTitle-italic"
+                  class="btn btn-secondary"
+                  style="
+                    padding: var(--space-1) var(--space-2);
+                    min-width: auto;
+                  "
+                  onclick="toggleFontStyle('transitionTitle', 'italic')"
+                  title="Italic"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="19" y1="4" x2="10" y2="4" />
+                    <line x1="14" y1="20" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="9" y2="20" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- ==================== WAIT TIMER PAGE ==================== -->
+    <div id="page-wait" class="page">
+      <div style="padding: var(--space-6); max-width: 600px; margin: 0 auto">
+        <h2
+          style="
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+          "
+        >
+          <i class="ph-duotone ph-timer" style="color: var(--color-accent)"></i>
+          Wait Timer
+        </h2>
+
+        <div class="card" style="padding: var(--space-6); text-align: center">
+          <!-- Timer Display -->
+          <div
+            id="wait-timer-display"
+            style="
+              font-size: 72px;
+              font-weight: var(--font-weight-bold);
+              font-family: &quot;Inter&quot;, monospace;
+              color: var(--color-text-primary);
+              margin-bottom: var(--space-2);
+            "
+          >
+            00:00
+          </div>
+          <div
+            id="wait-timer-status"
+            style="
+              font-size: var(--font-size-sm);
+              color: var(--color-text-tertiary);
+              margin-bottom: var(--space-6);
+            "
+          >
+            Not set
+          </div>
+
+          <!-- Custom Time Input -->
+          <div
+            style="
+              display: flex;
+              gap: var(--space-3);
+              justify-content: center;
+              margin-bottom: var(--space-4);
+              align-items: center;
+            "
+          >
+            <div style="text-align: center">
+              <label
+                style="
+                  display: block;
+                  font-size: var(--font-size-xs);
+                  color: var(--color-text-tertiary);
+                  margin-bottom: var(--space-1);
+                "
+                >Hours</label
+              >
+              <input
+                type="number"
+                id="wait-timer-hours"
+                class="input"
+                value="0"
+                min="0"
+                max="23"
+                style="
+                  width: 70px;
+                  text-align: center;
+                  font-size: var(--font-size-lg);
+                "
+              />
+            </div>
+            <span
+              style="
+                font-size: var(--font-size-2xl);
+                color: var(--color-text-secondary);
+                margin-top: var(--space-4);
+              "
+              >:</span
+            >
+            <div style="text-align: center">
+              <label
+                style="
+                  display: block;
+                  font-size: var(--font-size-xs);
+                  color: var(--color-text-tertiary);
+                  margin-bottom: var(--space-1);
+                "
+                >Minutes</label
+              >
+              <input
+                type="number"
+                id="wait-timer-minutes"
+                class="input"
+                value="0"
+                min="0"
+                max="59"
+                style="
+                  width: 70px;
+                  text-align: center;
+                  font-size: var(--font-size-lg);
+                "
+              />
+            </div>
+            <span
+              style="
+                font-size: var(--font-size-2xl);
+                color: var(--color-text-secondary);
+                margin-top: var(--space-4);
+              "
+              >:</span
+            >
+            <div style="text-align: center">
+              <label
+                style="
+                  display: block;
+                  font-size: var(--font-size-xs);
+                  color: var(--color-text-tertiary);
+                  margin-bottom: var(--space-1);
+                "
+                >Seconds</label
+              >
+              <input
+                type="number"
+                id="wait-timer-seconds"
+                class="input"
+                value="0"
+                min="0"
+                max="59"
+                style="
+                  width: 70px;
+                  text-align: center;
+                  font-size: var(--font-size-lg);
+                "
+              />
+            </div>
+          </div>
+
+          <button
+            class="btn btn-secondary"
+            onclick="setWaitTimerCustom()"
+            style="margin-bottom: var(--space-4)"
+          >
+            <i class="ph-bold ph-check"></i> Set Timer
+          </button>
+
+          <!-- Control Buttons -->
+          <div
+            style="display: flex; gap: var(--space-3); justify-content: center"
+          >
+            <button
+              id="wait-timer-toggle-btn"
+              class="btn btn-primary"
+              onclick="toggleWaitTimer()"
+              style="min-width: 120px"
+            >
+              <i class="ph-bold ph-play"></i> Start
+            </button>
+            <button class="btn btn-secondary" onclick="resetWaitTimer()">
+              <i class="ph-bold ph-arrow-counter-clockwise"></i> Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== OBS CONTROL PAGE ==================== -->
+    <div id="page-obs" class="page">
+      <div style="padding: var(--space-6); max-width: 800px; margin: 0 auto">
+        <h2
+          style="
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+          "
+        >
+          <i
+            class="ph-duotone ph-monitor-play"
+            style="color: var(--color-accent)"
+          ></i>
+          OBS Control
+          <span
+            id="obs-status-dot"
+            style="
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              background: var(--color-danger);
+              margin-left: var(--space-2);
+            "
+          ></span>
+        </h2>
+
+        <!-- Connection Card -->
+        <div
+          class="card"
+          style="padding: var(--space-5); margin-bottom: var(--space-4)"
+        >
+          <h3
+            style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            "
+          >
+            <i
+              class="ph-duotone ph-plugs"
+              style="margin-right: var(--space-2)"
+            ></i>
+            Connection
+          </h3>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: var(--space-3);
+              margin-bottom: var(--space-4);
+            "
+          >
+            <div>
+              <label
+                style="
+                  font-size: var(--font-size-sm);
+                  color: var(--color-text-secondary);
+                  margin-bottom: var(--space-1);
+                  display: block;
+                "
+                >Address</label
+              >
+              <input
+                type="text"
+                id="obs-address"
+                class="input"
+                value="ws://localhost:4455"
+                placeholder="ws://localhost:4455"
+              />
+            </div>
+            <div>
+              <label
+                style="
+                  font-size: var(--font-size-sm);
+                  color: var(--color-text-secondary);
+                  margin-bottom: var(--space-1);
+                  display: block;
+                "
+                >Password (optional)</label
+              >
+              <input
+                type="password"
+                id="obs-password"
+                class="input"
+                placeholder="Leave empty if none"
+              />
+            </div>
+          </div>
+
+          <button
+            id="obs-connect-btn"
+            class="btn btn-primary"
+            onclick="connectOBS()"
+            style="width: 100%"
+          >
+            <i class="ph-bold ph-plugs"></i> Connect
+          </button>
+        </div>
+
+        <!-- Scenes Card -->
+        <div class="card" style="padding: var(--space-5)">
+          <h3
+            style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-4);
+            "
+          >
+            <i
+              class="ph-duotone ph-film-slate"
+              style="margin-right: var(--space-2)"
+            ></i>
+            Scenes
+          </h3>
+
+          <div
+            id="obs-scenes-container"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+              gap: var(--space-3);
+            "
+          >
+            <div
+              style="
+                color: var(--color-text-tertiary);
+                text-align: center;
+                padding: var(--space-4);
+                grid-column: 1 / -1;
+              "
+            >
+              Connect to OBS to see scenes
+            </div>
+          </div>
+
+          <div style="margin-top: var(--space-4)">
+            <button
+              class="btn btn-secondary"
+              onclick="refreshOBSScenes()"
+              style="width: 100%"
+            >
+              <i class="ph-bold ph-arrows-clockwise"></i> Refresh Scenes
+            </button>
+          </div>
+        </div>
+
+        <!-- Auto Import Layout -->
+        <div
+          class="card"
+          style="padding: var(--space-5); margin-top: var(--space-4)"
+        >
+          <h3
+            style="
+              font-size: var(--font-size-lg);
+              font-weight: var(--font-weight-semibold);
+              margin-bottom: var(--space-3);
+            "
+          >
+            <i
+              class="ph-duotone ph-download"
+              style="margin-right: var(--space-2)"
+            ></i>
+            Import Default Layout
+          </h3>
+          <p
+            style="
+              font-size: var(--font-size-sm);
+              color: var(--color-text-secondary);
+              margin-bottom: var(--space-3);
+            "
+          >
+            Copy the Esport layout to OBS Scene Collection folder. Requires OBS
+            restart.
+          </p>
+          <button
+            class="btn btn-secondary"
+            onclick="importOBSLayout()"
+            style="width: 100%"
+          >
+            <i class="ph-bold ph-file-arrow-down"></i> Import
+            Esport__PaperX2.json
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Load main.ts -->
@@ -2259,6 +3356,14 @@
         if (pageName === "fonts") {
           refreshFonts();
         }
+
+        // Load bracket templates when switching to bracket page
+        if (
+          pageName === "bracket" &&
+          typeof loadBracketTemplates === "function"
+        ) {
+          loadBracketTemplates();
+        }
       }
 
       // ==========================================
@@ -2274,6 +3379,7 @@
             currentFontsState = await response.json();
             renderFontsList();
             updateFontDropdowns();
+            updateAllFontStyleUI();
           }
         } catch (err) {
           console.error("Failed to load fonts:", err);
@@ -2304,7 +3410,7 @@
             showNotification(
               "Success",
               `ฟอนต์ "${result.font.name}" อัพโหลดสำเร็จ`,
-              "success"
+              "success",
             );
             fileInput.value = "";
             refreshFonts();
@@ -2372,7 +3478,7 @@
                         <i class="ph-bold ph-trash"></i>
                     </button>
                 </div>
-            `
+            `,
           )
           .join("");
       }
@@ -2403,22 +3509,22 @@
 
       function updateFontDropdowns() {
         const assignmentKeys = [
-          "lowerThirdTitle",
-          "lowerThirdSlots",
-          "scoreboardTeamName",
-          "scoreboardScore",
+          "rovOverlayTeamName",
+          "rovOverlayScore",
           "versusTeamName",
           "bracketTeamName",
+          "bracketTournamentName",
+          "bracketTitle",
           "transitionTitle",
         ];
 
         const defaultLabels = {
-          lowerThirdTitle: "Default (Rajdhani)",
-          lowerThirdSlots: "Default (Outfit)",
-          scoreboardTeamName: "Default (Rajdhani)",
-          scoreboardScore: "Default (Rajdhani Bold)",
+          rovOverlayTeamName: "Default (Rajdhani)",
+          rovOverlayScore: "Default (Rajdhani Bold)",
           versusTeamName: "Default (Rajdhani)",
           bracketTeamName: "Default (Inter)",
+          bracketTournamentName: "Default (Inter)",
+          bracketTitle: "Default (Inter)",
           transitionTitle: "Default (System)",
         };
 
@@ -2475,6 +3581,102 @@
         }
       }
 
+      // ==========================================
+      // Font Styling Functions (Color, Glow, Bold, Italic)
+      // ==========================================
+
+      async function updateFontStyle(assignmentKey, styleKey, value) {
+        // Initialize style object if not exists
+        const styleAssignmentKey = `${assignmentKey}_style`;
+        if (!currentFontsState.assignments[styleAssignmentKey]) {
+          currentFontsState.assignments[styleAssignmentKey] = {};
+        }
+
+        currentFontsState.assignments[styleAssignmentKey][styleKey] = value;
+
+        // Auto-save immediately
+        try {
+          const response = await fetch("/api/fonts/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(currentFontsState.assignments),
+          });
+
+          if (response.ok) {
+            showNotification("Saved", `${styleKey} อัพเดทเรียบร้อย`, "success");
+            updateFontStyleUI(assignmentKey);
+          }
+        } catch (err) {
+          console.error("Update font style error:", err);
+        }
+      }
+
+      async function toggleFontStyle(assignmentKey, styleKey) {
+        const styleAssignmentKey = `${assignmentKey}_style`;
+        if (!currentFontsState.assignments[styleAssignmentKey]) {
+          currentFontsState.assignments[styleAssignmentKey] = {};
+        }
+
+        const currentValue =
+          currentFontsState.assignments[styleAssignmentKey][styleKey] || false;
+        await updateFontStyle(assignmentKey, styleKey, !currentValue);
+      }
+
+      function updateFontStyleUI(assignmentKey) {
+        const styleAssignmentKey = `${assignmentKey}_style`;
+        const style = currentFontsState.assignments[styleAssignmentKey] || {};
+
+        // Update color picker
+        const colorInput = document.getElementById(
+          `font-style-${assignmentKey}-color`,
+        );
+        if (colorInput) {
+          colorInput.value = style.color || "#ffffff";
+        }
+
+        // Update toggle buttons
+        const glowBtn = document.getElementById(
+          `font-style-${assignmentKey}-glow`,
+        );
+        if (glowBtn) {
+          glowBtn.classList.toggle("btn-primary", style.glow === true);
+          glowBtn.classList.toggle("btn-secondary", style.glow !== true);
+        }
+
+        const boldBtn = document.getElementById(
+          `font-style-${assignmentKey}-bold`,
+        );
+        if (boldBtn) {
+          boldBtn.classList.toggle("btn-primary", style.bold === true);
+          boldBtn.classList.toggle("btn-secondary", style.bold !== true);
+        }
+
+        const italicBtn = document.getElementById(
+          `font-style-${assignmentKey}-italic`,
+        );
+        if (italicBtn) {
+          italicBtn.classList.toggle("btn-primary", style.italic === true);
+          italicBtn.classList.toggle("btn-secondary", style.italic !== true);
+        }
+      }
+
+      // Update font dropdowns and style UI after refresh
+      function updateAllFontStyleUI() {
+        const assignmentKeys = [
+          "rovOverlayTeamName",
+          "rovOverlayScore",
+          "versusTeamName",
+          "bracketTeamName",
+          "bracketTournamentName",
+          "bracketTitle",
+          "transitionTitle",
+        ];
+
+        for (const key of assignmentKeys) {
+          updateFontStyleUI(key);
+        }
+      }
+
       function escapeHtml(text) {
         const div = document.createElement("div");
         div.textContent = text;
@@ -2493,7 +3695,10 @@
       document.getElementById("hero-team-b-url").value =
         `${baseUrl}/hero-team-b.html`;
       document.getElementById("smart-transition-url").value =
-        `${baseUrl}/smart-transition.html`;
+        `${baseUrl}/transition.html`;
+      document.getElementById("versus-url").value = `${baseUrl}/versus.html`;
+      document.getElementById("bracket-url").value = `${baseUrl}/bracket.html`;
+      document.getElementById("wait-url").value = `${baseUrl}/wait.html`;
 
       function copyUrlById(inputId) {
         const input = document.getElementById(inputId);
@@ -2511,7 +3716,7 @@
         title,
         subtitle = "",
         type = "info",
-        duration = 3000
+        duration = 3000,
       ) {
         // Get or create island element
         let island = document.getElementById("dynamic-island");
@@ -2626,7 +3831,7 @@
             .forEach((round) => {
               const roundName = getRoundName(
                 parseInt(round),
-                bracket.matches.length
+                bracket.matches.length,
               );
               matchesByRound[round].forEach((match) => {
                 const teamA = match.teamA?.name || "TBA";
@@ -2642,7 +3847,7 @@
           showNotification(
             "Refreshed",
             `${bracket.matches.length} matches loaded`,
-            "success"
+            "success",
           );
         } catch (err) {
           console.error("Failed to load bracket matches:", err);
@@ -2671,7 +3876,7 @@
           showNotification(
             "Select Match",
             "Please select a match to load",
-            "warning"
+            "warning",
           );
           return;
         }
@@ -2681,7 +3886,7 @@
         }
 
         const match = currentBracketData?.matches?.find(
-          (m) => m.id === matchId
+          (m) => m.id === matchId,
         );
         console.log("🔍 Loaded match:", match);
         if (!match) {
@@ -2727,7 +3932,7 @@
 
           if (match.teamA.logo) {
             const preview = document.getElementById(
-              `team${inputA}-logo-preview`
+              `team${inputA}-logo-preview`,
             );
             const dropzone = document.getElementById(`team${inputA}-dropzone`);
             if (preview) {
@@ -2751,7 +3956,7 @@
 
           if (match.teamB.logo) {
             const preview = document.getElementById(
-              `team${inputB}-logo-preview`
+              `team${inputB}-logo-preview`,
             );
             const dropzone = document.getElementById(`team${inputB}-dropzone`);
             if (preview) {
@@ -2800,7 +4005,7 @@
           });
 
           console.log(
-            "✅ Both teams saved directly from bracket data (with scores)"
+            "✅ Both teams saved directly from bracket data (with scores)",
           );
         } catch (err) {
           console.error("Failed to save teams:", err);
@@ -2809,7 +4014,7 @@
         showNotification(
           "Match Loaded & Linked",
           `${match.teamA?.name || "TBA"} vs ${match.teamB?.name || "TBA"}`,
-          "success"
+          "success",
         );
       }
 
@@ -2819,7 +4024,7 @@
         if (!indicator) {
           // Create indicator element
           const selectorSection = document.querySelector(
-            ".bracket-match-selector"
+            ".bracket-match-selector",
           );
           if (selectorSection) {
             indicator = document.createElement("div");
@@ -2901,7 +4106,7 @@
           showNotification(
             "Invalid file",
             "Please select an image file",
-            "error"
+            "error",
           );
           input.value = "";
           return;
@@ -2925,7 +4130,7 @@
             showNotification(
               "Logo uploaded",
               `Team ${side} logo updated`,
-              "success"
+              "success",
             );
           }
         };
@@ -2980,7 +4185,7 @@
         } else {
           // Fallback to DOM order (should rarely happen if selectionSequence logic is working)
           const checkboxes = document.querySelectorAll(
-            '#bracket-template-list input[type="checkbox"]:checked'
+            '#bracket-template-list input[type="checkbox"]:checked',
           );
           checkboxes.forEach((cb) => {
             const templateData = JSON.parse(cb.dataset.template);
@@ -3000,7 +4205,7 @@
           showNotification(
             "Error",
             "Please select at least 2 teams from templates",
-            "error"
+            "error",
           );
           return;
         }
@@ -3028,7 +4233,7 @@
             showNotification(
               "Success",
               `Bracket created with ${allTeams.length} teams`,
-              "success"
+              "success",
             );
             renderBracket(result.bracket);
             refreshBracketMatches(); // Update scoreboard dropdown
@@ -3036,7 +4241,7 @@
             showNotification(
               "Error",
               result.message || "Failed to create bracket",
-              "error"
+              "error",
             );
           }
         } catch (err) {
@@ -3073,7 +4278,7 @@
               showNotification(
                 "Templates Updated",
                 `${bracketTemplates.length} templates available`,
-                "info"
+                "info",
               );
             } else if (message.type === "BRACKET_UPDATE") {
               console.log("🏆 Bracket updated via WebSocket");
@@ -3152,7 +4357,7 @@
                         margin-left: var(--space-2);
                     "></span>
                 </label>
-            `
+            `,
           )
           .join("");
 
@@ -3167,7 +4372,7 @@
           }
         } else {
           selectionSequence = selectionSequence.filter(
-            (name) => name !== teamName
+            (name) => name !== teamName,
           );
         }
         refreshSelectionBadges();
@@ -3200,7 +4405,7 @@
 
       function updateSelectedCount() {
         const count = document.querySelectorAll(
-          '#bracket-template-list input[type="checkbox"]:checked'
+          '#bracket-template-list input[type="checkbox"]:checked',
         ).length;
         const countEl = document.getElementById("bracket-selected-count");
         if (countEl) {
@@ -3217,13 +4422,13 @@
 
         // Check if we have selected teams
         const selectedCount = labels.filter((l) =>
-          l.querySelector("input:checked")
+          l.querySelector("input:checked"),
         ).length;
         if (selectedCount < 2) {
           showNotification(
             "Shuffle",
             "Please select at least 2 teams to shuffle",
-            "warning"
+            "warning",
           );
           return;
         }
@@ -3237,7 +4442,7 @@
         showNotification(
           "Shuffled!",
           "Team order has been randomized",
-          "success"
+          "success",
         );
       }
 
@@ -3259,20 +4464,20 @@
             showNotification(
               "Shuffled!",
               "Team matchups have been randomized",
-              "success"
+              "success",
             );
           } else if (result.locked) {
             showNotification(
               "Locked",
               "Cannot shuffle after scoring has started",
-              "warning"
+              "warning",
             );
             updateShuffleButtonState(true);
           } else {
             showNotification(
               "Error",
               result.message || "Shuffle failed",
-              "error"
+              "error",
             );
           }
         } catch (err) {
@@ -3503,7 +4708,7 @@
             showNotification(
               "Winner Set",
               "Match updated successfully",
-              "success"
+              "success",
             );
           }
         } catch (err) {
@@ -3552,7 +4757,7 @@
         showNotification(
           "Copied!",
           "Bracket overlay URL copied to clipboard",
-          "success"
+          "success",
         );
       }
 
@@ -3568,9 +4773,446 @@
       window.copyBracketOverlayUrl = copyBracketOverlayUrl;
       window.shuffleBracketTeams = shuffleBracketTeams;
       window.updateShuffleButtonState = updateShuffleButtonState;
+
+      // ===========================================
+      // WAIT TIMER FUNCTIONS
+      // ===========================================
+
+      let waitTimerInterval = null;
+      let waitTimerState = { seconds: 0, running: false, endTime: null };
+
+      function updateWaitTimerDisplay() {
+        const display = document.getElementById("wait-timer-display");
+        const status = document.getElementById("wait-timer-status");
+        if (!display) return;
+
+        const hours = Math.floor(waitTimerState.seconds / 3600);
+        const minutes = Math.floor((waitTimerState.seconds % 3600) / 60);
+        const seconds = waitTimerState.seconds % 60;
+        display.textContent = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+        if (status) {
+          if (waitTimerState.running) {
+            status.textContent = "Running...";
+            status.style.color = "var(--color-success)";
+          } else if (waitTimerState.seconds > 0) {
+            status.textContent = "Ready";
+            status.style.color = "var(--color-accent)";
+          } else {
+            status.textContent = "Not set";
+            status.style.color = "var(--color-text-tertiary)";
+          }
+        }
+
+        // Update toggle button
+        const btn = document.getElementById("wait-timer-toggle-btn");
+        if (btn) {
+          if (waitTimerState.running) {
+            btn.innerHTML = '<i class="ph-bold ph-pause"></i> Pause';
+          } else {
+            btn.innerHTML = '<i class="ph-bold ph-play"></i> Start';
+          }
+        }
+      }
+
+      function startLocalTimer() {
+        if (waitTimerInterval) clearInterval(waitTimerInterval);
+        waitTimerInterval = setInterval(() => {
+          if (waitTimerState.running && waitTimerState.endTime) {
+            const remaining = Math.max(0, waitTimerState.endTime - Date.now());
+            waitTimerState.seconds = Math.ceil(remaining / 1000);
+            updateWaitTimerDisplay();
+
+            if (remaining <= 0) {
+              waitTimerState.running = false;
+              waitTimerState.endTime = null;
+              clearInterval(waitTimerInterval);
+              showNotification("Timer", "Time's up!", "info");
+            }
+          }
+        }, 200);
+      }
+
+      async function loadWaitTimerState() {
+        try {
+          const response = await fetch("/api/wait-timer");
+          if (response.ok) {
+            waitTimerState = await response.json();
+            updateWaitTimerDisplay();
+
+            if (waitTimerState.running) {
+              startLocalTimer();
+            }
+          }
+        } catch (err) {
+          console.error("Load wait timer error:", err);
+        }
+      }
+
+      async function setWaitTimerCustom() {
+        const hoursInput = document.getElementById("wait-timer-hours");
+        const minsInput = document.getElementById("wait-timer-minutes");
+        const secsInput = document.getElementById("wait-timer-seconds");
+
+        const hours = parseInt(hoursInput?.value) || 0;
+        const minutes = parseInt(minsInput?.value) || 0;
+        const secs = parseInt(secsInput?.value) || 0;
+
+        const totalSeconds = hours * 3600 + minutes * 60 + secs;
+
+        if (totalSeconds <= 0) {
+          showNotification("Error", "Please enter a valid time", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/wait-timer/set", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ seconds: totalSeconds }),
+          });
+          if (response.ok) {
+            const data = await response.json();
+            waitTimerState = data.state;
+            updateWaitTimerDisplay();
+
+            const timeStr = `${hours > 0 ? hours + "h " : ""}${minutes > 0 ? minutes + "m " : ""}${secs}s`;
+            showNotification("Timer Set", timeStr, "success");
+          }
+        } catch (err) {
+          console.error("Set timer error:", err);
+        }
+      }
+
+      async function setWaitTimer() {
+        const input = document.getElementById("wait-timer-input");
+        const seconds = parseInt(input.value) || 0;
+        if (seconds > 0) {
+          await setWaitTimerPreset(seconds);
+          input.value = "";
+        } else {
+          showNotification("Error", "Enter a valid number of seconds", "error");
+        }
+      }
+
+      async function toggleWaitTimer() {
+        try {
+          if (waitTimerState.running) {
+            const response = await fetch("/api/wait-timer/stop", {
+              method: "POST",
+            });
+            if (response.ok) {
+              const data = await response.json();
+              waitTimerState = data.state;
+              clearInterval(waitTimerInterval);
+              updateWaitTimerDisplay();
+              showNotification("Paused", "Timer paused", "info");
+            }
+          } else {
+            if (waitTimerState.seconds <= 0) {
+              showNotification("Error", "Set a timer first", "warning");
+              return;
+            }
+            const response = await fetch("/api/wait-timer/start", {
+              method: "POST",
+            });
+            if (response.ok) {
+              const data = await response.json();
+              waitTimerState = data.state;
+              startLocalTimer();
+              updateWaitTimerDisplay();
+              showNotification("Started", "Timer running", "success");
+            }
+          }
+        } catch (err) {
+          console.error("Toggle timer error:", err);
+        }
+      }
+
+      async function resetWaitTimer() {
+        try {
+          const response = await fetch("/api/wait-timer/reset", {
+            method: "POST",
+          });
+          if (response.ok) {
+            waitTimerState = { seconds: 0, running: false, endTime: null };
+            clearInterval(waitTimerInterval);
+            updateWaitTimerDisplay();
+            showNotification("Reset", "Timer cleared", "info");
+          }
+        } catch (err) {
+          console.error("Reset timer error:", err);
+        }
+      }
+
+      function copyWaitOverlayUrl() {
+        const input = document.getElementById("wait-overlay-url");
+        navigator.clipboard.writeText(input.value);
+        showNotification("Copied!", "Wait overlay URL copied", "success");
+      }
+
+      // Load timer state on page load
+      loadWaitTimerState();
+
+      // ===========================================
+      // OBS CONTROL FUNCTIONS
+      // ===========================================
+
+      let obsConnected = false;
+
+      async function connectOBS() {
+        const btn = document.getElementById("obs-connect-btn");
+        const addressInput = document.getElementById("obs-address");
+        const passwordInput = document.getElementById("obs-password");
+
+        if (obsConnected) {
+          // Disconnect
+          try {
+            const response = await fetch("/api/obs/disconnect", {
+              method: "POST",
+            });
+            if (response.ok) {
+              obsConnected = false;
+              updateOBSUI();
+              showNotification("Disconnected", "OBS connection closed", "info");
+            }
+          } catch (err) {
+            showNotification("Error", "Failed to disconnect", "error");
+          }
+          return;
+        }
+
+        // Connect
+        const address = addressInput.value || "ws://localhost:4455";
+        const password = passwordInput.value;
+
+        // Save to localStorage
+        localStorage.setItem("obs_address", address);
+        localStorage.setItem("obs_password", password);
+
+        btn.disabled = true;
+        btn.innerHTML =
+          '<i class="ph-bold ph-spinner ph-spin"></i> Connecting...';
+
+        try {
+          const response = await fetch("/api/obs/connect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address, password }),
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            obsConnected = true;
+            updateOBSUI();
+            refreshOBSScenes();
+            showNotification("Connected", "OBS WebSocket connected", "success");
+          } else {
+            showNotification("Error", "Failed to connect to OBS", "error");
+          }
+        } catch (err) {
+          console.error("OBS connect error:", err);
+          showNotification("Error", "Connection failed", "error");
+        }
+
+        btn.disabled = false;
+        updateOBSUI();
+      }
+
+      async function refreshOBSScenes() {
+        if (!obsConnected) {
+          showNotification("Not Connected", "Connect to OBS first", "warning");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/obs/scenes");
+          const scenes = await response.json();
+
+          const container = document.getElementById("obs-scenes-container");
+          if (scenes.length === 0) {
+            container.innerHTML =
+              '<div style="color: var(--color-text-tertiary); text-align: center; padding: var(--space-4); grid-column: 1 / -1;">No scenes found</div>';
+            return;
+          }
+
+          container.innerHTML = scenes
+            .map(
+              (sceneName) => `
+          <button class="btn btn-secondary" onclick="switchScene('${sceneName.replace(/'/g, "\\'")}')" style="padding: var(--space-3); text-align: center;">
+            <i class="ph-duotone ph-monitor" style="display: block; font-size: 24px; margin-bottom: var(--space-1);"></i>
+            ${sceneName}
+          </button>
+        `,
+            )
+            .join("");
+
+          showNotification(
+            "Refreshed",
+            `${scenes.length} scenes loaded`,
+            "success",
+          );
+        } catch (err) {
+          console.error("Refresh scenes error:", err);
+        }
+      }
+
+      async function switchScene(sceneName) {
+        if (!obsConnected) {
+          showNotification("Not Connected", "Connect to OBS first", "warning");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/obs/switch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sceneName }),
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            showNotification("Switched", `Scene: ${sceneName}`, "success");
+          } else {
+            showNotification(
+              "Error",
+              `Failed to switch to ${sceneName}`,
+              "error",
+            );
+          }
+        } catch (err) {
+          console.error("Switch scene error:", err);
+          showNotification("Error", "Failed to switch scene", "error");
+        }
+      }
+
+      async function importOBSLayout() {
+        try {
+          const response = await fetch("/api/obs/apply-layout", {
+            method: "POST",
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            showNotification(
+              "Imported",
+              data.message || "Layout imported to OBS",
+              "success",
+            );
+          } else {
+            showNotification("Error", "Failed to import layout", "error");
+          }
+        } catch (err) {
+          console.error("Import layout error:", err);
+          showNotification("Error", "Import failed", "error");
+        }
+      }
+
+      function updateOBSUI() {
+        const dot = document.getElementById("obs-status-dot");
+        const btn = document.getElementById("obs-connect-btn");
+
+        if (dot) {
+          dot.style.background = obsConnected
+            ? "var(--color-success)"
+            : "var(--color-danger)";
+        }
+
+        if (btn) {
+          if (obsConnected) {
+            btn.innerHTML =
+              '<i class="ph-bold ph-plugs-connected"></i> Disconnect';
+            btn.classList.remove("btn-primary");
+            btn.classList.add("btn-secondary");
+          } else {
+            btn.innerHTML = '<i class="ph-bold ph-plugs"></i> Connect';
+            btn.classList.add("btn-primary");
+            btn.classList.remove("btn-secondary");
+          }
+        }
+      }
+
+      async function updateOBSStatus() {
+        try {
+          const response = await fetch("/api/obs/status");
+          const data = await response.json();
+          obsConnected = data.connected;
+          updateOBSUI();
+        } catch (err) {
+          console.log("OBS status check failed");
+        }
+      }
+
+      // Load saved OBS settings
+      (function () {
+        const savedAddress = localStorage.getItem("obs_address");
+        const savedPassword = localStorage.getItem("obs_password");
+        if (savedAddress)
+          document.getElementById("obs-address").value = savedAddress;
+        if (savedPassword)
+          document.getElementById("obs-password").value = savedPassword;
+      })();
+
+      // Check OBS status on load
+      updateOBSStatus();
+      // Poll status every 10s
+      setInterval(updateOBSStatus, 10000);
     </script>
 
     <!-- Crop Modal -->
+    <script>
+      async function handleTransitionLogoSelect(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await fetch("/api/transition/logo", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const preview = document.getElementById("transition-logo-preview");
+            if (preview) {
+              preview.style.backgroundImage = `url('${data.path}')`;
+              preview.innerHTML = ""; // Remove icon
+            }
+            showNotification("Success", "Transition logo updated", "success");
+          } else {
+            showNotification("Error", "Failed to upload logo", "error");
+          }
+        } catch (err) {
+          console.error("Upload error:", err);
+          showNotification("Error", "Upload failed", "error");
+        }
+      }
+
+      // Load initial transition logo
+      async function loadTransitionLogo() {
+        try {
+          const response = await fetch("/api/transition/logo");
+          if (response.ok) {
+            const data = await response.json();
+            if (data.url) {
+              const preview = document.getElementById(
+                "transition-logo-preview",
+              );
+              if (preview) {
+                preview.style.backgroundImage = `url('${data.url}')`;
+                preview.innerHTML = "";
+              }
+            }
+          }
+        } catch (e) {
+          console.log("No transition logo set");
+        }
+      }
+      loadTransitionLogo();
+    </script>
     <div id="crop-modal" class="modal-overlay hidden" style="z-index: 10000">
       <div class="modal crop-modal">
         <div class="modal-header">
@@ -3610,7 +5252,154 @@
       </div>
     </div>
 
-    <!-- Load main application logic (transpiled from TypeScript by Bun on-the-fly) -->
-    <script type="module" src="/src/main.ts"></script>
+    <!-- Load main application logic (pre-compiled for production) -->
+    <script type="module" src="/dist/main.js"></script>
+    <style>
+      /* Drag & Drop Roster Styles Restoration */
+
+      .player-card {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2);
+        background: var(--color-bg-tertiary);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-2);
+        cursor: grab;
+        position: relative;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        /* Ensure it has height/width */
+        min-height: 3.5rem;
+      }
+
+      .player-card:active {
+        cursor: grabbing;
+      }
+
+      .player-card.dragging {
+        opacity: 0.5;
+        background: var(--color-bg-secondary);
+        border-color: var(--color-accent);
+      }
+
+      .player-card.drag-over {
+        background: var(--color-bg-secondary);
+        box-shadow: 0 0 0 2px var(--color-accent);
+        transform: scale(1.02);
+      }
+
+      .player-card--a {
+        border-left: 4px solid var(--color-team-a);
+      }
+
+      .player-card--b {
+        border-left: 4px solid var(--color-team-b);
+      }
+
+      .player-card__drag {
+        color: var(--color-text-tertiary);
+        cursor: grab;
+        padding: 0 var(--space-1);
+        display: flex;
+        align-items: center;
+      }
+
+      .player-card__role {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-bg-secondary);
+        border-radius: var(--radius-sm);
+        color: var(--color-text-secondary);
+        overflow: hidden;
+      }
+
+      .player-card__role.disabled {
+        opacity: 0.5;
+      }
+
+      .player-card__role img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .player-card__name {
+        flex-grow: 1;
+        min-width: 0;
+        /* flex fix */
+      }
+
+      .player-card__name input {
+        width: 100%;
+        background: transparent;
+        color: var(--color-text-primary);
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        padding: 2px 4px;
+        font-weight: var(--font-weight-medium);
+      }
+
+      .player-card__name input:hover,
+      .player-card__name input:focus {
+        background: var(--color-bg-primary);
+        border-color: var(--color-border);
+      }
+
+      .player-card__hero {
+        width: 3rem;
+        height: 3rem;
+        flex-shrink: 0;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-light);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-secondary);
+        margin-left: var(--space-2);
+      }
+
+      .player-card__hero:hover {
+        border-color: var(--color-text-secondary);
+      }
+
+      .player-card__hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .player-card__captain {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--color-text-tertiary);
+        cursor: pointer;
+        opacity: 0.3;
+        transition: opacity 0.2s;
+      }
+
+      .player-card__captain:hover {
+        opacity: 0.8;
+      }
+
+      .player-card__captain.active {
+        color: var(--color-yellow-400);
+        opacity: 1;
+      }
+    </style>
   </body>
 </html>
