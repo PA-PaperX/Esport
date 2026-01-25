@@ -48,7 +48,7 @@ public/dist/
 # Local state/data files (user-specific)
 match-data.json
 bracket-data.json
-templates.json
+# templates.json
 font-settings.json
 lower-third-data.json
 
