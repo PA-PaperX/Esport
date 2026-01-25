@@ -1,275 +1,293 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ROV Waiting</title>
+    <link rel="stylesheet" href="/styles/tokens.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style id="custom-fonts"></style>
+    <style>
+      :root {
+        --custom-font-wait-team: "Rajdhani";
+        --custom-font-wait-timer: "Rajdhani";
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ROV Waiting</title>
-  <link rel="stylesheet" href="/styles/tokens.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <style id="custom-fonts"></style>
-  <style>
-    :root {
-      --custom-font-wait-team: "Rajdhani";
-      --custom-font-wait-timer: "Rajdhani";
-    }
+      #timer-display {
+        font-family: var(--custom-font-wait-timer), sans-serif;
+      }
 
-    #timer-display {
-      font-family: var(--custom-font-wait-timer), sans-serif;
-    }
+      #team-a-name,
+      #team-b-name {
+        font-family: var(--custom-font-wait-team), sans-serif;
+      }
+    </style>
+  </head>
 
-    #team-a-name,
-    #team-b-name {
-      font-family: var(--custom-font-wait-team), sans-serif;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="box_wait">
-    <div class="box_wait_content">
-      <div class="absolute -top-28 -left-7.5 bg-amber-500 w-50 h-20">
-        <h2 id="timer-display">00:00</h2>
-      </div>
-      <div class="A">
-        <div class="logo-container" style="
+  <body>
+    <div class="box_wait">
+      <div class="box_wait_content">
+        <div class="absolute -top-28 -left-7.5 bg-amber-500 w-50 h-20">
+          <h2 id="timer-display">00:00</h2>
+        </div>
+        <div class="A">
+          <div
+            class="logo-container"
+            style="
               width: 180px;
               height: 180px;
               border-radius: 50%;
               overflow: hidden;
               background: var(--color-overlay);
-            ">
-          <img id="team-a-logo" src="" alt="" style="
+            "
+          >
+            <img
+              id="team-a-logo"
+              src=""
+              alt=""
+              style="
                 display: none;
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-              " />
+              "
+            />
+          </div>
+          <h2 id="team-a-name">TEAM A</h2>
         </div>
-        <h2 id="team-a-name">TEAM A</h2>
-      </div>
 
-      <h3 id="score-display">0-0</h3>
+        <h3 id="score-display">0-0</h3>
 
-      <div class="B">
-        <div class="logo-container" style="
+        <div class="B">
+          <div
+            class="logo-container"
+            style="
               width: 180px;
               height: 180px;
               border-radius: 50%;
               overflow: hidden;
               background: var(--color-overlay);
-            ">
-          <img id="team-b-logo" src="" alt="" style="
+            "
+          >
+            <img
+              id="team-b-logo"
+              src=""
+              alt=""
+              style="
                 display: none;
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-              " />
+              "
+            />
+          </div>
+          <h2 id="team-b-name">TEAM B</h2>
         </div>
-        <h2 id="team-b-name">TEAM B</h2>
       </div>
     </div>
-  </div>
 
-  <script>
-    // ==========================================
-    // Wait Page - API Integration + Timer
-    // ==========================================
+    <script>
+      // ==========================================
+      // Wait Page - API Integration + Timer
+      // ==========================================
 
-    const WS_URL = `ws://${window.location.host}/ws`;
-    let ws = null;
-    let currentState = null;
+      const WS_URL = `ws://${window.location.host}/ws`;
+      let ws = null;
+      let currentState = null;
 
-    // Timer state
-    let timerInterval = null;
-    let timerEndTime = null;
-    let timerSeconds = 0;
-    let timerRunning = false;
+      // Timer state
+      let timerInterval = null;
+      let timerEndTime = null;
+      let timerSeconds = 0;
+      let timerRunning = false;
 
-    // ==========================================
-    // WebSocket Connection
-    // ==========================================
-    function connectWebSocket() {
-      ws = new WebSocket(WS_URL);
+      // ==========================================
+      // WebSocket Connection
+      // ==========================================
+      function connectWebSocket() {
+        ws = new WebSocket(WS_URL);
 
-      ws.onopen = () => {
-        console.log("✅ Wait overlay connected");
-      };
+        ws.onopen = () => {
+          console.log("✅ Wait overlay connected");
+        };
 
-      ws.onmessage = (event) => {
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+
+            // Handle state updates (team data)
+            if (msg.type === "STATE_UPDATE" && msg.data) {
+              currentState = msg.data;
+              renderTeams();
+            }
+
+            // Handle timer updates
+            if (msg.type === "WAIT_TIMER_UPDATE" && msg.data) {
+              handleTimerUpdate(msg.data);
+            }
+
+            // Handle font updates
+            if (msg.type === "FONT_UPDATE" && msg.data) {
+              fontSettings = msg.data;
+              applyCustomFonts();
+            }
+          } catch (e) {
+            console.error("WebSocket message error:", e);
+          }
+        };
+
+        ws.onclose = () => {
+          console.log("🔌 Disconnected, reconnecting...");
+          setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket error:", error);
+        };
+      }
+
+      // ==========================================
+      // Render Teams
+      // ==========================================
+      function renderTeams() {
+        if (!currentState) return;
+
+        const swapped = currentState.swapped || false;
+        const TeamA = swapped ? currentState.teams.B : currentState.teams.A;
+        const TeamB = swapped ? currentState.teams.A : currentState.teams.B;
+
+        // Team Names
+        document.getElementById("team-a-name").textContent =
+          TeamA.name || "TEAM A";
+        document.getElementById("team-b-name").textContent =
+          TeamB.name || "TEAM B";
+
+        // Scores
+        const scoreA = TeamA.score || 0;
+        const scoreB = TeamB.score || 0;
+        document.getElementById("score-display").textContent =
+          `${scoreA}-${scoreB}`;
+
+        // Team Logos - only show if logo exists
+        const logoA = document.getElementById("team-a-logo");
+        const logoB = document.getElementById("team-b-logo");
+
+        if (TeamA.logo) {
+          logoA.src = TeamA.logo;
+          logoA.style.display = "block";
+        } else {
+          logoA.style.display = "none";
+        }
+
+        if (TeamB.logo) {
+          logoB.src = TeamB.logo;
+          logoB.style.display = "block";
+        } else {
+          logoB.style.display = "none";
+        }
+      }
+
+      // ==========================================
+      // Timer Functions
+      // ==========================================
+      function handleTimerUpdate(timerData) {
+        if (timerData.action === "start") {
+          startTimer(timerData.seconds, timerData.endTime);
+        } else if (timerData.action === "stop") {
+          stopTimer();
+          if (timerData.seconds !== undefined) {
+            timerSeconds = timerData.seconds;
+            updateTimerDisplay();
+          }
+        } else if (timerData.action === "reset") {
+          resetTimer();
+        } else if (timerData.action === "set") {
+          setTimer(timerData.seconds);
+        }
+      }
+
+      function setTimer(seconds) {
+        timerSeconds = seconds;
+        timerRunning = false;
+        updateTimerDisplay();
+      }
+
+      function startTimer(seconds, endTime) {
+        if (seconds !== undefined) {
+          timerSeconds = seconds;
+        }
+        if (endTime) {
+          timerEndTime = endTime;
+        } else {
+          timerEndTime = Date.now() + timerSeconds * 1000;
+        }
+
+        timerRunning = true;
+
+        // Clear existing interval
+        if (timerInterval) clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+          const remaining = Math.max(0, timerEndTime - Date.now());
+          timerSeconds = Math.ceil(remaining / 1000);
+          updateTimerDisplay();
+
+          if (remaining <= 0) {
+            stopTimer();
+          }
+        }, 100);
+      }
+
+      function stopTimer() {
+        timerRunning = false;
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
+      function resetTimer() {
+        stopTimer();
+        timerSeconds = 0;
+        timerEndTime = null;
+        updateTimerDisplay();
+      }
+
+      function updateTimerDisplay() {
+        const minutes = Math.floor(timerSeconds / 60);
+        const seconds = timerSeconds % 60;
+        const display = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        document.getElementById("timer-display").textContent = display;
+      }
+
+      // ==========================================
+      // Font Handling
+      // ==========================================
+      let fontSettings = null;
+
+      async function loadFontSettings() {
         try {
-          const msg = JSON.parse(event.data);
-
-          // Handle state updates (team data)
-          if (msg.type === "STATE_UPDATE" && msg.data) {
-            currentState = msg.data;
-            renderTeams();
-          }
-
-          // Handle timer updates
-          if (msg.type === "WAIT_TIMER_UPDATE" && msg.data) {
-            handleTimerUpdate(msg.data);
-          }
-
-          // Handle font updates
-          if (msg.type === "FONT_UPDATE" && msg.data) {
-            fontSettings = msg.data;
+          const response = await fetch("/api/fonts");
+          if (response.ok) {
+            fontSettings = await response.json();
             applyCustomFonts();
           }
         } catch (e) {
-          console.error("WebSocket message error:", e);
+          console.log("Failed to load font settings");
         }
-      };
-
-      ws.onclose = () => {
-        console.log("🔌 Disconnected, reconnecting...");
-        setTimeout(connectWebSocket, 3000);
-      };
-
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-    }
-
-    // ==========================================
-    // Render Teams
-    // ==========================================
-    function renderTeams() {
-      if (!currentState) return;
-
-      const swapped = currentState.swapped || false;
-      const TeamA = swapped ? currentState.teams.B : currentState.teams.A;
-      const TeamB = swapped ? currentState.teams.A : currentState.teams.B;
-
-      // Team Names
-      document.getElementById("team-a-name").textContent =
-        TeamA.name || "TEAM A";
-      document.getElementById("team-b-name").textContent =
-        TeamB.name || "TEAM B";
-
-      // Scores
-      const scoreA = TeamA.score || 0;
-      const scoreB = TeamB.score || 0;
-      document.getElementById("score-display").textContent =
-        `${scoreA}-${scoreB}`;
-
-      // Team Logos - only show if logo exists
-      const logoA = document.getElementById("team-a-logo");
-      const logoB = document.getElementById("team-b-logo");
-
-      if (TeamA.logo) {
-        logoA.src = TeamA.logo;
-        logoA.style.display = "block";
-      } else {
-        logoA.style.display = "none";
       }
 
-      if (TeamB.logo) {
-        logoB.src = TeamB.logo;
-        logoB.style.display = "block";
-      } else {
-        logoB.style.display = "none";
-      }
-    }
+      function applyCustomFonts() {
+        if (!fontSettings) return;
 
-    // ==========================================
-    // Timer Functions
-    // ==========================================
-    function handleTimerUpdate(timerData) {
-      if (timerData.action === "start") {
-        startTimer(timerData.seconds, timerData.endTime);
-      } else if (timerData.action === "stop") {
-        stopTimer();
-        if (timerData.seconds !== undefined) {
-          timerSeconds = timerData.seconds;
-          updateTimerDisplay();
-        }
-      } else if (timerData.action === "reset") {
-        resetTimer();
-      } else if (timerData.action === "set") {
-        setTimer(timerData.seconds);
-      }
-    }
-
-    function setTimer(seconds) {
-      timerSeconds = seconds;
-      timerRunning = false;
-      updateTimerDisplay();
-    }
-
-    function startTimer(seconds, endTime) {
-      if (seconds !== undefined) {
-        timerSeconds = seconds;
-      }
-      if (endTime) {
-        timerEndTime = endTime;
-      } else {
-        timerEndTime = Date.now() + timerSeconds * 1000;
-      }
-
-      timerRunning = true;
-
-      // Clear existing interval
-      if (timerInterval) clearInterval(timerInterval);
-
-      timerInterval = setInterval(() => {
-        const remaining = Math.max(0, timerEndTime - Date.now());
-        timerSeconds = Math.ceil(remaining / 1000);
-        updateTimerDisplay();
-
-        if (remaining <= 0) {
-          stopTimer();
-        }
-      }, 100);
-    }
-
-    function stopTimer() {
-      timerRunning = false;
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-    }
-
-    function resetTimer() {
-      stopTimer();
-      timerSeconds = 0;
-      timerEndTime = null;
-      updateTimerDisplay();
-    }
-
-    function updateTimerDisplay() {
-      const minutes = Math.floor(timerSeconds / 60);
-      const seconds = timerSeconds % 60;
-      const display = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-      document.getElementById("timer-display").textContent = display;
-    }
-
-    // ==========================================
-    // Font Handling
-    // ==========================================
-    let fontSettings = null;
-
-    async function loadFontSettings() {
-      try {
-        const response = await fetch("/api/fonts");
-        if (response.ok) {
-          fontSettings = await response.json();
-          applyCustomFonts();
-        }
-      } catch (e) {
-        console.log("Failed to load font settings");
-      }
-    }
-
-    function applyCustomFonts() {
-      if (!fontSettings) return;
-
-      // Inject @font-face rules
-      const styleEl = document.getElementById("custom-fonts");
-      let css = "";
-      for (const font of fontSettings.fonts || []) {
-        css += `
+        // Inject @font-face rules
+        const styleEl = document.getElementById("custom-fonts");
+        let css = "";
+        for (const font of fontSettings.fonts || []) {
+          css += `
           @font-face {
             font-family: '${font.name}';
             src: url('${font.path}') format('${font.format}');
@@ -278,71 +296,70 @@
             font-display: swap;
           }
         `;
-      }
-      styleEl.textContent = css;
-
-      const assignments = fontSettings.assignments || {};
-      const getFontName = (fontId) => {
-        if (!fontId) return null;
-        const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
-        return font ? font.name : null;
-      };
-
-      // Apply to Wait Screen elements
-      const teamFont = getFontName(assignments.waitTeamName);
-      document.documentElement.style.setProperty(
-        "--custom-font-wait-team",
-        teamFont ? `'${teamFont}'` : '"Rajdhani"',
-      );
-
-      const timerFont = getFontName(assignments.waitTimer);
-      document.documentElement.style.setProperty(
-        "--custom-font-wait-timer",
-        timerFont ? `'${timerFont}'` : '"Rajdhani"',
-      );
-    }
-
-    // ==========================================
-    // Initialize
-    // ==========================================
-    async function init() {
-      // Connect WebSocket
-      connectWebSocket();
-
-      // Load fonts
-      loadFontSettings();
-
-      // Fetch initial state
-      try {
-        const res = await fetch("/api/state");
-        if (res.ok) {
-          currentState = await res.json();
-          renderTeams();
         }
-      } catch (e) {
-        console.error("Failed to fetch initial state:", e);
+        styleEl.textContent = css;
+
+        const assignments = fontSettings.assignments || {};
+        const getFontName = (fontId) => {
+          if (!fontId) return null;
+          const font = (fontSettings.fonts || []).find((f) => f.id === fontId);
+          return font ? font.name : null;
+        };
+
+        // Apply to Wait Screen elements
+        const teamFont = getFontName(assignments.waitTeamName);
+        document.documentElement.style.setProperty(
+          "--custom-font-wait-team",
+          teamFont ? `'${teamFont}'` : '"Rajdhani"',
+        );
+
+        const timerFont = getFontName(assignments.waitTimer);
+        document.documentElement.style.setProperty(
+          "--custom-font-wait-timer",
+          timerFont ? `'${timerFont}'` : '"Rajdhani"',
+        );
       }
 
-      // Fetch initial timer state
-      try {
-        const res = await fetch("/api/wait-timer");
-        if (res.ok) {
-          const timerData = await res.json();
-          if (timerData.seconds > 0) {
-            setTimer(timerData.seconds);
-            if (timerData.running && timerData.endTime) {
-              startTimer(undefined, timerData.endTime);
+      // ==========================================
+      // Initialize
+      // ==========================================
+      async function init() {
+        // Connect WebSocket
+        connectWebSocket();
+
+        // Load fonts
+        loadFontSettings();
+
+        // Fetch initial state
+        try {
+          const res = await fetch("/api/state");
+          if (res.ok) {
+            currentState = await res.json();
+            renderTeams();
+          }
+        } catch (e) {
+          console.error("Failed to fetch initial state:", e);
+        }
+
+        // Fetch initial timer state
+        try {
+          const res = await fetch("/api/wait-timer");
+          if (res.ok) {
+            const timerData = await res.json();
+            if (timerData.seconds > 0) {
+              setTimer(timerData.seconds);
+              if (timerData.running && timerData.endTime) {
+                startTimer(undefined, timerData.endTime);
+              }
             }
           }
+        } catch (e) {
+          console.log("No timer state found, using defaults");
         }
-      } catch (e) {
-        console.log("No timer state found, using defaults");
       }
-    }
 
-    // Start
-    init();
-  </script>
-</body>
-
+      // Start
+      init();
+    </script>
+  </body>
 </html>

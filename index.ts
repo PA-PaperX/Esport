@@ -32,7 +32,11 @@ const port = process.env.PORT || 3000;
 
 // DEBUG: Log startup paths
 try {
-  const debugPath = join(process.env.USERPROFILE || "C:\\Users\\Administrator", "Desktop", "server_debug.txt");
+  const debugPath = join(
+    process.env.USERPROFILE || "C:\\Users\\Administrator",
+    "Desktop",
+    "server_debug.txt",
+  );
   const debugInfo = `
 Time: ${new Date().toISOString()}
 CWD: ${process.cwd()}
@@ -42,7 +46,7 @@ resources path: ${join(process.cwd(), "resources")}
 Files in resources: ${require("fs").existsSync(join(process.cwd(), "resources")) ? JSON.stringify(require("fs").readdirSync(join(process.cwd(), "resources"))) : "NOT FOUND"}
   `;
   require("fs").writeFileSync(debugPath, debugInfo);
-} catch (e) { }
+} catch (e) {}
 
 console.log(`Server running on port ${port}`);
 
@@ -60,7 +64,7 @@ const server = Bun.serve({
       );
       ws.subscribe("overlay");
     },
-    message(ws, message) { },
+    message(ws, message) {},
   },
 
   // 2. HTTP Request Handler
@@ -1432,7 +1436,7 @@ const server = Bun.serve({
           if (existsSync(p)) {
             try {
               unlinkSync(p);
-            } catch (e) { }
+            } catch (e) {}
           }
         }
 

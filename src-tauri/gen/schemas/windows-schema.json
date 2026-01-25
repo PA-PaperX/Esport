@@ -208,10 +208,7 @@
                       "anyOf": [
                         {
                           "type": "object",
-                          "required": [
-                            "cmd",
-                            "name"
-                          ],
+                          "required": ["cmd", "name"],
                           "properties": {
                             "args": {
                               "description": "The allowed arguments for the command execution.",
@@ -234,10 +231,7 @@
                         },
                         {
                           "type": "object",
-                          "required": [
-                            "name",
-                            "sidecar"
-                          ],
+                          "required": ["name", "sidecar"],
                           "properties": {
                             "args": {
                               "description": "The allowed arguments for the command execution.",
@@ -268,10 +262,7 @@
                       "anyOf": [
                         {
                           "type": "object",
-                          "required": [
-                            "cmd",
-                            "name"
-                          ],
+                          "required": ["cmd", "name"],
                           "properties": {
                             "args": {
                               "description": "The allowed arguments for the command execution.",
@@ -294,10 +285,7 @@
                         },
                         {
                           "type": "object",
-                          "required": [
-                            "name",
-                            "sidecar"
-                          ],
+                          "required": ["name", "sidecar"],
                           "properties": {
                             "args": {
                               "description": "The allowed arguments for the command execution.",
@@ -2516,9 +2504,7 @@
         {
           "description": "A variable that is set while calling the command from the webview API.",
           "type": "object",
-          "required": [
-            "validator"
-          ],
+          "required": ["validator"],
           "properties": {
             "raw": {
               "description": "Marks the validator as a raw regex, meaning the plugin should not make any modification at runtime.\n\nThis means the regex will not match on the entire string by default, which might be exploited if your regex allow unexpected input to be considered valid. When using this option, make sure your regex is correct.",
