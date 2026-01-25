@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "id": "tpl_1769333679145",
+    "name": "daswgdasg",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-25T09:34:39.145Z"
+  },
+  {
+    "id": "tpl_1769333681895",
+    "name": "adsgasdg",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-25T09:34:41.895Z"
+  },
+  {
+    "id": "tpl_1769334964830",
+    "name": "Team 1",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-25T09:56:04.830Z"
+  },
+  {
+    "id": "tpl_1769334990579",
+    "name": "Team 2",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-25T09:56:30.579Z"
+  },
+  {
+    "id": "tpl_1769336126361",
+    "name": "Team A",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-25T10:15:26.361Z"
+  },
+  {
+    "id": "tpl_1769336154280",
+    "name": "Team B",
+    "color": "#3b82f6",
+    "logo": "",
+    "players": [],
+    "createdAt": "2026-01-25T10:15:54.280Z"
+  }
+]

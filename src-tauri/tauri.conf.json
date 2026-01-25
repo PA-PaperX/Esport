@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Esport Control Panel",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "identifier": "com.paperx.esportcontrol",
   "build": {
     "devUrl": "http://localhost:3000",
@@ -25,18 +25,9 @@
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "nsis"
-    ],
-    "externalBin": [
-      "binaries/esport-server"
-    ],
-    "resources": [
-      "public/**/*",
-      "data/**/*",
-      "obs/**/*",
-      "resources/*"
-    ],
+    "targets": ["nsis"],
+    "externalBin": ["binaries/esport-server"],
+    "resources": ["public/**/*", "data/**/*", "obs/**/*"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
