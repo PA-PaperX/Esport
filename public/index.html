@@ -1002,7 +1002,7 @@
         <div class="team-panel__header" id="teamA-header">
           <div class="team-panel__indicator" id="teamA-accent"></div>
           <h2 class="team-panel__title">Team A</h2>
-          <span class="team-panel__subtitle">(Home)</span>
+          <!-- <span class="team-panel__subtitle">(Home)</span> -->
         </div>
 
         <!-- Template Selector -->
@@ -1116,7 +1116,7 @@
         <div class="team-panel__header" id="teamB-header">
           <div class="team-panel__indicator" id="teamB-accent"></div>
           <h2 class="team-panel__title">Team B</h2>
-          <span class="team-panel__subtitle">(Away)</span>
+          <!-- <span class="team-panel__subtitle">(Away)</span> -->
         </div>
 
         <!-- Template Selector -->
@@ -3367,203 +3367,7 @@
       }
     }
 
-    // Load templates for bracket selection
-    let bracketTemplates = [];
-
-    async function loadBracketTemplates() {
-      try {
-        const response = await fetch("/api/templates");
-        bracketTemplates = await response.json();
-        renderBracketTemplateList();
-      } catch (err) {
-        console.error("Failed to load templates:", err);
-      }
-    }
-
-    // WebSocket listener for real-time template updates
-    function setupBracketWebSocket() {
-      const ws = new WebSocket(`ws://localhost:3000/ws`);
-
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-
-          if (message.type === "TEMPLATES_UPDATE") {
-            console.log("📦 Templates updated via WebSocket");
-            bracketTemplates = message.data;
-            renderBracketTemplateList();
-            showNotification(
-              "Templates Updated",
-              `${bracketTemplates.length} templates available`,
-              "info",
-            );
-          } else if (message.type === "BRACKET_UPDATE") {
-            console.log("🏆 Bracket updated via WebSocket");
-            currentBracket = message.data;
-            renderBracket(currentBracket);
-            refreshBracketMatches();
-            // Optional: showNotification('Bracket Updated', 'Syncing changes...', 'info');
-          }
-        } catch (err) {
-          console.error("WebSocket message error:", err);
-        }
-      };
-
-      ws.onclose = () => {
-        console.log("🔌 Bracket WS disconnected, reconnecting...");
-        setTimeout(setupBracketWebSocket, 2000);
-      };
-    }
-
-    // Start WebSocket connection for real-time updates
-    setupBracketWebSocket();
-
-    // Track selection order
-    let selectionSequence = [];
-
-    function renderBracketTemplateList() {
-      const container = document.getElementById("bracket-template-list");
-      if (!container) return;
-
-      if (bracketTemplates.length === 0) {
-        container.innerHTML = `
-                    <div style="color: var(--color-text-tertiary); font-size: var(--font-size-sm); grid-column: 1 / -1; text-align: center; padding: var(--space-4);">
-                        <i class="ph-duotone ph-folder-open" style="font-size: 24px; display: block; margin-bottom: var(--space-2);"></i>
-                        No templates found. Create templates first in the Template Manager.
-                    </div>
-                `;
-        return;
-      }
-
-      container.innerHTML = bracketTemplates
-        .map(
-          (template) => `
-                <label style="
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-2);
-                    padding: var(--space-2) var(--space-3);
-                    background: var(--color-bg-tertiary);
-                    border: 1px solid transparent;
-                    border-radius: var(--radius-sm);
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    position: relative;
-                " class="bracket-team-card" data-name="${template.name}">
-                    <input type="checkbox" 
-                        data-template='${JSON.stringify(template).replace(/'/g, "&#039;")}'
-                        onchange="handleTeamSelection(this, '${template.name}')"
-                        style="width: 18px; height: 18px; accent-color: var(--color-primary);">
-                    
-                    ${template.logo
-              ? `<img src="${template.logo}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;">`
-              : `<div style="width: 24px; height: 24px; border-radius: 4px; background: ${template.color || "#3b82f6"}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white;">${template.name.substring(0, 2).toUpperCase()}</div>`
-            }
-                    <span style="flex: 1; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${template.name}</span>
-                    
-                    <!-- Sequence Badge Inline -->
-                    <span class="sequence-badge" style="
-                        display: none;
-                        background: var(--color-primary);
-                        color: white;
-                        font-size: 10px;
-                        font-weight: bold;
-                        padding: 2px 6px;
-                        border-radius: 10px;
-                        margin-left: var(--space-2);
-                    "></span>
-                </label>
-            `,
-        )
-        .join("");
-
-      // Re-apply states based on current selection sequence
-      refreshSelectionBadges();
-    }
-
-    function handleTeamSelection(checkbox, teamName) {
-      if (checkbox.checked) {
-        if (!selectionSequence.includes(teamName)) {
-          selectionSequence.push(teamName);
-        }
-      } else {
-        selectionSequence = selectionSequence.filter(
-          (name) => name !== teamName,
-        );
-      }
-      refreshSelectionBadges();
-      updateSelectedCount();
-    }
-
-    function refreshSelectionBadges() {
-      document.querySelectorAll(".bracket-team-card").forEach((card) => {
-        const name = card.dataset.name;
-        const index = selectionSequence.indexOf(name);
-        const badge = card.querySelector(".sequence-badge");
-        const checkbox = card.querySelector("input");
-
-        if (index !== -1) {
-          // Selected
-          card.style.borderColor = "var(--color-primary)";
-          card.style.background = "var(--color-bg-secondary)";
-          badge.style.display = "flex";
-          badge.textContent = index + 1;
-          if (checkbox) checkbox.checked = true;
-        } else {
-          // Not selected
-          card.style.borderColor = "transparent";
-          card.style.background = "var(--color-bg-tertiary)";
-          badge.style.display = "none";
-          if (checkbox) checkbox.checked = false;
-        }
-      });
-    }
-
-    function updateSelectedCount() {
-      const count = document.querySelectorAll(
-        '#bracket-template-list input[type="checkbox"]:checked',
-      ).length;
-      const countEl = document.getElementById("bracket-selected-count");
-      if (countEl) {
-        countEl.textContent = `${count} selected`;
-        countEl.style.color =
-          count >= 2 ? "var(--color-success)" : "var(--color-text-secondary)";
-      }
-    }
-
-    // Shuffle selected teams using Fisher-Yates algorithm
-    function shuffleSelectedTeams() {
-      const container = document.getElementById("bracket-template-list");
-      const labels = Array.from(container.querySelectorAll("label"));
-
-      // Check if we have selected teams
-      const selectedCount = labels.filter((l) =>
-        l.querySelector("input:checked"),
-      ).length;
-      if (selectedCount < 2) {
-        showNotification(
-          "Shuffle",
-          "Please select at least 2 teams to shuffle",
-          "warning",
-        );
-        return;
-      }
-
-      // Fisher-Yates shuffle
-      for (let i = labels.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        container.insertBefore(labels[j], labels[i]);
-      }
-
-      showNotification(
-        "Shuffled!",
-        "Team order has been randomized",
-        "success",
-      );
-    }
-
-    // Load templates when page loads
-    loadBracketTemplates();
+    // Bracket logic moved to src/main.ts to fix duplication bugs
 
     // Shuffle bracket teams (only works before scoring starts)
     async function shuffleBracketTeams() {
@@ -3622,42 +3426,7 @@
       }
     }
 
-    async function resetBracket() {
-      // Direct reset without confirm (works better in Electron)
-      console.log("🗑️ Resetting bracket...");
-
-      try {
-        const response = await fetch("/api/bracket", { method: "DELETE" });
-        console.log("Reset response:", response.status);
-
-        currentBracket = null;
-        document.getElementById("bracket-create-section").style.display =
-          "block";
-        document.getElementById("bracket-display").style.display = "none";
-
-        // Clear tournament name
-        const nameInput = document.getElementById("bracket-name");
-        if (nameInput) nameInput.value = "";
-
-        // Clear all checkboxes
-        document
-          .querySelectorAll('#bracket-template-list input[type="checkbox"]')
-          .forEach((cb) => {
-            cb.checked = false;
-          });
-
-        // Clear selection sequence
-        selectionSequence = [];
-        refreshSelectionBadges();
-        updateSelectedCount();
-        refreshBracketMatches(); // Clear scoreboard dropdown
-
-        showNotification("Reset", "Bracket has been reset", "info");
-      } catch (err) {
-        console.error("Reset bracket error:", err);
-        showNotification("Error", "Failed to reset bracket", "error");
-      }
-    }
+    // Reset function moved to main.ts
 
     function renderBracket(bracket) {
       if (!bracket) {
@@ -3878,17 +3647,10 @@
     }
 
     // Load bracket on page load
-    loadBracket();
+    // loadBracket() removed
 
     // Expose globally
-    window.createBracket = createBracket;
-    window.resetBracket = resetBracket;
-    window.setBracketType = setBracketType;
-    window.setMatchWinner = setMatchWinner;
-    window.updateMatchScore = updateMatchScore;
-    window.copyBracketOverlayUrl = copyBracketOverlayUrl;
-    window.shuffleBracketTeams = shuffleBracketTeams;
-    window.updateShuffleButtonState = updateShuffleButtonState;
+    // Global assignments removed to defer to src/main.ts
 
     // ===========================================
     // WAIT TIMER FUNCTIONS
@@ -4445,18 +4207,24 @@
 
     .player-card__name input {
       width: 100%;
-      background: transparent;
+      background: var(--color-bg-primary);
       color: var(--color-text-primary);
-      border: 1px solid transparent;
+      border: 1px solid var(--color-border-light);
       border-radius: var(--radius-sm);
-      padding: 2px 4px;
+      padding: 6px 8px;
       font-weight: var(--font-weight-medium);
+      transition: all var(--transition-fast);
     }
 
-    .player-card__name input:hover,
+    .player-card__name input:hover {
+      border-color: var(--color-border);
+    }
+
     .player-card__name input:focus {
       background: var(--color-bg-primary);
-      border-color: var(--color-border);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px var(--color-accent-alpha);
+      outline: none;
     }
 
     .player-card__hero {

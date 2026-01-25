@@ -1,89 +1,35 @@
 {
-  "matchId": "match_init",
-  "linkedMatchId": null,
+  "matchId": "clean_state",
   "bestOf": 3,
   "currentGame": 1,
-  "swapped": false,
   "teams": {
     "A": {
-      "name": "HOME TEAM",
+      "name": "Team A",
       "shortName": "HOME",
-      "color": "#3b82f6",
-      "logo": "/logos/team-a.png",
-      "logoVersion": 1768893950726,
+      "color": "#007AFF",
+      "logo": "",
       "score": 0,
       "players": [
-        {
-          "slot": 1,
-          "name": "Home Player 1",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 2,
-          "name": "Home Player 2",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 3,
-          "name": "Home Player 3",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 4,
-          "name": "Home Player 4",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 5,
-          "name": "Home Player 5",
-          "hero": "",
-          "lane": ""
-        }
+        { "slot": 1, "name": "Player 1", "hero": "", "lane": "" },
+        { "slot": 2, "name": "Player 2", "hero": "", "lane": "" },
+        { "slot": 3, "name": "Player 3", "hero": "", "lane": "" },
+        { "slot": 4, "name": "Player 4", "hero": "", "lane": "" },
+        { "slot": 5, "name": "Player 5", "hero": "", "lane": "" }
       ],
       "bans": []
     },
     "B": {
-      "name": "AWAY TEAM",
+      "name": "Team B",
       "shortName": "AWAY",
-      "color": "#ef4444",
+      "color": "#FF3B30",
       "logo": "",
-      "logoVersion": 1768893647080,
       "score": 0,
       "players": [
-        {
-          "slot": 1,
-          "name": "Away Player 1",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 2,
-          "name": "Away Player 2",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 3,
-          "name": "Away Player 3",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 4,
-          "name": "Away Player 4",
-          "hero": "",
-          "lane": ""
-        },
-        {
-          "slot": 5,
-          "name": "Away Player 5",
-          "hero": "",
-          "lane": ""
-        }
+        { "slot": 1, "name": "Player 1", "hero": "", "lane": "" },
+        { "slot": 2, "name": "Player 2", "hero": "", "lane": "" },
+        { "slot": 3, "name": "Player 3", "hero": "", "lane": "" },
+        { "slot": 4, "name": "Player 4", "hero": "", "lane": "" },
+        { "slot": 5, "name": "Player 5", "hero": "", "lane": "" }
       ],
       "bans": []
     }

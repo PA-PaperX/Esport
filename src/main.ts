@@ -4043,6 +4043,48 @@ function setBracketType(type: "single" | "double"): void {
     ?.classList.toggle("btn-secondary", type !== "double");
 }
 
+let selectionSequence: string[] = [];
+(window as any).selectionSequence = selectionSequence;
+
+function handleTeamSelection(checkbox: HTMLInputElement, teamName: string): void {
+  if (checkbox.checked) {
+    if (!selectionSequence.includes(teamName)) {
+      selectionSequence.push(teamName);
+    }
+  } else {
+    selectionSequence = selectionSequence.filter((name) => name !== teamName);
+  }
+  refreshSelectionBadges();
+  updateSelectedCount();
+}
+(window as any).handleTeamSelection = handleTeamSelection;
+
+function refreshSelectionBadges(): void {
+  document.querySelectorAll(".bracket-team-card").forEach((card: any) => {
+    const name = card.dataset.name;
+    const index = selectionSequence.indexOf(name);
+    const badge = card.querySelector(".sequence-badge") as HTMLElement;
+    const checkbox = card.querySelector("input") as HTMLInputElement;
+
+    if (index !== -1) {
+      // Selected
+      card.style.borderColor = "var(--color-primary)";
+      card.style.background = "var(--color-bg-secondary)";
+      if (badge) {
+        badge.style.display = "flex";
+        badge.textContent = (index + 1).toString();
+      }
+      if (checkbox) checkbox.checked = true;
+    } else {
+      // Not selected
+      card.style.borderColor = "transparent";
+      card.style.background = "var(--color-bg-tertiary)";
+      if (badge) badge.style.display = "none";
+      if (checkbox) checkbox.checked = false;
+    }
+  });
+}
+
 async function loadBracketTemplates(): Promise<void> {
   try {
     const list = document.getElementById("bracket-template-list");
@@ -4064,19 +4106,47 @@ async function loadBracketTemplates(): Promise<void> {
       list.innerHTML = templates
         .map(
           (t: any) => `
-        <label style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); background: var(--surface-2); border-radius: var(--radius-sm); cursor: pointer; border: 1px solid transparent;" 
-               class="template-checkbox-item">
-            <input type="checkbox" class="template-checkbox" value="${t.id}" data-name="${t.name}">
-            <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.name}</span>
+        <label style="
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: var(--color-bg-tertiary);
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        " class="bracket-team-card" data-name="${t.name}">
+            <input type="checkbox" 
+                data-template='${JSON.stringify(t).replace(/'/g, "&#039;")}'
+                onchange="handleTeamSelection(this, '${t.name}')"
+                style="width: 18px; height: 18px; accent-color: var(--color-primary);">
+            
+            ${t.logo
+              ? `<img src="${t.logo}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;">`
+              : `<div style="width: 24px; height: 24px; border-radius: 4px; background: ${t.color || "#3b82f6"}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white;">${t.name.substring(0, 2).toUpperCase()}</div>`
+            }
+            <span style="flex: 1; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.name}</span>
+            
+            <!-- Sequence Badge Inline -->
+            <span class="sequence-badge" style="
+                display: none;
+                background: var(--color-primary);
+                color: white;
+                font-size: 10px;
+                font-weight: bold;
+                padding: 2px 6px;
+                border-radius: 10px;
+                margin-left: var(--space-2);
+            "></span>
         </label>
     `,
         )
         .join("");
 
-      // Add event listeners to all checkboxes (instead of inline onchange)
-      list.querySelectorAll(".template-checkbox").forEach((checkbox) => {
-        checkbox.addEventListener("change", updateSelectedCount);
-      });
+      // Re-apply states if any selection exists
+      refreshSelectionBadges();
     }
   } catch (err) {
     console.error("Failed to load bracket templates:", err);
@@ -4094,6 +4164,18 @@ function updateSelectedCount(): void {
 async function createBracket(): Promise<void> {
   const nameInput = document.getElementById("bracket-name") as HTMLInputElement;
 
+  // Validate Name - Fixes "Haven't named tournament yet" bug
+  const name = nameInput?.value?.trim();
+  if (!name) {
+    if ((window as any).showNotification) {
+      (window as any).showNotification("Validation Error", "Please enter a tournament name", "warning");
+    } else {
+      alert("Please enter a tournament name");
+    }
+    nameInput?.focus();
+    return;
+  }
+
   // Update selector to match index.html's generated structure
   // It renders generic checkboxes inside #bracket-template-list
   // using parent label .bracket-team-card
@@ -4107,11 +4189,15 @@ async function createBracket(): Promise<void> {
     );
 
     teams = Array.from(checkedInputs).map((input: any) => {
+      console.log("Input:", input);
+      console.log("Dataset:", input.dataset);
+
       // index.html stores full template in data-template, or name in data-name/parent
       // Let's try to parse data-template if available
       if (input.dataset.template) {
         try {
           const t = JSON.parse(input.dataset.template);
+          console.log("Parsed template:", t);
           return { id: t.id, name: t.name };
         } catch (e) {
           console.error("Error parsing template data", e);
@@ -4130,10 +4216,12 @@ async function createBracket(): Promise<void> {
     });
   }
 
-  const name = nameInput?.value || "Tournament";
-
   if (teams.length < 2) {
-    alert("Please select at least 2 teams");
+    if ((window as any).showNotification) {
+      (window as any).showNotification("Validation Error", "Please select at least 2 teams", "warning");
+    } else {
+      alert("Please select at least 2 teams");
+    }
     return;
   }
 
@@ -4167,9 +4255,11 @@ async function fetchBracket(): Promise<void> {
       if (bracket && bracket.matches && bracket.matches.length > 0) {
         renderBracket(bracket);
       } else {
-        document.getElementById("bracket-create-section")!.style.display =
-          "block";
+        document.getElementById("bracket-create-section")!.style.display = "block";
         document.getElementById("bracket-display")!.style.display = "none";
+
+        // Ensure the list is populated with the correct "Fancy" UI
+        loadBracketTemplates();
       }
     }
   } catch (err) {
@@ -4415,6 +4505,7 @@ async function shuffleBracketTeams(): Promise<void> {
           "warning",
         );
       }
+      updateShuffleButtonState(true);
     } else {
       alert(result.message || "Shuffle failed");
     }
@@ -4422,6 +4513,58 @@ async function shuffleBracketTeams(): Promise<void> {
     console.error("Shuffle bracket error:", err);
   }
 }
+
+function updateShuffleButtonState(locked: boolean): void {
+  const btn = document.getElementById("bracket-shuffle-btn");
+  if (!btn) return;
+
+  if (locked) {
+    btn.setAttribute("disabled", "true");
+    btn.style.opacity = "0.5";
+    btn.style.cursor = "not-allowed";
+    btn.title = "Shuffle locked - scoring has started";
+    btn.innerHTML = '<i class="ph-bold ph-lock"></i> Locked';
+  } else {
+    btn.removeAttribute("disabled");
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+    btn.title = "Re-shuffle team matchups";
+    btn.innerHTML = '<i class="ph-bold ph-shuffle"></i> Shuffle';
+  }
+}
+
+function shuffleSelectedTeams(): void {
+  const container = document.getElementById("bracket-template-list");
+  if (!container) return;
+
+  const labels = Array.from(container.querySelectorAll("label"));
+
+  // Check if we have selected teams
+  const selectedCount = labels.filter((l) =>
+    l.querySelector("input:checked"),
+  ).length;
+
+  if (selectedCount < 2) {
+    if ((window as any).showNotification) {
+      (window as any).showNotification("Shuffle", "Please select at least 2 teams to shuffle", "warning");
+    } else {
+      alert("Please select at least 2 teams to shuffle");
+    }
+    return;
+  }
+
+  // Fisher-Yates shuffle
+  for (let i = labels.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    container.insertBefore(labels[j], labels[i]);
+  }
+
+  if ((window as any).showNotification) {
+    (window as any).showNotification("Shuffled!", "Team order has been randomized", "success");
+  }
+}
+(window as any).shuffleSelectedTeams = shuffleSelectedTeams;
+
 
 async function resetBracket(): Promise<void> {
   console.log("🗑️ Resetting bracket...");
@@ -4431,9 +4574,18 @@ async function resetBracket(): Promise<void> {
       method: "DELETE",
     });
     if (response.ok) {
-      document.getElementById("bracket-create-section")!.style.display =
-        "block";
       document.getElementById("bracket-display")!.style.display = "none";
+      document.getElementById("bracket-create-section")!.style.display = "block";
+
+      // Clear tournament name
+      const nameInput = document.getElementById("bracket-name") as HTMLInputElement;
+      if (nameInput) nameInput.value = "";
+
+      // Clear selection
+      selectionSequence = [];
+      refreshSelectionBadges();
+      updateSelectedCount();
+
       loadBracketTemplates(); // Refresh list
       if ((window as any).showNotification) {
         (window as any).showNotification(
@@ -4461,15 +4613,14 @@ function copyBracketOverlayUrl(): void {
   });
 }
 
+// Main entry point
 (window as any).setBracketType = setBracketType;
-// Note: updateSelectedCount and loadBracketTemplates are defined in index.html inline script
-// with more complete implementation (logo badges, sequence numbers)
 (window as any).createBracket = createBracket;
 (window as any).resetBracket = resetBracket;
 (window as any).shuffleBracketTeams = shuffleBracketTeams;
 (window as any).copyBracketOverlayUrl = copyBracketOverlayUrl;
 
-// Initialize - only fetchBracket, loadBracketTemplates is in index.html
+// Initialize
 document.addEventListener("DOMContentLoaded", () => {
   fetchBracket();
 });

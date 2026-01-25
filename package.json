@@ -1,6 +1,6 @@
 {
   "name": "esport-control",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Esport Control Panel for Tournament Management",
   "author": "PaperX",
   "main": "electron-main.cjs",
